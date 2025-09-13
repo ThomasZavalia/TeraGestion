@@ -1,0 +1,21 @@
+# Visual Studio
+bin/
+obj/
+
+
+*.user
+*.suo
+.vs/
+
+*.nupkg
+.nuget/
+packages/
+
+appsettings.Development.json
+appsettings.Local.json
+*.db
+*.sqlite
+
+*.log
+*.tmp
+*.bak
