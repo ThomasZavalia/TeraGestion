@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-    [Migration("20250913214656_NombreMigracion")]
-    partial class NombreMigracion
+    [Migration("20250914183226_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -61,7 +61,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Paciente");
+                    b.ToTable("Pacientes", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Pago", b =>
@@ -89,7 +89,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TurnoId");
 
-                    b.ToTable("Pagos");
+                    b.ToTable("Pagos", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Sesion", b =>
@@ -121,7 +121,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("PacienteId");
 
-                    b.ToTable("Sesiones");
+                    b.ToTable("Sesiones", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Turno", b =>
@@ -149,7 +149,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("PacienteId");
 
-                    b.ToTable("Turnos");
+                    b.ToTable("Turnos", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Usuario", b =>
@@ -174,7 +174,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Usuarios");
+                    b.ToTable("Usuarios", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Pago", b =>

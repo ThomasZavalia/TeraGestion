@@ -14,6 +14,8 @@ namespace Infraestructure
         public DbSet<Core.Entidades.Sesion> Sesiones { get; set; }
         public DbSet<Core.Entidades.Turno> Turnos { get; set; }
 
+        public DbSet<Paciente> Pacientes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
+
 using System.IO;
 using System;
 using System.Collections.Generic;
@@ -11,16 +12,57 @@ using System.Threading.Tasks;
 
 namespace Infrastructure
 {
-    public class TeraDbContextFactory:IDesignTimeDbContextFactory<TeraDbContext>
+    /*  public class TeraDbContextFactory:IDesignTimeDbContextFactory<TeraDbContext>
+      {
+
+
+
+
+
+
+          public TeraDbContext CreateDbContext(string[] args)
+          {
+
+
+              var optionsBuilder = new DbContextOptionsBuilder<TeraDbContext>();
+              optionsBuilder.UseNpgsql("Host=localhost;Database=consultorio_db;Username=postgres;Password=dkdemicorazon");
+              return new TeraDbContext(optionsBuilder.Options);
+
+          }
+      }
+    */
+
+
+    public class TeraDbContextFactory : IDesignTimeDbContextFactory<TeraDbContext>
     {
         public TeraDbContext CreateDbContext(string[] args)
         {
-            
+            var configuration = new ConfigurationBuilder()
+                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Controllers")) // ajustá la ruta según donde esté tu API
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            var provider = configuration["Database:Provider"];
+            var connectionString = configuration["Database:ConnectionString"];
 
             var optionsBuilder = new DbContextOptionsBuilder<TeraDbContext>();
-            optionsBuilder.UseNpgsql("Host=localhost;Database=consultorio_DB;Username=postgres;Password=pongansuclave");
-            return new TeraDbContext(optionsBuilder.Options);
 
+            switch (provider)
+            {
+                case "Postgres":
+                    optionsBuilder.UseNpgsql(connectionString);
+                    break;
+                case "MySQL":
+                    optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+                    break;
+                case "SQLite":
+                    optionsBuilder.UseSqlite(connectionString);
+                    break;
+                default:
+                    throw new Exception("Proveedor de base de datos no soportado.");
+            }
+
+            return new TeraDbContext(optionsBuilder.Options);
         }
     }
 

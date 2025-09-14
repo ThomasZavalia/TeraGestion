@@ -7,13 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class NombreMigracion : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Paciente",
+                name: "Pacientes",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -28,7 +28,7 @@ namespace Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Paciente", x => x.Id);
+                    table.PrimaryKey("PK_Pacientes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -62,9 +62,9 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Sesiones", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Sesiones_Paciente_PacienteId",
+                        name: "FK_Sesiones_Pacientes_PacienteId",
                         column: x => x.PacienteId,
-                        principalTable: "Paciente",
+                        principalTable: "Pacientes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -84,9 +84,9 @@ namespace Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Turnos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Turnos_Paciente_PacienteId",
+                        name: "FK_Turnos_Pacientes_PacienteId",
                         column: x => x.PacienteId,
-                        principalTable: "Paciente",
+                        principalTable: "Pacientes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -145,7 +145,7 @@ namespace Infrastructure.Migrations
                 name: "Turnos");
 
             migrationBuilder.DropTable(
-                name: "Paciente");
+                name: "Pacientes");
         }
     }
 }
