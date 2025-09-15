@@ -10,27 +10,33 @@ namespace Infraestructure
 {
     public class PacienteRepository : IPacienteRepository
     {
-        public void Actualizar(Paciente paciente)
+        private readonly TeraDbContext _context;
+
+        public PacienteRepository(TeraDbContext context)
+        {
+            _context = context;
+        }
+        public Task<Paciente> Actualizar(Paciente entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Agregar(Paciente entity)
+        public Task<Paciente> Agregar(Paciente entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Eliminar(Paciente entity)
+        public Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Paciente? GetById(int id)
+        public Task<Paciente>? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Paciente> ObtenerTodos()
+        public Task<IEnumerable<Paciente>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }

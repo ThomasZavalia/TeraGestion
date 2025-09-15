@@ -10,27 +10,33 @@ namespace Infraestructure
 {
     public class UsuarioRepository : IUsuariosRepository
     {
-        public void Actualizar(Usuario usuario)
+        private readonly TeraDbContext _context;
+
+        public UsuarioRepository(TeraDbContext context)
+        {
+            _context = context;
+        }
+        public Task<Usuario> Actualizar(Usuario entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Agregar(Usuario entity)
+        public Task<Usuario> Agregar(Usuario entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Eliminar(Usuario entity)
+        public Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Usuario? GetById(int id)
+        public Task<Usuario>? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Usuario> ObtenerTodos()
+        public Task<IEnumerable<Usuario>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }
