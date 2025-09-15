@@ -10,22 +10,29 @@ namespace Infraestructure
 {
     public class SesionRepository : ISesionRepository
     {
-        public void Actualizar(Sesion entity)
+        private readonly TeraDbContext _context;
+
+        public SesionRepository(TeraDbContext context)
+        {
+            _context = context;
+        }
+
+        public Task<Sesion> Actualizar(Sesion entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Agregar(Sesion entity)
+        public Task<Sesion> Agregar(Sesion entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Eliminar(Sesion entity)
+        public Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Sesion? GetById(int id)
+        public Task<Sesion>? GetById(int id)
         {
             throw new NotImplementedException();
         }

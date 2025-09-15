@@ -8,11 +8,11 @@ namespace Core.Interfaces.Repositorios
 {
     public interface IRepository<T> where T : class
     {
-        T? GetById(int id);
-        IEnumerable<T> ObtenerTodos();
-        void Agregar(T entity);
-        void Actualizar(T entity);
-        void Eliminar(T entity);
+        public Task<T>? GetById(int id);
+        public IEnumerable<T> ObtenerTodos();
+        public Task<T> Agregar(T entity);
+        public Task<T> Actualizar(T entity);
+        public Task<bool> Eliminar(int id);
 
     }
 }
