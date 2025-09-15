@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces;
+using Core.Interfaces.Repositorios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,10 @@ namespace Services
 {
     public class SesionService : ISesionService
     {
-        private readonly ISesionService _sesionService;
-        public SesionService(ISesionService sesionService)
+        private readonly ISesionRepository _repo;
+        public SesionService(ISesionRepository repo)
         {
-            _sesionService = sesionService;
+            _repo= repo;
         }
         public Task<Sesion> ActualizarSesionAsync(Sesion sesion)
         {

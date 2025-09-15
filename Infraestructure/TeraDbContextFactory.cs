@@ -38,8 +38,7 @@ namespace Infrastructure
         public TeraDbContext CreateDbContext(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Controllers")) // ajustá la ruta según donde esté tu API
-                .AddJsonFile("appsettings.json")
+                .SetBasePath(Path.Combine(Directory.GetCurrentDirectory(), "../Controllers")) 
                 .Build();
 
             var provider = configuration["Database:Provider"];
