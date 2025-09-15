@@ -9,7 +9,7 @@ namespace Core.Interfaces.Repositorios
     public interface IRepository<T> where T : class
     {
         public Task<T> GetById(int id);
-       public IEnumerable<T> ObtenerTodos();
+       public Task<IEnumerable<T>> ObtenerTodos();
         public Task<T> Agregar(T entity);
         public Task<T> Actualizar(T entity);
         public Task<bool> Eliminar(int id);

@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Microsoft.EntityFrameworkCore;
 using SQLitePCL;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,11 @@ namespace Infraestructure
 
         public async Task<Turno> Actualizar(Turno turno)
         {
-            var turnoExistente = _context.Turnos.Find(turno.Id);
+            var turnoExistente = await _context.Turnos.FindAsync(turno.Id);
+            if (turnoExistente == null)
+            {
+              return null;
+            }
             var turnoActualizado = _context.Turnos.Update(turno);
             await _context.SaveChangesAsync();
             return turnoActualizado.Entity;
@@ -35,8 +40,12 @@ namespace Infraestructure
 
         public async Task<bool> Eliminar(int id)
         {
-            var turnoExistente = _context.Turnos.Find(id);
-             _context.Turnos.Remove(turnoExistente);
+            var turnoExistente = await _context.Turnos.FindAsync(id);
+            if (turnoExistente == null)
+            {
+                return false;
+            }
+                _context.Turnos.Remove(turnoExistente);
             await _context.SaveChangesAsync();
             return true;
 
@@ -44,15 +53,19 @@ namespace Infraestructure
 
       
 
-        public async Task<Turno>? GetById(int id)
+        public async Task<Turno?> GetById(int id)
         {
-           var turnoExistente = _context.Turnos.Find(id);
+           var turnoExistente = await _context.Turnos.FindAsync(id);
+            if (turnoExistente == null)
+            {
+                return null;
+            }
             return turnoExistente;
         }
 
-        public IEnumerable<Turno> ObtenerTodos()
+        public async Task<IEnumerable<Turno>> ObtenerTodos()
         { 
-            return _context.Turnos.ToList();
+          return await _context.Turnos.ToListAsync();
 
         }
 
