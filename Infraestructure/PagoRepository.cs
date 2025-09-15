@@ -36,7 +36,7 @@ namespace Infraestructure
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Pago> ObtenerTodos()
+        public Task<IEnumerable<Pago>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }
