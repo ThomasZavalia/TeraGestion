@@ -16,27 +16,27 @@ namespace Services
         {
             _pagoRepository = pagoRepository;
         }
-        public Task<Pago> ActualizarPago(Pago pago)
+        public async Task<Pago> ActualizarPago(Pago pago)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Pago> CrearPago(Pago pago)
+        public async Task<Pago> CrearPago(Pago pago)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> EliminarPago(int id)
+        public async Task<bool> EliminarPago(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Pago> GetPago(int id)
+        public async Task<Pago> GetPago(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Pago>> GetPagos()
+        public async Task<IEnumerable<Pago>> GetPagos()
         {
             throw new NotImplementedException();
         }

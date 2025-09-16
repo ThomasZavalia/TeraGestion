@@ -16,7 +16,7 @@ namespace Services
         {
             _sesionRepository = sesionRepository;
         }
-        public Task<Sesion> ActualizarSesionAsync(Sesion sesion)
+        public async Task<Sesion> ActualizarSesionAsync(Sesion sesion)
         {
             throw new NotImplementedException();
         }
@@ -27,17 +27,17 @@ namespace Services
 
         }
 
-        public Task<bool> EliminarSesionAsync(int id)
+        public async Task<bool> EliminarSesionAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Sesion> GetSesionByIdAsync(int id)
+        public async Task<Sesion> GetSesionByIdAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Sesion>> GetSesionesAsync()
+        public async Task<IEnumerable<Sesion>> GetSesionesAsync()
         {
             throw new NotImplementedException();
         }

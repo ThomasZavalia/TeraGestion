@@ -16,27 +16,27 @@ namespace Infraestructure
         {
             _context = context;
         }
-        public Task<Turno> Actualizar(Turno entity)
+        public async Task<Turno> Actualizar(Turno entity)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Turno> Agregar(Turno entity)
+        public async Task<Turno> Agregar(Turno entity)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> Eliminar(int id)
+        public async Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Turno>? GetById(int id)
+        public async Task<Turno>? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Turno>> ObtenerTodos()
+        public async Task<IEnumerable<Turno>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }
