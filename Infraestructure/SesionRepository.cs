@@ -32,12 +32,12 @@ namespace Infraestructure
             throw new NotImplementedException();
         }
 
-        public Task<Sesion>? GetById(int id)
+        public async Task<Sesion>? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Sesion>> ObtenerTodos()
+        public async Task<IEnumerable<Sesion>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }

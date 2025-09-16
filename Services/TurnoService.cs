@@ -21,27 +21,29 @@ namespace Services
         }
 
 
-        public Task<Turno> ActualizarTurnoAsync(Turno turno)
+        public async Task<Turno> ActualizarTurnoAsync(Turno turno)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Turno> CrearTurnoAsync(Turno turno)
+      
+        public async Task<Turno> CrearTurnoAsync(Turno turno)
+        {
+          
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> EliminarTurnoAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> EliminarTurnoAsync(int id)
+        public async Task<Turno> GetTurnoAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Turno> GetTurnoAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<Turno>> GetTurnosAsync()
+        public async Task<IEnumerable<Turno>> GetTurnosAsync()
         {
             throw new NotImplementedException();
         }
