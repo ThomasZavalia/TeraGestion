@@ -17,29 +17,29 @@ namespace Infraestructure
             _context = context;
         }
 
-        public Task<Sesion> Actualizar(Sesion entity)
-        {
-            throw new NotImplementedException();
-        }
+       public Task<Sesion> Actualizar(Sesion entity)
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<Sesion> Agregar(Sesion entity)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<Sesion> Agregar(Sesion entity)
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<bool> Eliminar(int id)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<bool> Eliminar(int id)
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<Sesion>? GetById(int id)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<Sesion> GetById(int id)
+ {
+     throw new NotImplementedException();
+ }
 
-        public IEnumerable<Sesion> ObtenerTodos()
-        {
-            throw new NotImplementedException();
-        }
+ public Task<IEnumerable<Sesion>> ObtenerTodos()
+ {
+     throw new NotImplementedException();
+ }
     }
 }

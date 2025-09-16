@@ -36,7 +36,7 @@ namespace Infraestructure
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Paciente> ObtenerTodos()
+        public Task<IEnumerable <Paciente>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }

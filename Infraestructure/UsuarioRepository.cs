@@ -31,14 +31,17 @@ namespace Infraestructure
             throw new NotImplementedException();
         }
 
-        public Task<Usuario>? GetById(int id)
+        public Task<Usuario> GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Usuario> ObtenerTodos()
+        public Task<IEnumerable<Usuario>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }
-    }
+
+    }  
+ 
 }
+ 

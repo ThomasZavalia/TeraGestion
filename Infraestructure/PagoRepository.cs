@@ -17,28 +17,28 @@ namespace Infraestructure
             _context = context;    
         }
         public Task<Pago> Actualizar(Pago entity)
-        {
-            throw new NotImplementedException();
-        }
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<Pago> Agregar(Pago entity)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<Pago> Agregar(Pago entity)
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<bool> Eliminar(int id)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<bool> Eliminar(int id)
+ {
+     throw new NotImplementedException();
+ }
 
-        public Task<Pago>? GetById(int id)
-        {
-            throw new NotImplementedException();
-        }
+ public Task<Pago> GetById(int id)
+ {
+     throw new NotImplementedException();
+ }
 
-        public IEnumerable<Pago> ObtenerTodos()
-        {
-            throw new NotImplementedException();
-        }
+ public Task<IEnumerable<Pago>> ObtenerTodos()
+ {
+     throw new NotImplementedException();
+ }
     }
 }

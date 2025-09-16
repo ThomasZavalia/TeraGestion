@@ -2,7 +2,6 @@ using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Infraestructure;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Services;
 
 var builder = WebApplication.CreateBuilder(args);
