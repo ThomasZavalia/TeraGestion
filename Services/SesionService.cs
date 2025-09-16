@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces;
+using Core.Interfaces.Repositorios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,19 +11,20 @@ namespace Services
 {
     public class SesionService : ISesionService
     {
-        private readonly ISesionService _sesionService;
-        public SesionService(ISesionService sesionService)
+        private readonly ISesionRepository _sesionRepository;
+        public SesionService(ISesionRepository sesionRepository)
         {
-            _sesionService = sesionService;
+            _sesionRepository = sesionRepository;
         }
         public Task<Sesion> ActualizarSesionAsync(Sesion sesion)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Sesion> CrearSesionAsync(Sesion sesion)
+        public async Task<Sesion> CrearSesionAsync(Sesion sesion)
         {
-            throw new NotImplementedException();
+           throw new NotImplementedException();
+
         }
 
         public Task<bool> EliminarSesionAsync(int id)
