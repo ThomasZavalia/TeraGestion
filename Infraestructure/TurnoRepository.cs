@@ -21,10 +21,10 @@ namespace Infraestructure
 
         public async Task<Turno> Actualizar(Turno turno)
         {
-            var turnoExistente = await _context.Turnos.FindAsync(turno.Id);
+       var turnoExistente= await _context.Turnos.FindAsync(turno.Id);
             if (turnoExistente == null)
             {
-              return null;
+                return null;
             }
             var turnoActualizado = _context.Turnos.Update(turno);
             await _context.SaveChangesAsync();
@@ -34,6 +34,8 @@ namespace Infraestructure
         public async Task<Turno> Agregar(Turno turno)
         {
           await _context.Turnos.AddAsync(turno);
+           
+            var turnoActualizado = _context.Turnos.Update(turno);
             await _context.SaveChangesAsync();
             return turno;
         }
@@ -48,10 +50,10 @@ namespace Infraestructure
                 _context.Turnos.Remove(turnoExistente);
             await _context.SaveChangesAsync();
             return true;
-
+            
         }
 
-      
+        
 
         public async Task<Turno?> GetById(int id)
         {
@@ -59,7 +61,7 @@ namespace Infraestructure
             if (turnoExistente == null)
             {
                 return null;
-            }
+        }
             return turnoExistente;
         }
 
