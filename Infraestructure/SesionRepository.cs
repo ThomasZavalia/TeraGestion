@@ -12,34 +12,35 @@ namespace Infraestructure
     {
         private readonly TeraDbContext _context;
 
-        public SesionRepository(TeraDbContext context)
+        public  SesionRepository(TeraDbContext context)
         {
             _context = context;
         }
 
-       public Task<Sesion> Actualizar(Sesion entity)
- {
-     throw new NotImplementedException();
- }
+        public async Task<Sesion> Actualizar(Sesion entity)
+        {
+            throw new NotImplementedException();
+        }
 
- public Task<Sesion> Agregar(Sesion entity)
- {
-     throw new NotImplementedException();
- }
+        public async Task<Sesion> Agregar(Sesion entity)
+        {
+            throw new NotImplementedException();
+        }
 
- public Task<bool> Eliminar(int id)
- {
-     throw new NotImplementedException();
- }
+        public async Task<bool> Eliminar(int id)
+        {
+            throw new NotImplementedException();
+        }
 
- public Task<Sesion> GetById(int id)
- {
-     throw new NotImplementedException();
- }
+        public async Task<Sesion>? GetById(int id)
+        {
+            throw new NotImplementedException();
+        }
 
- public Task<IEnumerable<Sesion>> ObtenerTodos()
- {
-     throw new NotImplementedException();
- }
+        public async Task<IEnumerable<Sesion>> ObtenerTodos()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

@@ -16,27 +16,31 @@ namespace Infraestructure
         {
             _context = context;
         }
-        public Task<Usuario> Actualizar(Usuario entity)
+        public async Task<Usuario> Actualizar(Usuario entity)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Usuario> Agregar(Usuario entity)
+        public async Task<Usuario> Agregar(Usuario entity)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> Eliminar(int id)
+        public async Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Usuario> GetById(int id)
+
+        public async Task<Usuario>? GetById(int id)
+
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Usuario>> ObtenerTodos()
+
+        public async Task<IEnumerable<Usuario>> ObtenerTodos()
+
         {
             throw new NotImplementedException();
         }

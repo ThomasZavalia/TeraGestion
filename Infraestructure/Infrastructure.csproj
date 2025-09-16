@@ -11,7 +11,9 @@
     <None Remove="appsettings.json" />
   </ItemGroup>
 
-  <!---<ItemGroup>
+	<!--
+  <ItemGroup>
+>>>>>>> 75ba764abb2904e740cc9dc36e57080120ca0c56
     <Content Include="appsettings.Development.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
