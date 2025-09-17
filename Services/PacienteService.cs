@@ -15,32 +15,33 @@ namespace Services
 
         public async Task<Paciente> ActualizarPacienteAsync(Paciente paciente)
         {
-            throw new NotImplementedException();
+              return await _pacienteRepository.Actualizar(paciente);
         }
 
         public async Task<Paciente> CrearPacienteAsync(Paciente paciente)
         {
-            throw new NotImplementedException();
+              return await _pacienteRepository.Agregar(paciente);
         }
 
         public async Task<bool> EliminarPacienteAsync(int id)
         {
-            throw new NotImplementedException();
+              return await _pacienteRepository.Eliminar(id);
         }
 
         public async Task<Paciente> GetPacienteAsync(int id)
         {
-            throw new NotImplementedException();
+              return await _pacienteRepository.GetById(id);
         }
 
         public async Task<Paciente> GetPacientePorDniAsync(string dni)
         {
-            throw new NotImplementedException();
+              var pacientes = await _pacienteRepository.ObtenerTodos();
+            return pacientes.FirstOrDefault(p => p.DNI.ToString() == dni);
         }
 
         public async Task<IEnumerable<Paciente>> GetPacientesAsync()
         {
-            throw new NotImplementedException();
+              return await _pacienteRepository.ObtenerTodos();
         }
     }
 }
