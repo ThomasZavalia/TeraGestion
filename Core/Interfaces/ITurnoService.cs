@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs;
+using Core.Entidades;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Core.Interfaces
     {
         public Task<Turno> GetTurnoAsync(int id);
         public Task<IEnumerable<Turno>> GetTurnosAsync();
-        public Task<Turno> CrearTurnoAsync(Turno turno);
+        public Task<Turno> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
         public Task<Turno> ActualizarTurnoAsync(Turno turno);
         public Task<bool> EliminarTurnoAsync(int id);
 

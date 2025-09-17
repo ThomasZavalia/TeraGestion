@@ -10,7 +10,7 @@ namespace Core.Interfaces
     public interface IPacienteService
     {
       public Task<Paciente> GetPacienteAsync(int id);
-        public Task<Paciente> GetPacientePorDniAsync(string dni);
+        public Task<Paciente> GetPacientePorDniAsync(int dni);
         public Task<IEnumerable<Paciente>> GetPacientesAsync();
         public Task<Paciente> CrearPacienteAsync(Paciente paciente);
         public Task<Paciente> ActualizarPacienteAsync(Paciente paciente);
