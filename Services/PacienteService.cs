@@ -33,7 +33,7 @@ namespace Services
             throw new NotImplementedException();
         }
 
-        public async Task<Paciente> GetPacientePorDniAsync(string dni)
+        public async Task<Paciente> GetPacientePorDniAsync(int dni)
         {
             throw new NotImplementedException();
         }
