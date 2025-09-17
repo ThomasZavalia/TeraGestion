@@ -13,32 +13,32 @@ namespace Services
             _pacienteRepository = pacienteRepository;
         }
 
-        public Task<Paciente> ActualizarPacienteAsync(Paciente paciente)
+        public async Task<Paciente> ActualizarPacienteAsync(Paciente paciente)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Paciente> CrearPacienteAsync(Paciente paciente)
+        public async Task<Paciente> CrearPacienteAsync(Paciente paciente)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> EliminarPacienteAsync(int id)
+        public async Task<bool> EliminarPacienteAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Paciente> GetPacienteAsync(int id)
+        public async Task<Paciente> GetPacienteAsync(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Paciente> GetPacientePorDniAsync(string dni)
+        public async Task<Paciente> GetPacientePorDniAsync(int dni)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Paciente>> GetPacientesAsync()
+        public async Task<IEnumerable<Paciente>> GetPacientesAsync()
         {
             throw new NotImplementedException();
         }

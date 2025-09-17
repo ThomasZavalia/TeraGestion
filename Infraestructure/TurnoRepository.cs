@@ -10,27 +10,33 @@ namespace Infraestructure
 {
     public class TurnoRepository : ITurnoRepository
     {
-        public void Actualizar(Turno entity)
+        private readonly TeraDbContext _context;
+
+        public TurnoRepository(TeraDbContext context)
+        {
+            _context = context;
+        }
+        public async Task<Turno> Actualizar(Turno entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Agregar(Turno entity)
+        public async Task<Turno> Agregar(Turno entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Eliminar(Turno entity)
+        public async Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Turno? GetById(int id)
+        public async Task<Turno>? GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Turno> ObtenerTodos()
+        public async Task<IEnumerable<Turno>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }

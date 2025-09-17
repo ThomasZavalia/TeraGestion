@@ -10,27 +10,33 @@ namespace Infraestructure
 {
     public class PagoRepository : IPagosRepository
     {
-        public void Actualizar(Pago entity)
+
+        private readonly TeraDbContext _context;
+        public PagoRepository( TeraDbContext context) 
+        {
+            _context = context;    
+        }
+        public async Task<Pago> Actualizar(Pago entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Agregar(Pago entity)
+        public async Task<Pago> Agregar(Pago entity)
         {
             throw new NotImplementedException();
         }
 
-        public void Eliminar(Pago entity)
+        public async Task<bool> Eliminar(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Pago? GetById(int id)
+        public async Task<Pago?> GetById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<Pago> ObtenerTodos()
+        public async Task<IEnumerable<Pago>> ObtenerTodos()
         {
             throw new NotImplementedException();
         }

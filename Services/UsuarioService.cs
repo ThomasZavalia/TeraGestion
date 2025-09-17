@@ -17,27 +17,27 @@ namespace Services
         {
             _usuarioRepository = usuarioRepository;
         }
-        public Task<Usuario> ActualizarUsuario(Usuario usuario)
+        public async Task<Usuario> ActualizarUsuario(Usuario usuario)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Usuario> CrearUsuario(Usuario usuario)
+        public async Task<Usuario> CrearUsuario(Usuario usuario)
         {
             throw new NotImplementedException();
         }
 
-        public Task<bool> EliminarUsuario(int id)
+        public async Task<bool> EliminarUsuario(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Usuario> GetUsuarioById(int id)
+        public async Task<Usuario> GetUsuarioById(int id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Usuario>> GetUsuarios()
+        public async Task<IEnumerable<Usuario>> GetUsuarios()
         {
             throw new NotImplementedException();
         }
