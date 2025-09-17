@@ -9,7 +9,7 @@ namespace Core.DTOs
     public class TurnoDtoCreacion
     {
         public DateTime Fecha { get; set; }
-        public int DniPaciente { get; set; }
+        public string DniPaciente { get; set; }
         public string NombrePaciente { get; set; }
 
         public string ApellidoPaciente { get; set; }
