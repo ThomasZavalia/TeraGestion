@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infraestructure
 {
@@ -46,7 +47,17 @@ namespace Infraestructure
 
         public async Task<bool> Eliminar(int id)
         {
-            throw new NotImplementedException();
+            var sesionEncontrada = await _context.Sesiones.FindAsync(id);
+
+            if (sesionEncontrada == null)
+            {
+                throw new ArgumentException("Sesion no encontrada");
+            }
+
+            _context.Sesiones.Remove(sesionEncontrada);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
 
@@ -54,7 +65,7 @@ namespace Infraestructure
 
         public async Task<Sesion>? GetById(int id)
         {
-            return await _context.Sesiones.FindAsync(id);
+            return await _context.Sesiones.FirstOrDefaultAsync(s => s.Id == id);
         }
 
 
@@ -63,7 +74,7 @@ namespace Infraestructure
 
         public async Task<IEnumerable<Sesion>> ObtenerTodos()
         {
-            throw new NotImplementedException();
+            return await _context.Sesiones.ToListAsync();
         }
     }
 }

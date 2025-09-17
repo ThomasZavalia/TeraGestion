@@ -61,7 +61,9 @@ namespace Services
 
         public async Task<bool> EliminarSesionAsync(int id)
         {
-            throw new NotImplementedException();
+            var sesionAEliminar = await GetSesionByIdAsync(id);
+
+            return await _sesionRepository.Eliminar(sesionAEliminar.Id);
         }
 
 
@@ -95,7 +97,14 @@ namespace Services
 
         public async Task<IEnumerable<Sesion>> GetSesionesAsync()
         {
-            throw new NotImplementedException();
+            var TodasLasSesiones = await _sesionRepository.ObtenerTodos();
+
+            if (TodasLasSesiones == null || !TodasLasSesiones.Any())
+            {
+                throw new ArgumentException("No se encontraron sesiones.");
+            }
+
+            return TodasLasSesiones;
         }
     }
 }

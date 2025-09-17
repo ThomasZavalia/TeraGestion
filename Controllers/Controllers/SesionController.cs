@@ -17,7 +17,15 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSesion(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sesion = await _sesionService.GetSesionByIdAsync(id);
+                return Ok(sesion);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
 
@@ -25,7 +33,15 @@ namespace Controllers.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSesiones()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sesiones = await _sesionService.GetSesionesAsync();
+                return Ok(sesiones);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
 
@@ -57,7 +73,15 @@ namespace Controllers.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarSesion(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var resultado = await _sesionService.EliminarSesionAsync(id);
+                return Ok(new { mensaje = "Sesion eliminada exitosamente", exito = resultado });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
     }
