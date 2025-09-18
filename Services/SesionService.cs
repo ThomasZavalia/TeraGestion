@@ -15,10 +15,15 @@ namespace Services
     {
         private readonly ISesionRepository _sesionRepository;
 
-        public SesionService(ISesionRepository sesionRepository)
+        private readonly ITurnoService _turnoService;
+
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository)
         {
+            _turnoService = turnoService;
             _sesionRepository = sesionRepository;
         }
+
+
 
 
 
