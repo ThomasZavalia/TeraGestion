@@ -22,20 +22,18 @@ namespace Infraestructure
         public async Task<Turno> Actualizar(Turno turno)
         {
        var turnoExistente= await _context.Turnos.FindAsync(turno.Id);
-            if (turnoExistente == null)
-            {
-                return null;
-            }
-            var turnoActualizado = _context.Turnos.Update(turno);
+            turnoExistente.FechaHora = turno.FechaHora;
+            turnoExistente.Estado = turno.Estado;
+            turnoExistente.Precio = turno.Precio;
             await _context.SaveChangesAsync();
-            return turnoActualizado.Entity;
+            return turnoExistente;
         }
 
         public async Task<Turno> Agregar(Turno turno)
         {
           await _context.Turnos.AddAsync(turno);
            
-            var turnoActualizado = _context.Turnos.Update(turno);
+           
             await _context.SaveChangesAsync();
             return turno;
         }

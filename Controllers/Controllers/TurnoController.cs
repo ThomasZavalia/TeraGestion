@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.DTOs;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers.Controllers
@@ -17,28 +18,54 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTurno(int id)
         {
-            throw new NotImplementedException();
+           
+           var turno = await _turnoService.GetTurnoAsync(id);
+            if (turno == null)
+            {
+                return NotFound();
+            }
+            return Ok(turno);
         }
         [HttpGet]
         public async Task<IActionResult> GetTurnos()
         {
-            throw new NotImplementedException();
+         var turnos = await _turnoService.GetTurnosAsync();
+            return Ok(turnos);
         }
         [HttpPost]
-        public async Task<IActionResult> CrearTurno([FromBody] Core.Entidades.Turno turno)
+        public async Task<IActionResult> CrearTurno([FromBody] TurnoDtoCreacion turno)
         {
-            throw new NotImplementedException();
+         var turnoCreado = await _turnoService.CrearTurnoAsync(turno);
+            if (turnoCreado == null)
+            {
+                return BadRequest("No se pudo crear el turno");
+            }
+            return CreatedAtAction(nameof(GetTurno), new { id = turnoCreado.Id }, turnoCreado);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarTurno(int id, [FromBody] Core.Entidades.Turno turno)
         {
-            throw new NotImplementedException();
+            if (id != turno.Id)
+            {
+                return BadRequest("El ID del turno no coincide");
+            }
+           var turnoActualizado = await _turnoService.ActualizarTurnoAsync(turno);
+            if (turnoActualizado == null)
+            {
+                return NotFound();
+            }
+            return Ok(turnoActualizado);
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarTurno(int id)
         {
-            throw new NotImplementedException();
+           var turno = await _turnoService.EliminarTurnoAsync(id);
+            if (!turno)
+            {
+                return NotFound();
+            }
+            return NoContent();
         }
     }
 }

@@ -25,7 +25,12 @@ namespace Services
 
         public async Task<Turno> ActualizarTurnoAsync(Turno turno)
         {
-            throw new NotImplementedException();
+           turno = await _turnoRepository.Actualizar(turno);
+            if (turno == null)
+            {
+                throw new Exception("No se pudo actualizar el turno");
+            }
+            return turno;
 
 
         }
@@ -56,17 +61,32 @@ namespace Services
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-            throw new NotImplementedException();
+            var turnoAeliminar = await _turnoRepository.GetById(id);
+            if (turnoAeliminar == null)
+            {
+                
+                return false;
+            }
+            await _turnoRepository.Eliminar(id);
+            return true;
+
+
         }
 
         public async Task<Turno> GetTurnoAsync(int id)
         {
-            throw new NotImplementedException();
+         var turnoAbuscar = await _turnoRepository.GetById(id);
+            if (turnoAbuscar == null)
+            {
+                throw new Exception("No se encontro el turno");
+            }
+            return turnoAbuscar;
         }
 
         public async Task<IEnumerable<Turno>> GetTurnosAsync()
         {
-            throw new NotImplementedException();
+           var turnos = await _turnoRepository.ObtenerTodos();
+            return turnos;
         }
     }
 }
