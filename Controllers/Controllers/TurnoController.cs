@@ -50,11 +50,24 @@ namespace Controllers.Controllers
             {
                 return BadRequest("El ID del turno no coincide");
             }
+            
            var turnoActualizado = await _turnoService.ActualizarTurnoAsync(turno);
             if (turnoActualizado == null)
             {
                 return NotFound();
             }
+            var turnoRespuesta =
+new TurnoDtoRespuesta
+{
+   Id= turnoActualizado.Id,
+    Fecha = turnoActualizado.FechaHora,
+    Estado = turnoActualizado.Estado,
+   PacienteNombre = turnoActualizado.Paciente.Nombre,
+   Precio= turnoActualizado.Precio,
+
+
+
+};   
             return Ok(turnoActualizado);
         }
         [HttpDelete("{id}")]

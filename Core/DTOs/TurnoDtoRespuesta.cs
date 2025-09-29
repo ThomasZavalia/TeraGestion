@@ -12,7 +12,8 @@ namespace Core.DTOs
         public DateTime Fecha { get; set; }
         public string Hora { get; set; }
         public string PacienteNombre { get; set; }
-        public string TerapeutaNombre { get; set; }
+     
+        public decimal Precio { get; set; }
         public string Estado { get; set; }
     }
 }

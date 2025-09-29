@@ -16,15 +16,38 @@ namespace Services
     {
         private readonly IPacienteService _pacienteService;
         private readonly ITurnoRepository _turnoRepository;
-        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService)
+        private readonly IPagoService _pagoService;
+        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService)
         {
             _turnoRepository = turnoRepository;
             _pacienteService = pacienteService;
+            _pagoService = pagoService;
+
         }
 
 
         public async Task<Turno> ActualizarTurnoAsync(Turno turno)
         {
+            if(turno == null || turno.Id <= 0)
+            {
+                throw new Exception("El turno es nulo o no tiene un ID valido");
+            }
+
+            if (turno.Estado == "Pagado") 
+            {
+                var pago = new Pago
+                {
+                    Monto = turno.Precio,
+                    Fecha = DateTime.Now,
+                    TurnoId = turno.Id
+                };
+                var pagoCreado = await _pagoService.CrearPago(pago);
+                if (pagoCreado == null)
+                {
+                    throw new Exception("No se pudo crear el pago asociado al turno");
+                }
+
+            }
            turno = await _turnoRepository.Actualizar(turno);
             if (turno == null)
             {
@@ -54,7 +77,8 @@ namespace Services
             {
                 FechaHora = dto.Fecha,
                 PacienteId = pacienteAbuscar.Id,
-                Paciente = pacienteAbuscar
+                Paciente = pacienteAbuscar,
+                Estado = "Pendiente"
             };
             return await _turnoRepository.Agregar(turno);
         }
