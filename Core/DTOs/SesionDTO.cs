@@ -10,8 +10,5 @@ namespace Core.DTOs
     {
         public string Asistencia { get; set; } // Ejemplo: "Asistió", "No asistió", "Reprogramado"
         public string Notas { get; set; }
-        public DateTime Fecha { get; set; }
-        public int TurnoId { get; set; }
-        public int PacienteId { get; set; }
     }
 }

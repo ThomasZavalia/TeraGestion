@@ -47,9 +47,18 @@ namespace Controllers.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearSesion([FromBody] Core.Entidades.Sesion sesion)
+        public async Task<IActionResult> CrearSesion([FromBody] Core.DTOs.CrearSesionDTO sesion)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var nuevaSesion = await _sesionService.CrearSesionAsync(sesion);
+                
+                return Ok(nuevaSesion);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
 

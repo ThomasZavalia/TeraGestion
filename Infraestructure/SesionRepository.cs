@@ -40,7 +40,12 @@ namespace Infraestructure
 
         public async Task<Sesion> Agregar(Sesion sesion)
         {
-            throw new NotImplementedException();
+
+            _context.Sesiones.Add(sesion);
+            await _context.SaveChangesAsync();
+
+            
+            return sesion;
         }
 
 

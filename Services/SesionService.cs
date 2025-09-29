@@ -16,11 +16,13 @@ namespace Services
         private readonly ISesionRepository _sesionRepository;
 
         private readonly ITurnoService _turnoService;
+        private readonly IPacienteService _pacienteService;
 
-        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository)
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService)
         {
             _turnoService = turnoService;
             _sesionRepository = sesionRepository;
+            _pacienteService = pacienteService;
         }
 
 
@@ -48,15 +50,59 @@ namespace Services
 
             return await _sesionRepository.Actualizar(sesionExistente);
         }
-        
 
 
 
 
-        public async Task<Sesion> CrearSesionAsync(Sesion sesion)
+
+        public async Task<Sesion> CrearSesionAsync(CrearSesionDTO sesionDTO)
         {
-            throw new NotImplementedException();
 
+            var turnoExistente = await _turnoService.GetTurnoAsync(sesionDTO.TurnoId);
+            var pacienteId = turnoExistente.PacienteId;
+            //var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
+            var pacienteExistente = turnoExistente.Paciente;
+
+
+            if(sesionDTO == null)
+            {
+                throw new ArgumentNullException(nameof(sesionDTO), "El objeto SesionDTO no puede ser nulo.");
+            }
+            
+
+            if (turnoExistente == null)
+            {
+                throw new ArgumentException("El turno con ID " + sesionDTO.TurnoId + " no fue encontrado.");
+            }
+
+
+            if (pacienteExistente == null)
+            {
+                throw new ArgumentException("El paciente con ID " + pacienteId + " no fue encontrado.");
+            }
+
+
+            if (pacienteId != sesionDTO.PacienteId)
+            {
+                throw new ArgumentException("El pacienteId no coincide con el del turno.");
+            }
+
+
+            if (sesionDTO.Fecha < DateTime.Now)
+            {
+                throw new ArgumentException("La fecha de la sesion no puede ser en el pasado.");
+            }
+            
+
+
+            var nuevaSesion = new Sesion
+            {
+                FechaHoraInicio = sesionDTO.Fecha,
+                TurnoId = turnoExistente.Id,
+                PacienteId = sesionDTO.PacienteId
+            };
+
+            return await _sesionRepository.Agregar(nuevaSesion);
         }
 
 
