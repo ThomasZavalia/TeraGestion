@@ -16,29 +16,48 @@ namespace Infraestructure
         {
             _context = context;
         }
-        public async Task<Usuario> Actualizar(Usuario entity)
+        public async Task<Usuario> Actualizar(Usuario usuario)
         {
-            throw new NotImplementedException();
+            var usuarioExistente = _context.Usuarios.FirstOrDefault(u => u.Id == usuario.Id);
+            if (usuarioExistente == null) { return null; }
+
+                usuarioExistente.Username = usuario.Username;
+                usuarioExistente.Rol = usuario.Rol;
+            await _context.SaveChangesAsync();
+            return usuarioExistente;
+
+
         }
 
-        public async Task<Usuario> Agregar(Usuario entity)
+        public async Task<Usuario> Agregar(Usuario usuario)
         {
-            throw new NotImplementedException();
+            if (usuario == null) { return null; }
+        
+          await _context.Usuarios.AddAsync(usuario);
+            await _context.SaveChangesAsync();
+            return usuario;
         }
 
         public async Task<bool> Eliminar(int id)
         {
-            throw new NotImplementedException();
+            var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
+            if (usuario == null) { return false; }
+            _context.Usuarios.Remove(usuario);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<Usuario>? GetById(int id)
         {
-            throw new NotImplementedException();
+         var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
+            if (usuario == null) { return null; }
+            return usuario;
         }
 
         public async Task<IEnumerable<Usuario>> ObtenerTodos()
         {
-            throw new NotImplementedException();
+            var usuarios = _context.Usuarios.ToList();
+            return usuarios;
         }
     }
 }
