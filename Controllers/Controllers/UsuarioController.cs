@@ -8,15 +8,19 @@ namespace Controllers.Controllers
     public class UsuarioController : ControllerBase
     {
         private readonly Core.Interfaces.IUsuarioService _usuarioService;
-        public UsuarioController(Core.Interfaces.IUsuarioService usuarioService)
+        private readonly IConfiguration _configuration;
+        public UsuarioController(Core.Interfaces.IUsuarioService usuarioService, IConfiguration configuration)
         {
             _usuarioService = usuarioService;
+            configuration = _configuration;
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsuario(int id)
         {
-            throw new NotImplementedException();
+          var usuario = await _usuarioService.GetUsuarioById(id);
+            if (usuario == null) { return NotFound(); }
+            return Ok(usuario);
         }
         [HttpGet]
         public async Task<IActionResult> GetUsuarios()
@@ -38,5 +42,8 @@ namespace Controllers.Controllers
         {
             throw new NotImplementedException();
         }
+
+
+
     }
 }

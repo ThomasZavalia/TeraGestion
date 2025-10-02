@@ -19,29 +19,40 @@ namespace Services
         }
         public async Task<Usuario> ActualizarUsuario(Usuario usuario)
         {
-            throw new NotImplementedException();
+            var usuarioExistente = await _usuarioRepository.GetById(usuario.Id);
+            if (usuarioExistente == null) { return null; }
+            usuarioExistente.Username = usuario.Username;
+            usuarioExistente.Rol = usuario.Rol;
+            var usuarioActualizado = await _usuarioRepository.Actualizar(usuarioExistente);
+            return usuarioActualizado;
         }
 
         public async Task<Usuario> CrearUsuario(Usuario usuario)
         {
-          throw new NotImplementedException();
+          if (usuario == null) { return null; }
+            var nuevoUsuario = await _usuarioRepository.Agregar(usuario);
+            return nuevoUsuario;
 
 
         }
 
         public async Task<bool> EliminarUsuario(int id)
         {
-            throw new NotImplementedException();
+          var resultado = await _usuarioRepository.Eliminar(id);
+            return resultado;
         }
 
         public async Task<Usuario> GetUsuarioById(int id)
         {
-            throw new NotImplementedException();
+           var usuario = await _usuarioRepository.GetById(id);
+            if (usuario == null) { return null; }
+            return usuario;
         }
 
         public async Task<IEnumerable<Usuario>> GetUsuarios()
         {
-            throw new NotImplementedException();
+            var usuarios = await _usuarioRepository.ObtenerTodos();
+            return usuarios;
         }
     }
 }
