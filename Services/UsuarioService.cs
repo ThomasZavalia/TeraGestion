@@ -21,8 +21,8 @@ namespace Services
         {
             var usuarioExistente = await _usuarioRepository.GetById(usuario.Id);
             if (usuarioExistente == null) { return null; }
-            usuarioExistente.Username = usuario.Username;
-            usuarioExistente.Rol = usuario.Rol;
+           
+
             var usuarioActualizado = await _usuarioRepository.Actualizar(usuarioExistente);
             return usuarioActualizado;
         }
@@ -45,6 +45,14 @@ namespace Services
         public async Task<Usuario> GetUsuarioById(int id)
         {
            var usuario = await _usuarioRepository.GetById(id);
+            if (usuario == null) { return null; }
+            return usuario;
+        }
+
+        public async Task<Usuario> GetByName(string username)
+        {
+            var usuarios = await _usuarioRepository.ObtenerTodos();
+            var usuario = usuarios.FirstOrDefault(u => u.Username == username);
             if (usuario == null) { return null; }
             return usuario;
         }

@@ -22,6 +22,7 @@ namespace Infraestructure
             if (usuarioExistente == null) { return null; }
 
                 usuarioExistente.Username = usuario.Username;
+                usuarioExistente.Email = usuario.Email;
                 usuarioExistente.Rol = usuario.Rol;
             await _context.SaveChangesAsync();
             return usuarioExistente;

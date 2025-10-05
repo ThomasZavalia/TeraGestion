@@ -11,6 +11,7 @@ namespace Core.Entidades
 
         public int Id { get; set; }
         public string Username { get; set; }
+        public string Email { get; set; }
 
         public string PasswordHash { get; set; }
         public string Rol { get; set; } // Ejemplo: "Admin", "Usuario", "Terapeuta"

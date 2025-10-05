@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.Entidades;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services;
@@ -34,6 +35,32 @@ namespace Controllers.Controllers
             var token = GenerateJwtToken(usuario.Rol); // 🔹 Pasás el rol al generar el token
             return Ok(new { token });
         }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        {
+            var existingUser = await _usuarioService.GetByName(registerDto.Username);
+            if (existingUser != null)
+            {
+                return BadRequest("El nombre de usuario ya existe");
+            }
+
+            var nuevoUsuario = new Usuario
+            {
+                Username = registerDto.Username,
+                PasswordHash = registerDto.Password,
+                Rol = "User" // Asignás un rol por defecto
+            };
+
+            var creadoUsuario = await _usuarioService.CrearUsuario(nuevoUsuario);
+            if (creadoUsuario == null)
+            {
+                return StatusCode(500, "Error al crear el usuario");
+            }
+
+            return Ok("Usuario registrado exitosamente");
+        }
+
 
         private string GenerateJwtToken(string rol)
         {
