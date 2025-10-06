@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,29 +17,41 @@ namespace Infraestructure
         {
             _context = context;    
         }
-        public async Task<Pago> Actualizar(Pago entity)
+        public async Task<Pago> Actualizar(Pago pago)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<Pago> Agregar(Pago entity)
+        public async Task<Pago> Agregar(Pago pago)
         {
-            throw new NotImplementedException();
+            _context.Pagos.Add(pago);
+            await _context.SaveChangesAsync();
+            return pago;
         }
 
         public async Task<bool> Eliminar(int id)
         {
-            throw new NotImplementedException();
+            var pagoEncontrado = await _context.Pagos.FindAsync(id);
+            if (pagoEncontrado == null)
+            {
+                return false;
+            }
+            else
+            {
+                _context.Pagos.Remove(pagoEncontrado);
+                await _context.SaveChangesAsync();
+                return true;
+            }
         }
 
         public async Task<Pago?> GetById(int id)
         {
-            throw new NotImplementedException();
+            return await _context.Pagos.FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public async Task<IEnumerable<Pago>> ObtenerTodos()
         {
-            throw new NotImplementedException();
+            return await _context.Pagos.ToListAsync();
         }
     }
 }
