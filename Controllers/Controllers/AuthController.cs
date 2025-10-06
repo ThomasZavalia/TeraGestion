@@ -26,14 +26,13 @@ namespace Controllers.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var usuarios = await _usuarioService.GetUsuarios();
-            var usuario = usuarios.FirstOrDefault(u => u.Username == loginDto.Username && u.PasswordHash == loginDto.Password);
+            var usuario = await _usuarioService.ValidarCredenciales(loginDto.Username, loginDto.Password);
             if (usuario == null)
-            {
                 return Unauthorized("Credenciales inválidas");
-            }
-            var token = GenerateJwtToken(usuario.Rol); // 🔹 Pasás el rol al generar el token
+
+            var token = GenerateJwtToken(usuario.Rol);
             return Ok(new { token });
+
         }
 
         [HttpPost("register")]

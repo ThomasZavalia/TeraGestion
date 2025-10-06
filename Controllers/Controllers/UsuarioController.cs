@@ -12,7 +12,7 @@ namespace Controllers.Controllers
         public UsuarioController(Core.Interfaces.IUsuarioService usuarioService, IConfiguration configuration)
         {
             _usuarioService = usuarioService;
-            configuration = _configuration;
+          
         }
 
         [HttpGet("{id}")]
@@ -25,22 +25,35 @@ namespace Controllers.Controllers
         [HttpGet]
         public async Task<IActionResult> GetUsuarios()
         {
-            throw new NotImplementedException();
+
+            var usuarios = await _usuarioService.GetUsuarios();
+            return Ok(usuarios);
         }
         [HttpPost]
         public async Task<IActionResult> CrearUsuario([FromBody] Core.Entidades.Usuario usuario)
         {
-            throw new NotImplementedException();
+
+            var nuevoUsuario = await _usuarioService.CrearUsuario(usuario);
+            if (nuevoUsuario == null) { return BadRequest("No se pudo crear el usuario"); }
+            return CreatedAtAction(nameof(GetUsuario), new { id = nuevoUsuario.Id }, nuevoUsuario);
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Core.Entidades.Usuario usuario)
         {
-            throw new NotImplementedException();
+            if (id != usuario.Id) { return BadRequest("El ID del usuario no coincide"); }
+            var usuarioActualizado = await _usuarioService.ActualizarUsuario(usuario);
+            if (usuarioActualizado == null) { return NotFound(); }
+            return Ok(usuarioActualizado);
+
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarUsuario(int id)
         {
-            throw new NotImplementedException();
+
+            var resultado = await _usuarioService.EliminarUsuario(id);
+            if (!resultado) { return NotFound(); }
+            return NoContent();
+
         }
 
 

@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace Infraestructure
         }
         public async Task<Usuario> Actualizar(Usuario usuario)
         {
-            var usuarioExistente = _context.Usuarios.FirstOrDefault(u => u.Id == usuario.Id);
+            var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuario.Id);
             if (usuarioExistente == null) { return null; }
 
                 usuarioExistente.Username = usuario.Username;
@@ -41,7 +42,7 @@ namespace Infraestructure
 
         public async Task<bool> Eliminar(int id)
         {
-            var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
+            var usuario =  await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
             if (usuario == null) { return false; }
             _context.Usuarios.Remove(usuario);
             await _context.SaveChangesAsync();
@@ -50,14 +51,14 @@ namespace Infraestructure
 
         public async Task<Usuario>? GetById(int id)
         {
-         var usuario = _context.Usuarios.FirstOrDefault(u => u.Id == id);
+         var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
             if (usuario == null) { return null; }
             return usuario;
         }
 
         public async Task<IEnumerable<Usuario>> ObtenerTodos()
         {
-            var usuarios = _context.Usuarios.ToList();
+            var usuarios = await _context.Usuarios.ToListAsync();
             return usuarios;
         }
     }

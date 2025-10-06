@@ -1,6 +1,7 @@
 ﻿using Core.Entidades;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,7 @@ namespace Services
     {
 
         private readonly IUsuariosRepository _usuarioRepository;
+        private readonly PasswordHasher<string> _passwordHasher = new();
         public UsuarioService(IUsuariosRepository usuarioRepository)
         {
             _usuarioRepository = usuarioRepository;
@@ -30,6 +32,7 @@ namespace Services
         public async Task<Usuario> CrearUsuario(Usuario usuario)
         {
           if (usuario == null) { return null; }
+            usuario.PasswordHash = _passwordHasher.HashPassword(null, usuario.PasswordHash);
             var nuevoUsuario = await _usuarioRepository.Agregar(usuario);
             return nuevoUsuario;
 
@@ -61,6 +64,15 @@ namespace Services
         {
             var usuarios = await _usuarioRepository.ObtenerTodos();
             return usuarios;
+        }
+
+        public async Task<Usuario> ValidarCredenciales(string username, string password)
+        {
+            var usuario = await GetByName(username);
+            if (usuario == null) { return null; }
+            var resultado = _passwordHasher.VerifyHashedPassword(null, usuario.PasswordHash, password);
+            if (resultado == PasswordVerificationResult.Failed) { return null; }
+            return usuario;
         }
     }
 }
