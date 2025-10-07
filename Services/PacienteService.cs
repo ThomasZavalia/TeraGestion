@@ -25,16 +25,17 @@ namespace Services
                   return MapToDto(actualizado);
             }
 
-            public async Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto)
+            public async Task<Paciente> CrearPacienteAsync(Paciente paciente)
             {
-                  if (pacienteDto == null)
-                        throw new ArgumentNullException(nameof(pacienteDto));
-                  if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
-                        throw new ArgumentException("Nombre y Apellido son obligatorios");
-                  var paciente = MapToEntity(pacienteDto);
-                  var creado = await _pacienteRepository.Agregar(paciente);
-                  return MapToDto(creado);
+                  if (paciente == null)
+            {
+                return null;
             }
+                  var creado = await _pacienteRepository.Agregar(paciente);
+            return creado;
+
+
+        }
 
             public async Task<bool> EliminarPacienteAsync(int id)
             {
@@ -53,13 +54,12 @@ namespace Services
                   return MapToDto(paciente);
             }
 
-            public async Task<PacienteDTO> GetPacientePorDniAsync(string dni)
+            public async Task<Paciente> GetPacientePorDniAsync(string dni)
             {
-                  if (string.IsNullOrWhiteSpace(dni))
-                        throw new ArgumentException("DNI es obligatorio");
-                  var pacientes = await _pacienteRepository.ObtenerTodos();
-                  var paciente = pacientes.FirstOrDefault(p => p.DNI.ToString() == dni);
-                  return paciente == null ? null : MapToDto(paciente);
+           if (dni == null) { return null; }
+            var pacientes = await _pacienteRepository.ObtenerTodos();
+            return pacientes.FirstOrDefault(p => p.DNI == dni);
+
             }
 
             public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync()

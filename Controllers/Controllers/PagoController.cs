@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.Entidades;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SQLitePCL;
 
@@ -55,7 +56,7 @@ namespace Controllers.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearPago([FromBody] Core.DTOs.CrearPagoDTO pago)
+        public async Task<IActionResult> CrearPago([FromBody] Pago pago)
         {
             try
             {

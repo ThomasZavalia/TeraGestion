@@ -29,23 +29,23 @@ namespace Services
 
 
 
-        public async Task<Pago> CrearPago(CrearPagoDTO pagoDto)
+        public async Task<Pago> CrearPago(Pago pago)
         {
-            if (pagoDto.Monto <= 0)
+            if (pago.Monto <= 0)
             {
                 throw new ArgumentException("El monto debe ser mayor que cero.");
             }
 
-            if (string.IsNullOrWhiteSpace(pagoDto.MetodoPago))
+            if (string.IsNullOrWhiteSpace(pago.MetodoPago))
             {
                 throw new ArgumentException("El método de pago no puede estar vacío.");
             }
 
             var nuevoPago = new Pago
             {
-                Monto = pagoDto.Monto,
-                MetodoPago = pagoDto.MetodoPago,
-                TurnoId = pagoDto.TurnoId,
+                Monto = pago.Monto,
+                MetodoPago = pago.MetodoPago,
+                TurnoId = pago.TurnoId,
                 Fecha = DateTime.Now
             };
 

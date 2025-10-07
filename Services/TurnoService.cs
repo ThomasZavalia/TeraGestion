@@ -28,37 +28,40 @@ namespace Services
 
         public async Task<Turno> ActualizarTurnoAsync(Turno turno)
         {
-            if(turno == null || turno.Id <= 0)
+           var turnoExistente = await _turnoRepository.GetById(turno.Id);
+            if (turnoExistente == null)
             {
-                throw new Exception("El turno es nulo o no tiene un ID valido");
+                return null;
             }
-
-            if (turno.Estado == "Pagado") 
-            {
-                var pago = new Pago
-                {
-                    Monto = turno.Precio,
-                    Fecha = DateTime.Now,
-                    TurnoId = turno.Id
-                };
-                var pagoCreado = await _pagoService.CrearPago(pago);
-                if (pagoCreado == null)
-                {
-                    throw new Exception("No se pudo crear el pago asociado al turno");
-                }
-
-            }
-           turno = await _turnoRepository.Actualizar(turno);
-            if (turno == null)
-            {
-                throw new Exception("No se pudo actualizar el turno");
-            }
-            return turno;
+            var turnoActualizado = await _turnoRepository.Actualizar(turno);
+            return turnoActualizado;
 
 
         }
 
-      
+        public async Task MarcarComoPagadoAsync(int turnoId, string metodoPago)
+        {
+            var turno = await _turnoRepository.GetById(turnoId);
+            if (turno == null) throw new Exception("Turno no encontrado");
+            if (turno.Estado == "pagado") throw new Exception("El turno ya está pagado");
+
+            var pago = new Pago
+            {
+                TurnoId = turnoId,
+                MetodoPago = metodoPago,
+                Fecha = DateTime.Now,
+                Monto = turno.Precio 
+            };
+
+            await _pagoService.CrearPago(pago);
+
+            turno.Estado = "pagado";
+           
+
+            await ActualizarTurnoAsync(turno);
+        }
+
+
         public async Task<Turno> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
 

@@ -1,4 +1,6 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs;
+using Core.Entidades;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +33,7 @@ namespace Controllers.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearPaciente([FromBody] Core.Entidades.Paciente paciente)
+        public async Task<IActionResult> CrearPaciente([FromBody] Paciente paciente)
         {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
@@ -42,7 +44,7 @@ namespace Controllers.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] Core.Entidades.Paciente paciente)
+        public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] PacienteDTO paciente)
         {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);

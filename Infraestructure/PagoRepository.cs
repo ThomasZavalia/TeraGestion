@@ -13,9 +13,9 @@ namespace Infraestructure
     {
 
         private readonly TeraDbContext _context;
-        public PagoRepository( TeraDbContext context) 
+        public PagoRepository(TeraDbContext context)
         {
-            _context = context;    
+            _context = context;
         }
         public async Task<Pago> Actualizar(Pago pago)
         {
@@ -29,7 +29,7 @@ namespace Infraestructure
             return pago;
         }
 
-        public Task<bool> Eliminar(int id)
+        public async Task <bool> Eliminar(int id)
         {
             var pagoEncontrado = await _context.Pagos.FindAsync(id);
             if (pagoEncontrado == null)
@@ -44,12 +44,12 @@ namespace Infraestructure
             }
         }
 
-        public Task<Pago>? GetById(int id)
+        public async Task<Pago>? GetById(int id)
         {
             return await _context.Pagos.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public Task <IEnumerable<Pago>> ObtenerTodos()
+        public async Task <IEnumerable<Pago>> ObtenerTodos()
         {
             return await _context.Pagos.ToListAsync();
         }

@@ -12,7 +12,7 @@ namespace Core.Interfaces
     {
         public Task<Pago> GetPago(int id);
         public Task<IEnumerable<Pago>> GetPagos();
-        public Task<Pago> CrearPago(CrearPagoDTO pagoDTO);
+        public Task<Pago> CrearPago(Pago pago);
         public Task<Pago> ActualizarPago(Pago pago);
         public Task<bool> EliminarPago(int id);
 
