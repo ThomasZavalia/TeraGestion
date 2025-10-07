@@ -38,7 +38,7 @@ namespace Services
             throw new NotImplementedException();
         }
 
-        public async  Task<IEnumerable<Paciente>> GetPacientesAsync()
+        public async Task<IEnumerable<Paciente>> GetPacientesAsync()
         {
             throw new NotImplementedException();
         }

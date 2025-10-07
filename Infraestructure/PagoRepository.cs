@@ -31,7 +31,7 @@ namespace Infraestructure
             throw new NotImplementedException();
         }
 
-        public async Task<Pago>? GetById(int id)
+        public async Task<Pago?> GetById(int id)
         {
             throw new NotImplementedException();
         }
