@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs;
+using Core.Entidades;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,9 @@ namespace Core.Interfaces
         public Task<Usuario> CrearUsuario(Usuario usuario);
         public Task<Usuario> ActualizarUsuario(Usuario usuario);
         public Task<bool> EliminarUsuario(int id);
+        public Task<Usuario> GetByName(string username);
+
+        public Task<Usuario> ValidarCredenciales(string username, string password);
 
     }
 }

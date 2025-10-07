@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entidades
+namespace Core.DTOs
 {
-    public class Usuario
+    public class RegisterDto
     {
 
-        public int Id { get; set; }
         public string Username { get; set; }
+        public string Password { get; set; }
+
         public string Email { get; set; }
 
-        public string PasswordHash { get; set; }
-        public string Rol { get; set; } // Ejemplo: "Admin", "Usuario", "Terapeuta"
+
     }
 }
