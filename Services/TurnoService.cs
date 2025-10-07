@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs;
+using Core.Entidades;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using System;
@@ -13,39 +14,103 @@ namespace Services
 
 
     {
-
+        private readonly IPacienteService _pacienteService;
         private readonly ITurnoRepository _turnoRepository;
-        public TurnoService(ITurnoRepository turnoRepository)
+        private readonly IPagoService _pagoService;
+        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService)
         {
             _turnoRepository = turnoRepository;
+            _pacienteService = pacienteService;
+            _pagoService = pagoService;
+
         }
 
 
         public async Task<Turno> ActualizarTurnoAsync(Turno turno)
         {
-            throw new NotImplementedException();
+            if(turno == null || turno.Id <= 0)
+            {
+                throw new Exception("El turno es nulo o no tiene un ID valido");
+            }
+
+            if (turno.Estado == "Pagado") 
+            {
+                var pago = new Pago
+                {
+                    Monto = turno.Precio,
+                    Fecha = DateTime.Now,
+                    TurnoId = turno.Id
+                };
+                var pagoCreado = await _pagoService.CrearPago(pago);
+                if (pagoCreado == null)
+                {
+                    throw new Exception("No se pudo crear el pago asociado al turno");
+                }
+
+            }
+           turno = await _turnoRepository.Actualizar(turno);
+            if (turno == null)
+            {
+                throw new Exception("No se pudo actualizar el turno");
+            }
+            return turno;
+
+
         }
 
       
-        public async Task<Turno> CrearTurnoAsync(Turno turno)
+        public async Task<Turno> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
-          
-            throw new NotImplementedException();
+
+            var pacienteAbuscar = await _pacienteService.GetPacientePorDniAsync(dto.DniPaciente);
+            if (pacienteAbuscar == null)
+            {
+                var nuevoPaciente = new Paciente
+                {
+                    DNI = dto.DniPaciente,
+                    Nombre = dto.NombrePaciente,
+                    Apellido = dto.ApellidoPaciente
+                };
+                pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+            }
+            var turno = new Turno
+            {
+                FechaHora = dto.Fecha,
+                PacienteId = pacienteAbuscar.Id,
+                Paciente = pacienteAbuscar,
+                Estado = "Pendiente"
+            };
+            return await _turnoRepository.Agregar(turno);
         }
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-            throw new NotImplementedException();
+            var turnoAeliminar = await _turnoRepository.GetById(id);
+            if (turnoAeliminar == null)
+            {
+                
+                return false;
+            }
+            await _turnoRepository.Eliminar(id);
+            return true;
+
+
         }
 
         public async Task<Turno> GetTurnoAsync(int id)
         {
-            throw new NotImplementedException();
+         var turnoAbuscar = await _turnoRepository.GetById(id);
+            if (turnoAbuscar == null)
+            {
+                throw new Exception("No se encontro el turno");
+            }
+            return turnoAbuscar;
         }
 
         public async Task<IEnumerable<Turno>> GetTurnosAsync()
         {
-            throw new NotImplementedException();
+           var turnos = await _turnoRepository.ObtenerTodos();
+            return turnos;
         }
     }
 }

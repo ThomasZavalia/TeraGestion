@@ -65,17 +65,10 @@ namespace Infraestructure
             return true;
         }
 
-
-
-
         public async Task<Sesion>? GetById(int id)
         {
             return await _context.Sesiones.FirstOrDefaultAsync(s => s.Id == id);
         }
-
-
-
-
 
         public async Task<IEnumerable<Sesion>> ObtenerTodos()
         {
