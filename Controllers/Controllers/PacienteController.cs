@@ -17,33 +17,53 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPaciente(int id)
         {
-            throw new NotImplementedException();
+              var paciente = await _pacienteService.GetPacienteAsync(id);
+              if (paciente == null)
+                 return NotFound();
+              return Ok(paciente);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetPacientes()
         {
-            throw new NotImplementedException();
+              var pacientes = await _pacienteService.GetPacientesAsync();
+              return Ok(pacientes);
         }
 
         [HttpPost]
         public async Task<IActionResult> CrearPaciente([FromBody] Core.Entidades.Paciente paciente)
         {
-            throw new NotImplementedException();
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                var creado = await _pacienteService.CrearPacienteAsync(paciente);
+                if (creado == null)
+                    return BadRequest("No se pudo crear el paciente.");
+                return CreatedAtAction(nameof(GetPaciente), new { id = creado.Id }, creado);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] Core.Entidades.Paciente paciente)
         {
-            throw new NotImplementedException();
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                var existente = await _pacienteService.GetPacienteAsync(id);
+                if (existente == null)
+                    return NotFound();
+                paciente.Id = id;
+                var actualizado = await _pacienteService.ActualizarPacienteAsync(paciente);
+                return Ok(actualizado);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPaciente(int id)
         {
-            throw new NotImplementedException();
+              var eliminado = await _pacienteService.EliminarPacienteAsync(id);
+              if (!eliminado)
+                 return NotFound();
+              return NoContent();
         }
 
 
     }
 }
+

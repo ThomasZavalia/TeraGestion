@@ -29,7 +29,7 @@ namespace Infraestructure
             return pago;
         }
 
-        public async Task<bool> Eliminar(int id)
+        public Task<bool> Eliminar(int id)
         {
             var pagoEncontrado = await _context.Pagos.FindAsync(id);
             if (pagoEncontrado == null)
@@ -44,12 +44,12 @@ namespace Infraestructure
             }
         }
 
-        public async Task<Pago?> GetById(int id)
+        public Task<Pago>? GetById(int id)
         {
             return await _context.Pagos.FirstOrDefaultAsync(p => p.Id == id);
         }
 
-        public async Task<IEnumerable<Pago>> ObtenerTodos()
+        public Task <IEnumerable<Pago>> ObtenerTodos()
         {
             return await _context.Pagos.ToListAsync();
         }

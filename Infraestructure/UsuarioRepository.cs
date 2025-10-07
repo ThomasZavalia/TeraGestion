@@ -49,17 +49,24 @@ namespace Infraestructure
             return true;
         }
 
+
         public async Task<Usuario>? GetById(int id)
+
         {
          var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
             if (usuario == null) { return null; }
             return usuario;
         }
 
+
         public async Task<IEnumerable<Usuario>> ObtenerTodos()
+
         {
             var usuarios = await _context.Usuarios.ToListAsync();
             return usuarios;
         }
-    }
+
+    }  
+ 
 }
+ 

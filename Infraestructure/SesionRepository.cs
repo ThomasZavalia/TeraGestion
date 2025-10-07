@@ -74,5 +74,6 @@ namespace Infraestructure
         {
             return await _context.Sesiones.ToListAsync();
         }
+
     }
 }

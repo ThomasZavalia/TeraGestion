@@ -1,4 +1,5 @@
 ﻿using Core.Entidades;
+using Core.DTOs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +10,11 @@ namespace Core.Interfaces
 {
     public interface IPacienteService
     {
-      public Task<Paciente> GetPacienteAsync(int id);
-        public Task<Paciente> GetPacientePorDniAsync(int dni);
-        public Task<IEnumerable<Paciente>> GetPacientesAsync();
-        public Task<Paciente> CrearPacienteAsync(Paciente paciente);
-        public Task<Paciente> ActualizarPacienteAsync(Paciente paciente);
+        public Task<PacienteDTO> GetPacienteAsync(int id);
+        public Task<PacienteDTO> GetPacientePorDniAsync(string dni);
+        public Task<IEnumerable<PacienteDTO>> GetPacientesAsync();
+        public Task<PacienteDTO> CrearPacienteAsync(PacienteDTO paciente);
+        public Task<PacienteDTO> ActualizarPacienteAsync(PacienteDTO paciente);
         public Task<bool> EliminarPacienteAsync(int id);
 
     }
