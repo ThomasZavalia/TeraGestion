@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SQLitePCL;
 
 namespace Controllers.Controllers
 {
@@ -14,30 +15,94 @@ namespace Controllers.Controllers
             _pagoService = pagoService;
         }
 
+        
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPago(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var pagoEncontrado = await _pagoService.GetPago(id);
+
+                return Ok(pagoEncontrado);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
         }
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetPagos()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var pagos = await _pagoService.GetPagos();
+                return Ok(pagos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
         }
+
+
+
         [HttpPost]
-        public async Task<IActionResult> CrearPago([FromBody] Core.Entidades.Pago pago)
+        public async Task<IActionResult> CrearPago([FromBody] Core.DTOs.CrearPagoDTO pago)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var nuevoPago = await _pagoService.CrearPago(pago);
+                return CreatedAtAction(nameof(GetPago), new { id = nuevoPago.Id }, nuevoPago);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
         }
+
+
+
+
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarPago(int id, [FromBody] Core.Entidades.Pago pago)
         {
             throw new NotImplementedException();
         }
+
+
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPago(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var eliminado = await _pagoService.EliminarPago(id);
+                if (eliminado)
+                {
+                    return NoContent();
+                }
+                else
+                {
+                    return NotFound($"No se encontró un pago con ID {id}.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
         }
     }
 }

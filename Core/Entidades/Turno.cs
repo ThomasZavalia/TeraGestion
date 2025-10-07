@@ -19,4 +19,6 @@ namespace Core.Entidades
         public Paciente Paciente { get; set; }
 
     }
+
 }
+
