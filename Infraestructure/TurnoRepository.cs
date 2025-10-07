@@ -1,5 +1,7 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Microsoft.EntityFrameworkCore;
+using SQLitePCL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,29 +18,57 @@ namespace Infraestructure
         {
             _context = context;
         }
-        public async Task<Turno> Actualizar(Turno entity)
+
+        public async Task<Turno> Actualizar(Turno turno)
         {
-            throw new NotImplementedException();
+       var turnoExistente= await _context.Turnos.FindAsync(turno.Id);
+            turnoExistente.FechaHora = turno.FechaHora;
+            turnoExistente.Estado = turno.Estado;
+            turnoExistente.Precio = turno.Precio;
+            await _context.SaveChangesAsync();
+            return turnoExistente;
         }
 
-        public async Task<Turno> Agregar(Turno entity)
+        public async Task<Turno> Agregar(Turno turno)
         {
-            throw new NotImplementedException();
+          await _context.Turnos.AddAsync(turno);
+           
+           
+            await _context.SaveChangesAsync();
+            return turno;
         }
 
         public async Task<bool> Eliminar(int id)
         {
-            throw new NotImplementedException();
+            var turnoExistente = await _context.Turnos.FindAsync(id);
+            if (turnoExistente == null)
+            {
+                return false;
+            }
+                _context.Turnos.Remove(turnoExistente);
+            await _context.SaveChangesAsync();
+            return true;
+            
         }
 
-        public async Task<Turno>? GetById(int id)
+        
+
+        public async Task<Turno?> GetById(int id)
         {
-            throw new NotImplementedException();
+           var turnoExistente = await _context.Turnos.FindAsync(id);
+            if (turnoExistente == null)
+            {
+                return null;
+        }
+            return turnoExistente;
         }
 
         public async Task<IEnumerable<Turno>> ObtenerTodos()
-        {
-            throw new NotImplementedException();
+        { 
+          return await _context.Turnos.ToListAsync();
+
         }
+
+       
     }
 }

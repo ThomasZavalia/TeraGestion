@@ -17,27 +17,80 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSesion(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sesion = await _sesionService.GetSesionByIdAsync(id);
+                return Ok(sesion);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetSesiones()
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sesiones = await _sesionService.GetSesionesAsync();
+                return Ok(sesiones);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
+
+
         [HttpPost]
-        public async Task<IActionResult> CrearSesion([FromBody] Core.Entidades.Sesion sesion)
+        public async Task<IActionResult> CrearSesion([FromBody] Core.DTOs.CrearSesionDTO sesion)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var nuevaSesion = await _sesionService.CrearSesionAsync(sesion);
+                
+                return Ok(nuevaSesion);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
+
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] Core.Entidades.Sesion sesion)
+        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] Core.DTOs.SesionDTO sesionDTO)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var sesionActualizada = await _sesionService.ActualizarSesionAsync(id, sesionDTO);
+                return Ok(sesionActualizada);
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarSesion(int id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var resultado = await _sesionService.EliminarSesionAsync(id);
+                return Ok(new { mensaje = "Sesion eliminada exitosamente", exito = resultado });
+            }
+            catch (ArgumentException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
     }
