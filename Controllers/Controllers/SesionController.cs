@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.DTOs.Sesion;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers.Controllers
@@ -47,7 +48,7 @@ namespace Controllers.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearSesion([FromBody] Core.DTOs.CrearSesionDTO sesion)
+        public async Task<IActionResult> CrearSesion([FromBody] SesionDTO sesion)
         {
             try
             {
@@ -64,11 +65,26 @@ namespace Controllers.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] Core.DTOs.SesionDTO sesionDTO)
+        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] SesionDTO sesionDTO)
         {
             try
             {
-                var sesionActualizada = await _sesionService.ActualizarSesionAsync(id, sesionDTO);
+                var sesionActualizada = await _sesionService.ActualizarSesionAsync(sesionDTO);
+                if (sesionActualizada == null)
+                {
+                    return NotFound("No se pudo actualizar la sesion");
+                }
+                var sesionRespuesta = new SesionDTO
+                {
+                    Id = sesionActualizada.Id,
+                    FechaHoraInicio = sesionActualizada.FechaHoraInicio,
+                    PacienteId = sesionActualizada.PacienteId,
+                    TurnoId = sesionActualizada.TurnoId,
+                    Notas = sesionActualizada.Notas,
+                    Asistencia = sesionActualizada.Asistencia
+
+
+                };
                 return Ok(sesionActualizada);
             }
             catch (ArgumentException ex)

@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+﻿using Core.DTOs.Paciente;
 using Core.Entidades;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -33,11 +33,11 @@ namespace Controllers.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearPaciente([FromBody] Paciente paciente)
+        public async Task<IActionResult> CrearPaciente([FromBody] PacienteDTO pacienteDto)
         {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
-                var creado = await _pacienteService.CrearPacienteAsync(paciente);
+                var creado = await _pacienteService.CrearPacienteAsync(pacienteDto);
                 if (creado == null)
                     return BadRequest("No se pudo crear el paciente.");
                 return CreatedAtAction(nameof(GetPaciente), new { id = creado.Id }, creado);

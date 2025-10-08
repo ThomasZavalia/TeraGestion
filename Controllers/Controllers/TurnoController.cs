@@ -1,4 +1,7 @@
 ﻿using Core.DTOs;
+using Core.DTOs.Turno;
+using Core.DTOs.Turno.Input;
+using Core.DTOs.Turno.Output;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -35,39 +38,34 @@ namespace Controllers.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearTurno([FromBody] TurnoDtoCreacion turno)
         {
+            try { 
          var turnoCreado = await _turnoService.CrearTurnoAsync(turno);
             if (turnoCreado == null)
             {
                 return BadRequest("No se pudo crear el turno");
             }
             return CreatedAtAction(nameof(GetTurno), new { id = turnoCreado.Id }, turnoCreado);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Error al crear el turno: " + ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarTurno(int id, [FromBody] Core.Entidades.Turno turno)
+        public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDto turnoDto)
         {
-            if (id != turno.Id)
+            if (id != turnoDto.Id)
             {
                 return BadRequest("El ID del turno no coincide");
             }
             
-           var turnoActualizado = await _turnoService.ActualizarTurnoAsync(turno);
+           var turnoActualizado = await _turnoService.ActualizarTurnoAsync(turnoDto);
             if (turnoActualizado == null)
             {
                 return NotFound();
             }
-            var turnoRespuesta =
-new TurnoDtoRespuesta
-{
-   Id= turnoActualizado.Id,
-    Fecha = turnoActualizado.FechaHora,
-    Estado = turnoActualizado.Estado,
-   PacienteNombre = turnoActualizado.Paciente.Nombre,
-   Precio= turnoActualizado.Precio,
-
-
-
-};   
+            
             return Ok(turnoActualizado);
         }
         [HttpDelete("{id}")]
