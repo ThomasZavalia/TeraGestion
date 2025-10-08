@@ -68,7 +68,12 @@ namespace Infraestructure
 
         public async Task<Sesion>? GetById(int id)
         {
-            return await _context.Sesiones.FirstOrDefaultAsync(s => s.Id == id);
+          var sesionExistente = await _context.Sesiones.FindAsync(id);
+            if (sesionExistente == null)
+            {
+                return null;
+            }
+            return sesionExistente;
         }
 
         public async Task<IEnumerable<Sesion>> ObtenerTodos()

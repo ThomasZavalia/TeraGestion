@@ -35,27 +35,22 @@ namespace Services
 
         public async Task<SesionDTO> ActualizarSesionAsync(SesionDTO sesionDTO)
         {
+            var sesionExistente = await _sesionRepository.GetById(sesionDTO.Id);
 
-
-           
-
-            var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
-
-            if (sesionDTO == null)
+            if (sesionExistente == null)
             {
                 return null;
-
             }
 
+            // Mapear los valores del DTO sobre la entidad existente
             _mapper.Map(sesionDTO, sesionExistente);
-            var sesionActualizada = await _sesionRepository.Actualizar(_mapper.Map<Sesion>(sesionExistente));
 
-
+            // Actualizar directamente la sesión existente
+            var sesionActualizada = await _sesionRepository.Actualizar(sesionExistente);
 
             return _mapper.Map<SesionDTO>(sesionActualizada);
-
-
         }
+
 
 
 
