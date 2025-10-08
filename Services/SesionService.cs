@@ -1,4 +1,5 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs.Sesion;
 using Core.Entidades;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
@@ -17,12 +18,14 @@ namespace Services
 
         private readonly ITurnoService _turnoService;
         private readonly IPacienteService _pacienteService;
+        private readonly IMapper _mapper;
 
-        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService)
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService,IMapper mapper)
         {
             _turnoService = turnoService;
             _sesionRepository = sesionRepository;
             _pacienteService = pacienteService;
+            _mapper = mapper;
         }
 
 
@@ -30,38 +33,41 @@ namespace Services
 
 
 
-        public async Task<Sesion> ActualizarSesionAsync(int id, SesionDTO sesionDTO)
+        public async Task<SesionDTO> ActualizarSesionAsync(SesionDTO sesionDTO)
         {
+
+
+           
+
+            var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
+
             if (sesionDTO == null)
             {
-                throw new ArgumentNullException(nameof(sesionDTO), "El objeto SesionDTO no puede ser nulo.");
+                return null;
+
             }
 
-            if (id <= 0)
-            {
-                throw new ArgumentException("El ID es invalido.");
-            }
-
-            var sesionExistente = await GetSesionByIdAsync(id);
+            _mapper.Map(sesionDTO, sesionExistente);
+            var sesionActualizada = await _sesionRepository.Actualizar(_mapper.Map<Sesion>(sesionExistente));
 
 
-            sesionExistente.Asistencia = sesionDTO.Asistencia;
-            sesionExistente.Notas = sesionDTO.Notas;
 
-            return await _sesionRepository.Actualizar(sesionExistente);
+            return _mapper.Map<SesionDTO>(sesionActualizada);
+
+
         }
 
 
 
 
 
-        public async Task<Sesion> CrearSesionAsync(CrearSesionDTO sesionDTO)
+        public async Task<Sesion> CrearSesionAsync(SesionDTO sesionDTO)
         {
 
             var turnoExistente = await _turnoService.GetTurnoAsync(sesionDTO.TurnoId);
             var pacienteId = turnoExistente.PacienteId;
             //var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
-            var pacienteExistente = turnoExistente.Paciente;
+            //var pacienteExistente = turnoExistente.Paciente;
 
 
             if(sesionDTO == null)
@@ -76,10 +82,6 @@ namespace Services
             }
 
 
-            if (pacienteExistente == null)
-            {
-                throw new ArgumentException("El paciente con ID " + pacienteId + " no fue encontrado.");
-            }
 
 
             if (pacienteId != sesionDTO.PacienteId)
@@ -88,16 +90,16 @@ namespace Services
             }
 
 
-            if (sesionDTO.Fecha < DateTime.Now)
-            {
-                throw new ArgumentException("La fecha de la sesion no puede ser en el pasado.");
-            }
+          
             
 
 
             var nuevaSesion = new Sesion
             {
-                FechaHoraInicio = sesionDTO.Fecha,
+                Id = sesionDTO.Id,
+                Notas = sesionDTO.Notas,
+                Asistencia = sesionDTO.Asistencia,
+                FechaHoraInicio = sesionDTO.FechaHoraInicio,
                 TurnoId = turnoExistente.Id,
                 PacienteId = sesionDTO.PacienteId
             };
@@ -122,7 +124,7 @@ namespace Services
 
 
 
-        public async Task<Sesion> GetSesionByIdAsync(int id)
+        public async Task<SesionDTO> GetSesionByIdAsync(int id)
         {
             if (id <= 0)
             {
@@ -136,7 +138,8 @@ namespace Services
                 throw new ArgumentException("La sesion con ID" + id + " no fue encontrada.");
             }
 
-            return sesion;
+         var sesionDto = _mapper.Map<SesionDTO>(sesion);
+            return sesionDto;
         }
 
 

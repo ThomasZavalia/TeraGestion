@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs
+namespace Core.DTOs.Turno.Input
 {
     public class TurnoDtoRespuesta
     {
@@ -12,7 +12,7 @@ namespace Core.DTOs
         public DateTime Fecha { get; set; }
         public string Hora { get; set; }
         public string PacienteNombre { get; set; }
-     
+
         public decimal Precio { get; set; }
         public string Estado { get; set; }
     }

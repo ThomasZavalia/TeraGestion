@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.DTOs
+namespace Core.DTOs.Turno.Input
 {
     public class TurnoDtoCreacion
     {
@@ -13,6 +13,10 @@ namespace Core.DTOs
         public string NombrePaciente { get; set; }
 
         public string ApellidoPaciente { get; set; }
+
+        public decimal Precio { get; set; }
+
+        public string ObraSocial { get; set; }
 
 
     }

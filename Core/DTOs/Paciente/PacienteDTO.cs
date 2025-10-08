@@ -1,6 +1,6 @@
 using System;
 
-namespace Core.DTOs
+namespace Core.DTOs.Paciente
 {
     public class PacienteDTO
     {

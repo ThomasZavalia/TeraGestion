@@ -1,7 +1,7 @@
 ﻿using Core.Entidades;
-using Core.DTOs;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.DTOs.Paciente;
 
 namespace Services
 {
@@ -25,14 +25,23 @@ namespace Services
                   return MapToDto(actualizado);
             }
 
-            public async Task<Paciente> CrearPacienteAsync(Paciente paciente)
+            public async Task<Paciente> CrearPacienteAsync(PacienteDTO pacienteDto)
             {
-                  if (paciente == null)
+            try
             {
-                return null;
+                if (pacienteDto == null)
+                {
+                    return null;
+                }
+                var paciente = MapToEntity(pacienteDto);
+                var creado = await _pacienteRepository.Agregar(paciente);
+                return creado;
             }
-                  var creado = await _pacienteRepository.Agregar(paciente);
-            return creado;
+            catch (Exception ex)
+            {
+                // Manejar la excepción (por ejemplo, registrar el error)
+                throw new Exception("Error al crear el paciente", ex);
+            }
 
 
         }

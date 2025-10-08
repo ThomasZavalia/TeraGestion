@@ -26,11 +26,12 @@ namespace Infraestructure
             {
                 throw new ArgumentException("Sesion no encontrada");
             }
-
+            sesionEncontada.PacienteId = sesion.PacienteId;
+            sesionEncontada.TurnoId = sesion.TurnoId;
+            sesionEncontada.FechaHoraInicio = sesion.FechaHoraInicio;
             sesionEncontada.Asistencia = sesion.Asistencia;
             sesionEncontada.Notas = sesion.Notas;
             
-            _context.Sesiones.Update(sesionEncontada);
             await _context.SaveChangesAsync();
 
             return sesionEncontada;
