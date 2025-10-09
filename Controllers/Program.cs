@@ -1,5 +1,7 @@
+using Controllers;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.Mapping;
 using Infraestructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -57,6 +59,8 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddAutoMapper(typeof(Core.Mapping.TurnoProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(PagoProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
 
 
 
@@ -64,6 +68,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     options.JsonSerializerOptions.WriteIndented = true;
+    options.JsonSerializerOptions.Converters.Add(new DateTimeConverterWithoutZone());
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

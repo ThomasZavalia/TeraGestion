@@ -12,10 +12,12 @@ namespace Core.Interfaces
     public interface ITurnoService
     {
         public Task<TurnoDto> GetTurnoAsync(int id);
-        public Task<IEnumerable<Turno>> GetTurnosAsync();
-        public Task<Turno> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
+        public Task<IEnumerable<TurnoDto>> GetTurnosAsync();
+        public Task<TurnoDto> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
         public Task<TurnoDto> ActualizarTurnoAsync(TurnoDto turno);
         public Task<bool> EliminarTurnoAsync(int id);
+
+        public Task MarcarComoPagadoAsync(int turnoId, string metodo);
 
     }
 }

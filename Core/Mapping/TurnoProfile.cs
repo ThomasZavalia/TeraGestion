@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.DTOs.Paciente;
+using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
 using System;
@@ -16,6 +17,7 @@ namespace Core.Mapping
         public TurnoProfile()
         {
             CreateMap<TurnoDto, Turno>();
+           
             CreateMap<Turno, TurnoDto>();
         }
     }

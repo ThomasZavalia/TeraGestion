@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -31,6 +32,7 @@ namespace Infraestructure
 
         }
 
+        
         public async Task<Usuario> Agregar(Usuario usuario)
         {
             if (usuario == null) { return null; }

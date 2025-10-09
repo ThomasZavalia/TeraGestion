@@ -56,7 +56,7 @@ namespace Services
 
 
 
-        public async Task<Sesion> CrearSesionAsync(SesionDTO sesionDTO)
+        public async Task<SesionDTO> CrearSesionAsync(SesionDTO sesionDTO)
         {
 
             var turnoExistente = await _turnoService.GetTurnoAsync(sesionDTO.TurnoId);
@@ -85,21 +85,15 @@ namespace Services
             }
 
 
-          
-            
 
 
-            var nuevaSesion = new Sesion
-            {
-                Id = sesionDTO.Id,
-                Notas = sesionDTO.Notas,
-                Asistencia = sesionDTO.Asistencia,
-                FechaHoraInicio = sesionDTO.FechaHoraInicio,
-                TurnoId = turnoExistente.Id,
-                PacienteId = sesionDTO.PacienteId
-            };
 
-            return await _sesionRepository.Agregar(nuevaSesion);
+
+            var nuevaSesion = _mapper.Map<Sesion>(sesionDTO);
+
+            var sesionCreada = await _sesionRepository.Agregar(nuevaSesion);
+            return _mapper.Map<SesionDTO>(sesionCreada);
+
         }
 
 
@@ -144,7 +138,7 @@ namespace Services
 
 
 
-        public async Task<IEnumerable<Sesion>> GetSesionesAsync()
+        public async Task<IEnumerable<SesionDTO>> GetSesionesAsync()
         {
             var TodasLasSesiones = await _sesionRepository.ObtenerTodos();
 
@@ -152,8 +146,9 @@ namespace Services
             {
                 throw new ArgumentException("No se encontraron sesiones.");
             }
+            var sesionesDto = _mapper.Map<IEnumerable<SesionDTO>>(TodasLasSesiones);
 
-            return TodasLasSesiones;
+            return sesionesDto;
         }
     }
 }

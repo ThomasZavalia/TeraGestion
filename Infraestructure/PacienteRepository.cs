@@ -20,8 +20,18 @@ namespace Infraestructure
         }
         public async Task<Paciente> Actualizar(Paciente entity)
         {
-              _context.Pacientes.Update(entity);
-              await _context.SaveChangesAsync();
+            var pacienteEncontrado = await _context.Pacientes.FindAsync(entity.Id);
+            if (pacienteEncontrado == null)
+            { return null; }
+            pacienteEncontrado.Nombre = entity.Nombre;
+            pacienteEncontrado.Apellido = entity.Apellido;
+            pacienteEncontrado.FechaNacimiento = entity.FechaNacimiento.Date;
+           pacienteEncontrado.ObraSocialId = entity.ObraSocialId;
+            pacienteEncontrado.Telefono = entity.Telefono;
+            pacienteEncontrado.Email = entity.Email;
+            pacienteEncontrado.DNI = entity.DNI;
+
+            await _context.SaveChangesAsync();
               return entity;
         }
 

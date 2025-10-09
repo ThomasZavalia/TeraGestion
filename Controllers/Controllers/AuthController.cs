@@ -1,5 +1,6 @@
 ﻿using Core.DTOs;
 using Core.Entidades;
+using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services;
@@ -15,9 +16,9 @@ namespace Controllers.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly UsuarioService _usuarioService;
+        private readonly IUsuarioService _usuarioService;
         private readonly IConfiguration _configuration;
-        public AuthController(UsuarioService usuarioService, IConfiguration configuration)
+        public AuthController(IUsuarioService usuarioService, IConfiguration configuration)
         {
             _usuarioService = usuarioService;
             _configuration = configuration;
@@ -48,7 +49,8 @@ namespace Controllers.Controllers
             {
                 Username = registerDto.Username,
                 PasswordHash = registerDto.Password,
-                Rol = "User" // Asignás un rol por defecto
+                Rol = "User",// Asignás un rol por defecto
+                Email = registerDto.Email
             };
 
             var creadoUsuario = await _usuarioService.CrearUsuario(nuevoUsuario);

@@ -86,10 +86,10 @@ namespace Services
                         Nombre = paciente.Nombre,
                         Apellido = paciente.Apellido,
                         FechaNacimiento = paciente.FechaNacimiento,
-                        ObraSocial = paciente.ObraSocial,
                         Telefono = paciente.Telefono,
                         Email = paciente.Email,
-                        DNI = paciente.DNI
+                        DNI = paciente.DNI,
+                        
                   };
             }
 
@@ -102,7 +102,7 @@ namespace Services
                         Nombre = dto.Nombre,
                         Apellido = dto.Apellido,
                         FechaNacimiento = dto.FechaNacimiento,
-                        ObraSocial = dto.ObraSocial,
+                        ObraSocialId = dto.ObraSocialId,
                         Telefono = dto.Telefono,
                         Email = dto.Email,
                         DNI = dto.DNI

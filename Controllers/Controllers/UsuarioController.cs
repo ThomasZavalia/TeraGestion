@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.DTOs.Usuario.Input;
+using Core.Entidades;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers.Controllers
@@ -22,6 +25,8 @@ namespace Controllers.Controllers
             if (usuario == null) { return NotFound(); }
             return Ok(usuario);
         }
+
+        [Authorize(Roles = "admin")]
         [HttpGet]
         public async Task<IActionResult> GetUsuarios()
         {
@@ -37,15 +42,16 @@ namespace Controllers.Controllers
             if (nuevoUsuario == null) { return BadRequest("No se pudo crear el usuario"); }
             return CreatedAtAction(nameof(GetUsuario), new { id = nuevoUsuario.Id }, nuevoUsuario);
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] Core.Entidades.Usuario usuario)
-        {
-            if (id != usuario.Id) { return BadRequest("El ID del usuario no coincide"); }
-            var usuarioActualizado = await _usuarioService.ActualizarUsuario(usuario);
-            if (usuarioActualizado == null) { return NotFound(); }
-            return Ok(usuarioActualizado);
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] UsuarioActualizarDto dto)
+        {
+            var usuarioActualizado = await _usuarioService.ActualizarUsuario(id, dto);
+            if (usuarioActualizado == null) return NotFound();
+
+            return Ok(usuarioActualizado); // Devuelve solo los campos del usuario (sin PasswordHash)
         }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarUsuario(int id)
         {

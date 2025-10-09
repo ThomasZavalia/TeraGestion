@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs.Usuario.Input;
+using Core.Entidades;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Microsoft.AspNetCore.Identity;
@@ -19,15 +20,19 @@ namespace Services
         {
             _usuarioRepository = usuarioRepository;
         }
-        public async Task<Usuario> ActualizarUsuario(Usuario usuario)
+        public async Task<Usuario> ActualizarUsuario(int id,UsuarioActualizarDto dto)
         {
-            var usuarioExistente = await _usuarioRepository.GetById(usuario.Id);
-            if (usuarioExistente == null) { return null; }
-           
+            var usuarioExistente = await _usuarioRepository.GetById(id);
+            if (usuarioExistente == null) return null;
+            usuarioExistente.Username = dto.Username;
+            usuarioExistente.Email = dto.Email;
+            usuarioExistente.Rol = dto.Rol;
 
-            var usuarioActualizado = await _usuarioRepository.Actualizar(usuarioExistente);
-            return usuarioActualizado;
+            return await _usuarioRepository.Actualizar(usuarioExistente);
         }
+
+       
+
 
         public async Task<Usuario> CrearUsuario(Usuario usuario)
         {

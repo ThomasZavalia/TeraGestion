@@ -11,8 +11,8 @@ namespace Core.Interfaces
     public interface ISesionService
     {
         public Task<SesionDTO> GetSesionByIdAsync(int id);
-        public Task<IEnumerable<Sesion>> GetSesionesAsync();
-        public Task<Sesion> CrearSesionAsync(SesionDTO sesionDTO);
+        public Task<IEnumerable<SesionDTO>> GetSesionesAsync();
+        public Task<SesionDTO> CrearSesionAsync(SesionDTO sesionDTO);
         public Task<SesionDTO> ActualizarSesionAsync( SesionDTO sesionDTO);
         public Task<bool> EliminarSesionAsync(int id);
 

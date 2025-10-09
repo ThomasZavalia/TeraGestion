@@ -25,6 +25,8 @@ namespace Infraestructure
             turnoExistente.FechaHora = turno.FechaHora;
             turnoExistente.Estado = turno.Estado;
             turnoExistente.Precio = turno.Precio;
+            turnoExistente.PacienteId = turno.PacienteId;
+            turnoExistente.ObraSocialId = turno.ObraSocialId;
             await _context.SaveChangesAsync();
             return turnoExistente;
         }
@@ -65,7 +67,7 @@ namespace Infraestructure
 
         public async Task<IEnumerable<Turno>> ObtenerTodos()
         { 
-          return await _context.Turnos.ToListAsync();
+          return await _context.Turnos.AsNoTracking().ToListAsync();
 
         }
 

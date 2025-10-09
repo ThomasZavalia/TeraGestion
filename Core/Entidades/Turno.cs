@@ -18,6 +18,12 @@ namespace Core.Entidades
 
         public Paciente Paciente { get; set; }
 
+        public int? ObraSocialId { get; set; }  // Para calcular precio si el paciente no tiene
+        public ObraSocial ObraSocial { get; set; }
+
+        public ICollection<Sesion> Sesiones { get; set; }
+        public ICollection<Pago> Pagos { get; set; }
+
     }
 
 }

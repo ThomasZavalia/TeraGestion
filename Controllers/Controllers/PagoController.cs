@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs.Pago.Output;
+using Core.Entidades;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SQLitePCL;
@@ -56,12 +57,12 @@ namespace Controllers.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearPago([FromBody] Pago pago)
+        public async Task<IActionResult> CrearPago([FromBody] PagoDto pago)
         {
             try
             {
                 var nuevoPago = await _pagoService.CrearPago(pago);
-                return CreatedAtAction(nameof(GetPago), new { id = nuevoPago.Id }, nuevoPago);
+                return Ok(nuevoPago);
             }
             catch (ArgumentException ex)
             {

@@ -1,4 +1,6 @@
-﻿using Core.DTOs;
+﻿using AutoMapper;
+using Core.DTOs;
+using Core.DTOs.Pago.Output;
 using Core.Entidades;
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
@@ -13,9 +15,11 @@ namespace Services
     public class PagoService : IPagoService
     {
         private readonly IPagosRepository _pagoRepository;
-        public PagoService(IPagosRepository pagoRepository)
+        private readonly IMapper _mapper;
+        public PagoService(IPagosRepository pagoRepository,IMapper mapper)
         {
             _pagoRepository = pagoRepository;
+            _mapper = mapper;
         }
 
 
@@ -29,27 +33,22 @@ namespace Services
 
 
 
-        public async Task<Pago> CrearPago(Pago pago)
+        public async Task<PagoDto> CrearPago(PagoDto pagoDto)
         {
-            if (pago.Monto <= 0)
+            if (pagoDto.Monto <= 0)
             {
                 throw new ArgumentException("El monto debe ser mayor que cero.");
             }
 
-            if (string.IsNullOrWhiteSpace(pago.MetodoPago))
+            if (string.IsNullOrWhiteSpace(pagoDto.MetodoPago))
             {
                 throw new ArgumentException("El método de pago no puede estar vacío.");
             }
 
-            var nuevoPago = new Pago
-            {
-                Monto = pago.Monto,
-                MetodoPago = pago.MetodoPago,
-                TurnoId = pago.TurnoId,
-                Fecha = DateTime.Now
-            };
+            var nuevoPago = _mapper.Map<Pago>(pagoDto);
 
-            return await _pagoRepository.Agregar(nuevoPago);
+            var pagoCreado = await _pagoRepository.Agregar(nuevoPago);
+            return _mapper.Map<PagoDto>(pagoCreado);
         }
 
 
@@ -64,29 +63,30 @@ namespace Services
 
 
 
-        public async Task<Pago> GetPago(int id)
+        public async Task<PagoDto> GetPago(int id)
         {
             if (id <= 0)
             {
                 throw new ArgumentException("El ID debe ser un número positivo.");
 
             }
-
+          
             var pago = await _pagoRepository.GetById(id);
 
+            var pagoDto = _mapper.Map<PagoDto>(pago);
 
             if (pago == null)
             {
                 throw new KeyNotFoundException("Pago no encontrado.");
             }
 
-            return pago;
+            return pagoDto;
         }
 
 
 
 
-        public async Task<IEnumerable<Pago>> GetPagos()
+        public async Task<IEnumerable<PagoDto>> GetPagos()
         {
             var todosLosPagos = await _pagoRepository.ObtenerTodos();
 
@@ -94,8 +94,9 @@ namespace Services
             {
                 throw new InvalidOperationException("No hay pagos disponibles.");
             }
+            var pagosDto = _mapper.Map<IEnumerable<PagoDto>>(todosLosPagos);
 
-            return todosLosPagos;
+            return pagosDto;
         }
     }
 }

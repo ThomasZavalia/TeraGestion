@@ -219,13 +219,13 @@ namespace Infrastructure.Migrations
                 oldClrType: typeof(string),
                 oldType: "text");
 
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.AlterColumn<string>(
                 name: "DNI",
                 table: "Pacientes",
-                type: "INTEGER",
+                type: "text",
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                oldClrType: typeof(string),
+                oldType: "text");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Apellido",

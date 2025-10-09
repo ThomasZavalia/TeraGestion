@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Core.DTOs.Paciente;
+using Core.DTOs.Pago.Output;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
@@ -56,11 +57,11 @@ namespace Services
             if (turno == null) throw new Exception("Turno no encontrado");
             if (turno.Estado == "pagado") throw new Exception("El turno ya está pagado");
 
-            var pago = new Pago
+            var pago = new PagoDto
             {
                 TurnoId = turnoId,
                 MetodoPago = metodoPago,
-                Fecha = DateTime.Now,
+                Fecha = DateTime.UtcNow,
                 Monto = turno.Precio 
             };
 
@@ -73,7 +74,7 @@ namespace Services
         }
 
 
-        public async Task<Turno> CrearTurnoAsync(TurnoDtoCreacion dto)
+        public async Task<TurnoDto> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
 
@@ -87,7 +88,7 @@ namespace Services
                         DNI = dto.DniPaciente,
                         Nombre = dto.NombrePaciente,
                         Apellido = dto.ApellidoPaciente,
-                        ObraSocial = dto.ObraSocial
+                        ObraSocialId = dto.ObraSocialId 
 
                     };
                     pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
@@ -107,7 +108,8 @@ namespace Services
 
 
                 await transaction.CommitAsync();
-                return turnoCreado;
+                var turnoDto = _mapper.Map<TurnoDto>(turnoCreado);
+                return turnoDto;
             }
             catch (Exception ex)
             {
@@ -145,10 +147,11 @@ namespace Services
             return turnoDto;
         }
 
-        public async Task<IEnumerable<Turno>> GetTurnosAsync()
+        public async Task<IEnumerable<TurnoDto>> GetTurnosAsync()
         {
            var turnos = await _turnoRepository.ObtenerTodos();
-            return turnos;
+          var turnosDto = _mapper.Map<IEnumerable<TurnoDto>>(turnos);
+            return turnosDto;
         }
     }
 }

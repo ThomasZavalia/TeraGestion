@@ -16,6 +16,8 @@ namespace Core.DTOs.Turno.Output
         public decimal Precio { get; set; }
         public int PacienteId { get; set; }
 
+        public int? ObraSocialId { get; set; }  // Para calcular precio si el paciente no tiene
+
 
     }
 }

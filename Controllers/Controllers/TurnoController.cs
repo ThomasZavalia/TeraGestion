@@ -2,6 +2,7 @@
 using Core.DTOs.Turno;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,7 +45,7 @@ namespace Controllers.Controllers
             {
                 return BadRequest("No se pudo crear el turno");
             }
-            return CreatedAtAction(nameof(GetTurno), new { id = turnoCreado.Id }, turnoCreado);
+            return Ok(turnoCreado);
             }
             catch (Exception ex)
             {
@@ -77,6 +78,20 @@ namespace Controllers.Controllers
                 return NotFound();
             }
             return NoContent();
+        }
+
+        [HttpPost("{id}/pagar")]
+        public async Task<IActionResult> MarcarComoPagado(int id, [FromBody] string metodoPago)
+        {
+            try
+            {
+                await _turnoService.MarcarComoPagadoAsync(id, metodoPago);
+                return Ok("Turno marcado como pagado correctamente");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

@@ -18,6 +18,7 @@ namespace Core.Entidades
 
         public Paciente Paciente { get; set; }
         public int TurnoId { get; set; }
+        public Turno Turno { get; set; }
 
 
 

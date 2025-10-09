@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.DTOs.Usuario.Input;
 using Core.Entidades;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace Core.Interfaces
         public Task<Usuario> GetUsuarioById(int id);
         public Task<IEnumerable<Usuario>> GetUsuarios();
         public Task<Usuario> CrearUsuario(Usuario usuario);
-        public Task<Usuario> ActualizarUsuario(Usuario usuario);
+        public Task<Usuario> ActualizarUsuario(int id,UsuarioActualizarDto usuario);
         public Task<bool> EliminarUsuario(int id);
         public Task<Usuario> GetByName(string username);
 

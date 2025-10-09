@@ -40,7 +40,7 @@ namespace Controllers.Controllers
                 var creado = await _pacienteService.CrearPacienteAsync(pacienteDto);
                 if (creado == null)
                     return BadRequest("No se pudo crear el paciente.");
-                return CreatedAtAction(nameof(GetPaciente), new { id = creado.Id }, creado);
+               return Ok(creado);
         }
 
         [HttpPut("{id}")]

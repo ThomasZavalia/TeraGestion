@@ -3,6 +3,7 @@ using System;
 using Infraestructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-    partial class TeraDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251009183401_AgregarEmailUser")]
+    partial class AgregarEmailUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,27 +24,6 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Core.Entidades.ObraSocial", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<decimal>("PrecioTurno")
-                        .HasColumnType("decimal(10,2)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ObrasSociales", (string)null);
-                });
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
                 {
@@ -53,8 +35,7 @@ namespace Infrastructure.Migrations
 
                     b.Property<string>("Apellido")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<string>("DNI")
                         .IsRequired()
@@ -64,22 +45,19 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaNacimiento")
-                        .HasColumnType("date");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
-                    b.Property<int?>("ObraSocialId")
-                        .HasColumnType("integer");
+                    b.Property<string>("ObraSocial")
+                        .HasColumnType("text");
 
                     b.Property<string>("Telefono")
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ObraSocialId");
 
                     b.ToTable("Pacientes", (string)null);
                 });
@@ -93,15 +71,14 @@ namespace Infrastructure.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Fecha")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("MetodoPago")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<decimal>("Monto")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("numeric");
 
                     b.Property<int>("TurnoId")
                         .HasColumnType("integer");
@@ -126,12 +103,11 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHoraInicio")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Notas")
                         .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                        .HasColumnType("text");
 
                     b.Property<int>("PacienteId")
                         .HasColumnType("integer");
@@ -142,8 +118,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PacienteId");
-
-                    b.HasIndex("TurnoId");
 
                     b.ToTable("Sesiones", (string)null);
                 });
@@ -161,20 +135,15 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHora")
-                        .HasColumnType("timestamp");
-
-                    b.Property<int?>("ObraSocialId")
-                        .HasColumnType("integer");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("PacienteId")
                         .HasColumnType("integer");
 
                     b.Property<decimal>("Precio")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("numeric");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ObraSocialId");
 
                     b.HasIndex("PacienteId");
 
@@ -210,20 +179,10 @@ namespace Infrastructure.Migrations
                     b.ToTable("Usuarios", (string)null);
                 });
 
-            modelBuilder.Entity("Core.Entidades.Paciente", b =>
-                {
-                    b.HasOne("Core.Entidades.ObraSocial", "ObraSocial")
-                        .WithMany("Pacientes")
-                        .HasForeignKey("ObraSocialId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("ObraSocial");
-                });
-
             modelBuilder.Entity("Core.Entidades.Pago", b =>
                 {
                     b.HasOne("Core.Entidades.Turno", "Turno")
-                        .WithMany("Pagos")
+                        .WithMany()
                         .HasForeignKey("TurnoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -239,52 +198,23 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Entidades.Turno", "Turno")
-                        .WithMany("Sesiones")
-                        .HasForeignKey("TurnoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Paciente");
-
-                    b.Navigation("Turno");
                 });
 
             modelBuilder.Entity("Core.Entidades.Turno", b =>
                 {
-                    b.HasOne("Core.Entidades.ObraSocial", "ObraSocial")
-                        .WithMany("Turnos")
-                        .HasForeignKey("ObraSocialId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("Core.Entidades.Paciente", "Paciente")
                         .WithMany("Turnos")
                         .HasForeignKey("PacienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ObraSocial");
-
                     b.Navigation("Paciente");
-                });
-
-            modelBuilder.Entity("Core.Entidades.ObraSocial", b =>
-                {
-                    b.Navigation("Pacientes");
-
-                    b.Navigation("Turnos");
                 });
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
                 {
                     b.Navigation("Turnos");
-                });
-
-            modelBuilder.Entity("Core.Entidades.Turno", b =>
-                {
-                    b.Navigation("Pagos");
-
-                    b.Navigation("Sesiones");
                 });
 #pragma warning restore 612, 618
         }
