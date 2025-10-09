@@ -2,6 +2,7 @@
 using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Core.DTOs.Paciente;
+using AutoMapper;
 
 namespace Services
 {
@@ -9,9 +10,11 @@ namespace Services
 
     {
         private readonly IPacienteRepository _pacienteRepository;
-        public PacienteService(IPacienteRepository pacienteRepository)
+        private readonly IMapper _mapper;
+        public PacienteService(IPacienteRepository pacienteRepository,IMapper mapper)
         {
             _pacienteRepository = pacienteRepository;
+            _mapper = mapper;
         }
 
             public async Task<PacienteDTO> ActualizarPacienteAsync(PacienteDTO pacienteDto)
@@ -25,7 +28,7 @@ namespace Services
                   return MapToDto(actualizado);
             }
 
-            public async Task<Paciente> CrearPacienteAsync(PacienteDTO pacienteDto)
+            public async Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto)
             {
             try
             {
@@ -33,9 +36,9 @@ namespace Services
                 {
                     return null;
                 }
-                var paciente = MapToEntity(pacienteDto);
-                var creado = await _pacienteRepository.Agregar(paciente);
-                return creado;
+                var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
+                var creado = await _pacienteRepository.Agregar(nuevoPaciente);
+                return _mapper.Map<PacienteDTO>(creado);
             }
             catch (Exception ex)
             {
@@ -63,13 +66,14 @@ namespace Services
                   return MapToDto(paciente);
             }
 
-            public async Task<Paciente> GetPacientePorDniAsync(string dni)
+            public async Task<PacienteDTO> GetPacientePorDniAsync(string dni)
             {
            if (dni == null) { return null; }
             var pacientes = await _pacienteRepository.ObtenerTodos();
-            return pacientes.FirstOrDefault(p => p.DNI == dni);
+          var paciente = pacientes.FirstOrDefault(p => p.DNI == dni);
+            return MapToDto(paciente);
 
-            }
+        }
 
             public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync()
             {

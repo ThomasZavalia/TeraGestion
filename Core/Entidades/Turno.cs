@@ -13,7 +13,7 @@ namespace Core.Entidades
         public DateTime FechaHora { get; set; }
         public string Estado { get; set; } // Ejemplo: "Pendiente", "Completado", "Cancelado"
 
-        public decimal Precio { get; set; }
+        public decimal? Precio { get; set; }
         public int PacienteId { get; set; }
 
         public Paciente Paciente { get; set; }

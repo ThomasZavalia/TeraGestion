@@ -25,14 +25,15 @@ namespace Services
         private readonly IPagoService _pagoService;
         private readonly TeraDbContext _teraDbContext;
         private readonly IMapper _mapper;
-        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService, TeraDbContext teraDbContext,IMapper mapper)
+        private readonly IObraSocialService _obraSocialService;
+        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService, TeraDbContext teraDbContext,IMapper mapper, IObraSocialService obraSocialService)
         {
             _turnoRepository = turnoRepository;
             _pacienteService = pacienteService;
             _pagoService = pagoService;
             _teraDbContext = teraDbContext;
             _mapper = mapper;
-
+            _obraSocialService = obraSocialService;
         }
 
 
@@ -79,28 +80,50 @@ namespace Services
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
 
             try {
-                var pacienteAbuscar = await _pacienteService.GetPacientePorDniAsync(dto.DniPaciente);
-                if (pacienteAbuscar == null)
+                PacienteDTO pacienteAbuscar;
+
+                if (dto.PacienteId.HasValue)
                 {
-                    var nuevoPaciente = new PacienteDTO
-                    {
-
-                        DNI = dto.DniPaciente,
-                        Nombre = dto.NombrePaciente,
-                        Apellido = dto.ApellidoPaciente,
-                        ObraSocialId = dto.ObraSocialId 
-
-                    };
-                    pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+                    pacienteAbuscar = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                 }
+                else
+                {
+                    pacienteAbuscar = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
+
+                    if (pacienteAbuscar == null)
+                    {
+                        var nuevoPaciente = new PacienteDTO
+                        {
+                            DNI = dto.DNI,
+                            Nombre = dto.NombrePaciente,
+                            Apellido = dto.ApellidoPaciente,
+                            ObraSocialId = dto.ObraSocialId
+                        };
+                        pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+                    }
+                }
+
+                decimal precioTurno;
+
+                if (dto.EsParticular && dto.Precio.HasValue) 
+                {
+                    precioTurno = dto.Precio.Value;
+                }
+                else
+                {
+                    precioTurno= await _obraSocialService.CalcularPrecioTurnoAsync(pacienteAbuscar);
+
+                }
+
+                var pacienteEntidad = _mapper.Map<Paciente>(pacienteAbuscar);
 
                 var turno = new Turno
                 {
 
                     FechaHora = dto.Fecha,
                     PacienteId = pacienteAbuscar.Id,
-                    Precio = dto.Precio,
-                    Paciente = pacienteAbuscar,
+                    Precio = precioTurno,
+                    Paciente = pacienteEntidad,
                     Estado = "Pendiente",
                     
                 };

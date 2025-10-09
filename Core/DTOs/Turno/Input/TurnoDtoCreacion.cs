@@ -13,6 +13,8 @@ namespace Core.DTOs.Turno.Input
         public string? NombrePaciente { get; set; }
         public string? ApellidoPaciente { get; set; }
         public string? DNI { get; set; }
+
+     
         public int? ObraSocialId { get; set; } // solo si tiene obra social
         public bool EsParticular { get; set; } // true = precio manual
         public decimal? Precio { get; set; } // opcional si es particular
