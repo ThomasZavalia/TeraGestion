@@ -115,7 +115,7 @@ namespace Services
 
                 }
 
-                var pacienteEntidad = _mapper.Map<Paciente>(pacienteAbuscar);
+               
 
                 var turno = new Turno
                 {
@@ -123,9 +123,9 @@ namespace Services
                     FechaHora = dto.Fecha,
                     PacienteId = pacienteAbuscar.Id,
                     Precio = precioTurno,
-                    Paciente = pacienteEntidad,
                     Estado = "Pendiente",
-                    
+                    ObraSocialId = dto.ObraSocialId
+
                 };
                var turnoCreado = await _turnoRepository.Agregar(turno);
 
@@ -137,7 +137,7 @@ namespace Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw new Exception("Error al crear el turno. Se revirtieron los cambios.", ex);
+                throw new Exception($"Error al crear el turno. Detalle: {ex.Message}", ex);
             } 
             
             }

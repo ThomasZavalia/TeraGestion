@@ -3,6 +3,7 @@ using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Core.Mapping;
 using Infraestructure;
+using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -25,6 +26,7 @@ builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPagosRepository, PagoRepository>();
 builder.Services.AddScoped<ISesionRepository, SesionRepository>();
+builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
 
 
 // Servicios
@@ -33,6 +35,7 @@ builder.Services.AddScoped<ITurnoService, TurnoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<ISesionService, SesionService>();
+builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
 
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
@@ -61,6 +64,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddAutoMapper(typeof(Core.Mapping.TurnoProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(PagoProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
+
 
 
 
