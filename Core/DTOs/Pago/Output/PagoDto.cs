@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +11,14 @@ namespace Core.DTOs.Pago.Output
     {
 
         public int Id { get; set; }
+
+        [Required]
         public DateTime Fecha { get; set; }
+        [Required]
         public decimal Monto { get; set; }
-        public string MetodoPago { get; set; } // Ejemplo: "Efectivo", "Tarjeta", "Transferencia"
+        [Required]
+        public string MetodoPago { get; set; }
+        [Required]
         public int TurnoId { get; set; }
     }
 }
