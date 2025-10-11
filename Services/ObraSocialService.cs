@@ -14,7 +14,7 @@ namespace Services
     {
 
         private readonly IObraSocialRepository _obraSocialRepository;
-        private const decimal PrecioBaseSinObraSocial = 5000m; // puedes cambiar o parametrizar
+        private const decimal PrecioBaseSinObraSocial = 5m; // puedes cambiar o parametrizar
 
         public ObraSocialService(IObraSocialRepository obraSocialRepository)
         {
@@ -26,11 +26,11 @@ namespace Services
             return await _obraSocialRepository.GetById(id);
         }
 
-        public async Task<decimal> CalcularPrecioTurnoAsync(PacienteDTO paciente)
+        public async Task<decimal> CalcularPrecioTurnoAsync(int? obraSocialId)
         {
-            if (paciente.ObraSocialId.HasValue)
+            if (obraSocialId.HasValue)
             {
-                var obraSocial = await _obraSocialRepository.GetById(paciente.ObraSocialId.Value);
+                var obraSocial = await _obraSocialRepository.GetById(obraSocialId.Value);
                 if (obraSocial != null)
                     return obraSocial.PrecioTurno;
             }

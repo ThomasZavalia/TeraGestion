@@ -62,7 +62,7 @@ namespace Services
             {
                 TurnoId = turnoId,
                 MetodoPago = metodoPago,
-                Fecha = DateTime.UtcNow,
+                Fecha = DateTime.Now,
                 Monto = turno.Precio 
             };
 
@@ -101,7 +101,16 @@ namespace Services
                         };
                         pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
                     }
+                    else
+                    {
+                        if (dto.ObraSocialId.HasValue && pacienteAbuscar.ObraSocialId != dto.ObraSocialId)
+                        {
+                            pacienteAbuscar.ObraSocialId = dto.ObraSocialId;
+                            await _pacienteService.ActualizarPacienteAsync(pacienteAbuscar);
+                        }
+                    }
                 }
+                
 
                 decimal precioTurno;
 
@@ -111,7 +120,7 @@ namespace Services
                 }
                 else
                 {
-                    precioTurno= await _obraSocialService.CalcularPrecioTurnoAsync(pacienteAbuscar);
+                    precioTurno= await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
 
                 }
 

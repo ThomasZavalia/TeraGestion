@@ -19,19 +19,32 @@ namespace Infrastructure
             _context = context;
         }
 
-        public Task<ObraSocial> Actualizar(ObraSocial entity)
+        public async Task<ObraSocial> Actualizar(ObraSocial entity)
         {
-            throw new NotImplementedException();
+            var existente = await _context.ObrasSociales.FindAsync(entity.Id);
+            if (existente == null) return null;
+
+            existente.Nombre = entity.Nombre;
+            existente.PrecioTurno = entity.PrecioTurno;
+
+            await _context.SaveChangesAsync();
+            return existente;
         }
 
-        public Task<ObraSocial> Agregar(ObraSocial entity)
+        public async Task<ObraSocial> Agregar(ObraSocial entity)
         {
-            throw new NotImplementedException();
+            await _context.ObrasSociales.AddAsync(entity);
+            await _context.SaveChangesAsync();
+            return entity;
         }
 
-        public Task<bool> Eliminar(int id)
+        public async Task<bool> Eliminar(int id)
         {
-            throw new NotImplementedException();
+            var existente = await _context.ObrasSociales.FindAsync(id);
+            if (existente == null) return false;
+            _context.ObrasSociales.Remove(existente);
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<ObraSocial> GetById(int id)
@@ -41,11 +54,9 @@ namespace Infrastructure
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 
-      
-
-        public Task<IEnumerable<ObraSocial>> ObtenerTodos()
+        public async Task<IEnumerable<ObraSocial>> ObtenerTodos()
         {
-            throw new NotImplementedException();
+            return await _context.ObrasSociales.AsNoTracking().ToListAsync();
         }
     }
 }

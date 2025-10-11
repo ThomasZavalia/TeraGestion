@@ -31,7 +31,7 @@ namespace Controllers.Controllers
             if (usuario == null)
                 return Unauthorized("Credenciales inválidas");
 
-            var token = GenerateJwtToken(usuario.Rol);
+            var token = GenerateJwtToken(usuario);
             return Ok(new { token });
 
         }
@@ -63,13 +63,15 @@ namespace Controllers.Controllers
         }
 
 
-        private string GenerateJwtToken(string rol)
+        private string GenerateJwtToken(Usuario usuario)
         {
             var claims = new[]
             {
-            new Claim(ClaimTypes.Name, "usuario_demo"),
-            new Claim(ClaimTypes.Role, rol)  // 🔹 Guardás el rol
-        };
+                new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+                new Claim(ClaimTypes.Name, usuario.Username),
+                new Claim(ClaimTypes.Role, usuario.Rol),
+                new Claim(ClaimTypes.Email, usuario.Email ?? "")
+            };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])
@@ -80,7 +82,7 @@ namespace Controllers.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddHours(2),
+                expires: DateTime.UtcNow.AddHours(2),
                 signingCredentials: creds
             );
 

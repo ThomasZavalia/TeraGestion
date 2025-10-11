@@ -5,11 +5,13 @@ using Core.Mapping;
 using Infraestructure;
 using Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Services;
 using System.Text;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,17 @@ builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<ISesionService, SesionService>();
 builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5033")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
 
 builder.Services.AddAuthentication(options =>
@@ -46,6 +59,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -88,6 +103,18 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseExceptionHandler(a => a.Run(async context =>
+{
+    var feature = context.Features.Get<IExceptionHandlerPathFeature>();
+    var ex = feature?.Error;
+    var result = JsonSerializer.Serialize(new { error = ex?.Message });
+    context.Response.ContentType = "application/json";
+    context.Response.StatusCode = ex is ArgumentException ? StatusCodes.Status400BadRequest : StatusCodes.Status500InternalServerError;
+    await context.Response.WriteAsync(result);
+}));
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
