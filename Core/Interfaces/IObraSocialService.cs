@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Paciente;
+﻿using Core.DTOs.ObraSocial;
+using Core.DTOs.Paciente;
 using Core.Entidades;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
@@ -13,5 +14,12 @@ namespace Core.Interfaces
     {
         Task<ObraSocial> GetByIdAsync(int id);
         Task<decimal> CalcularPrecioTurnoAsync(int? id);
+        public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync();
+
+        public Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto);
+        public Task<ObraSocialDto> ActualizarObraSocialAsync(ObraSocialDto obraSocialDto);
+        public Task<bool> EliminarObraSocialAsync(int id);
+
+
     }
 }
