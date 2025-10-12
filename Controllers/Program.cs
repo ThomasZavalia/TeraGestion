@@ -104,17 +104,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseExceptionHandler(a => a.Run(async context =>
-{
-    var feature = context.Features.Get<IExceptionHandlerPathFeature>();
-    var ex = feature?.Error;
-    var result = JsonSerializer.Serialize(new { error = ex?.Message });
-    context.Response.ContentType = "application/json";
-    context.Response.StatusCode = ex is ArgumentException ? StatusCodes.Status400BadRequest : StatusCodes.Status500InternalServerError;
-    await context.Response.WriteAsync(result);
-}));
+
 
 app.UseCors("AllowFrontend");
+app.UseMiddleware<Controllers.Middlewares.ErrorHandlingMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
