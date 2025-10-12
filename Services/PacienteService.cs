@@ -32,10 +32,7 @@ namespace Services
             {
             try
             {
-                if (pacienteDto == null)
-                {
-                    return null;
-                }
+               
                 var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
                 var creado = await _pacienteRepository.Agregar(nuevoPaciente);
                 return _mapper.Map<PacienteDTO>(creado);
@@ -53,7 +50,9 @@ namespace Services
             {
                   if (id <= 0)
                         throw new ArgumentException("Id inválido");
-                  return await _pacienteRepository.Eliminar(id);
+                  await _pacienteRepository.Eliminar(id);
+            if(await _pacienteRepository.GetById(id) == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+                return true;
             }
 
             public async Task<PacienteDTO> GetPacienteAsync(int id)
@@ -61,16 +60,17 @@ namespace Services
                   if (id <= 0)
                         throw new ArgumentException("Id inválido");
                   var paciente = await _pacienteRepository.GetById(id);
-                  if (paciente == null)
-                        return null;
+                  if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+                       
                   return MapToDto(paciente);
             }
 
             public async Task<PacienteDTO> GetPacientePorDniAsync(string dni)
             {
-           if (dni == null) { return null; }
+           if (dni == null) { throw new ArgumentException("Obligatorio introducir el dni"); }
             var pacientes = await _pacienteRepository.ObtenerTodos();
           var paciente = pacientes.FirstOrDefault(p => p.DNI == dni);
+            if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
             return MapToDto(paciente);
 
         }
@@ -78,7 +78,10 @@ namespace Services
             public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync()
             {
                   var pacientes = await _pacienteRepository.ObtenerTodos();
-                  return pacientes.Select(MapToDto);
+            if (pacientes == null) { throw new ArgumentException("No se encontraron pacientes"); }
+
+
+            return pacientes.Select(MapToDto);
             }
 
             private PacienteDTO MapToDto(Paciente paciente)

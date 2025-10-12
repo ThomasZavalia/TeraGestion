@@ -57,6 +57,10 @@ namespace Services
         public async Task<bool> EliminarPago(int id)
         {
             var pagoExistente = await GetPago(id);
+            if (pagoExistente == null)
+            {
+                throw new KeyNotFoundException("Pago no encontrado.");
+            }
 
             return await _pagoRepository.Eliminar(id);
         }

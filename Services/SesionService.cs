@@ -39,7 +39,7 @@ namespace Services
 
             if (sesionExistente == null)
             {
-                return null;
+               throw new ArgumentException("Sesion no encontrada");
             }
 
             // Mapear los valores del DTO sobre la entidad existente
