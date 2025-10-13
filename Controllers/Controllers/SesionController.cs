@@ -18,15 +18,10 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSesion(int id)
         {
-            try
-            {
+           
                 var sesion = await _sesionService.GetSesionByIdAsync(id);
                 return Ok(sesion);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+          
         }
 
 
@@ -34,15 +29,10 @@ namespace Controllers.Controllers
         [HttpGet]
         public async Task<IActionResult> GetSesiones()
         {
-            try
-            {
+            
                 var sesiones = await _sesionService.GetSesionesAsync();
                 return Ok(sesiones);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+           
         }
 
 
@@ -50,16 +40,12 @@ namespace Controllers.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearSesion([FromBody] SesionDTO sesion)
         {
-            try
-            {
+           
                 var nuevaSesion = await _sesionService.CrearSesionAsync(sesion);
-                
+
                 return Ok(nuevaSesion);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            
+           
         }
 
 
@@ -67,46 +53,23 @@ namespace Controllers.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarSesion(int id, [FromBody] SesionDTO sesionDTO)
         {
-            try
-            {
-                var sesionActualizada = await _sesionService.ActualizarSesionAsync(sesionDTO);
-                if (sesionActualizada == null)
-                {
-                    return NotFound("No se pudo actualizar la sesion");
-                }
-                var sesionRespuesta = new SesionDTO
-                {
-                    Id = sesionActualizada.Id,
-                    FechaHoraInicio = sesionActualizada.FechaHoraInicio,
-                    PacienteId = sesionActualizada.PacienteId,
-                    TurnoId = sesionActualizada.TurnoId,
-                    Notas = sesionActualizada.Notas,
-                    Asistencia = sesionActualizada.Asistencia
 
+            var sesionActualizada = await _sesionService.ActualizarSesionAsync(id, sesionDTO);
 
-                };
-                return Ok(sesionActualizada);
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+           
+            return Ok(sesionActualizada);
         }
+    
+        
 
 
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarSesion(int id)
         {
-            try
-            {
+            
                 var resultado = await _sesionService.EliminarSesionAsync(id);
-                return Ok(new { mensaje = "Sesion eliminada exitosamente", exito = resultado });
-            }
-            catch (ArgumentException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return NoContent();
         }
 
     }

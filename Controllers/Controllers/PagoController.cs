@@ -59,19 +59,10 @@ namespace Controllers.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearPago([FromBody] PagoDto pago)
         {
-            try
-            {
+           
                 var nuevoPago = await _pagoService.CrearPago(pago);
                 return Ok(nuevoPago);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
+          
         }
 
 
@@ -89,22 +80,9 @@ namespace Controllers.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPago(int id)
         {
-            try
-            {
+            
                 var eliminado = await _pagoService.EliminarPago(id);
-                if (eliminado)
-                {
-                    return NoContent();
-                }
-                else
-                {
-                    return NotFound($"No se encontró un pago con ID {id}.");
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
-            }
+            return NoContent();
         }
     }
 }

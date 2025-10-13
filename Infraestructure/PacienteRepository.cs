@@ -32,7 +32,7 @@ namespace Infraestructure
             pacienteEncontrado.DNI = entity.DNI;
 
             await _context.SaveChangesAsync();
-              return entity;
+              return pacienteEncontrado;
         }
 
         public async Task<Paciente> Agregar(Paciente entity)

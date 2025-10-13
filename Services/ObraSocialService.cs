@@ -59,10 +59,10 @@ namespace Services
 
         }
 
-        public Task<ObraSocialDto> ActualizarObraSocialAsync(ObraSocialDto obraSocialDto)
+        public Task<ObraSocialDto> ActualizarObraSocialAsync(int id,ObraSocialDto obraSocialDto)
         {
 
-            var obraSocialExistente = _obraSocialRepository.GetById(obraSocialDto.Id).Result;
+            var obraSocialExistente = _obraSocialRepository.GetById(id).Result;
 
             if (obraSocialExistente == null)
             {

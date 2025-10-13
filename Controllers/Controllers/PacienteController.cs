@@ -20,8 +20,7 @@ namespace Controllers.Controllers
         public async Task<IActionResult> GetPaciente(int id)
         {
               var paciente = await _pacienteService.GetPacienteAsync(id);
-              if (paciente == null)
-                 return NotFound();
+            
               return Ok(paciente);
         }
 
@@ -48,11 +47,8 @@ namespace Controllers.Controllers
         {
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
-                var existente = await _pacienteService.GetPacienteAsync(id);
-                if (existente == null)
-                    return NotFound();
-                paciente.Id = id;
-                var actualizado = await _pacienteService.ActualizarPacienteAsync(paciente);
+             
+                var actualizado = await _pacienteService.ActualizarPacienteAsync(id,paciente);
                 return Ok(actualizado);
         }
 
@@ -60,8 +56,7 @@ namespace Controllers.Controllers
         public async Task<IActionResult> EliminarPaciente(int id)
         {
               var eliminado = await _pacienteService.EliminarPacienteAsync(id);
-              if (!eliminado)
-                 return NotFound();
+             
               return NoContent();
         }
 

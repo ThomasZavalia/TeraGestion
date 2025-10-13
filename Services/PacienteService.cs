@@ -17,16 +17,20 @@ namespace Services
             _mapper = mapper;
         }
 
-            public async Task<PacienteDTO> ActualizarPacienteAsync(PacienteDTO pacienteDto)
+            public async Task<PacienteDTO> ActualizarPacienteAsync(int id,PacienteDTO pacienteDto)
             {
                   if (pacienteDto == null)
                         throw new ArgumentNullException(nameof(pacienteDto));
+
                   if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
                         throw new ArgumentException("Nombre y Apellido son obligatorios");
-                  var paciente = MapToEntity(pacienteDto);
-                  var actualizado = await _pacienteRepository.Actualizar(paciente);
-                  return MapToDto(actualizado);
-            }
+                  var pacienteExistente = await _pacienteRepository.GetById(id);
+            if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+            _mapper.Map(pacienteDto, pacienteExistente);
+           
+            var actualizado = await _pacienteRepository.Actualizar(pacienteExistente);
+            return _mapper.Map<PacienteDTO>(actualizado);
+        }
 
             public async Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto)
             {
@@ -50,9 +54,12 @@ namespace Services
             {
                   if (id <= 0)
                         throw new ArgumentException("Id inválido");
-                  await _pacienteRepository.Eliminar(id);
-            if(await _pacienteRepository.GetById(id) == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
-                return true;
+            var pacienteExistente = await _pacienteRepository.GetById(id);
+            if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+
+            await _pacienteRepository.Eliminar(id);
+
+            return true;
             }
 
             public async Task<PacienteDTO> GetPacienteAsync(int id)

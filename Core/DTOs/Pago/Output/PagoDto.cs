@@ -15,7 +15,7 @@ namespace Core.DTOs.Pago.Output
         [Required]
         public DateTime Fecha { get; set; }
         [Required]
-        public decimal Monto { get; set; }
+        public decimal? Monto { get; set; }
         [Required]
         public string MetodoPago { get; set; }
         [Required]

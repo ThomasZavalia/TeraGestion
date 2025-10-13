@@ -33,9 +33,9 @@ namespace Services
 
 
 
-        public async Task<SesionDTO> ActualizarSesionAsync(SesionDTO sesionDTO)
+        public async Task<SesionDTO> ActualizarSesionAsync(int id,SesionDTO sesionDTO)
         {
-            var sesionExistente = await _sesionRepository.GetById(sesionDTO.Id);
+            var sesionExistente = await _sesionRepository.GetById(id);
 
             if (sesionExistente == null)
             {
@@ -58,23 +58,25 @@ namespace Services
 
         public async Task<SesionDTO> CrearSesionAsync(SesionDTO sesionDTO)
         {
+            if (sesionDTO == null)
+            {
+                throw new ArgumentNullException(nameof(sesionDTO), "El objeto SesionDTO no puede ser nulo.");
+            }
+
 
             var turnoExistente = await _turnoService.GetTurnoAsync(sesionDTO.TurnoId);
+            if (turnoExistente == null)
+            {
+                throw new ArgumentException("El turno con ID " + sesionDTO.TurnoId + " no fue encontrado.");
+            }
             var pacienteId = turnoExistente.PacienteId;
             //var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
             //var pacienteExistente = turnoExistente.Paciente;
 
 
-            if(sesionDTO == null)
-            {
-                throw new ArgumentNullException(nameof(sesionDTO), "El objeto SesionDTO no puede ser nulo.");
-            }
-            
+           
 
-            if (turnoExistente == null)
-            {
-                throw new ArgumentException("El turno con ID " + sesionDTO.TurnoId + " no fue encontrado.");
-            }
+            
 
 
 
@@ -103,9 +105,14 @@ namespace Services
 
         public async Task<bool> EliminarSesionAsync(int id)
         {
-            var sesionAEliminar = await GetSesionByIdAsync(id);
+            if (id <= 0)
+                throw new ArgumentException("El ID es invalido.");
 
-            return await _sesionRepository.Eliminar(sesionAEliminar.Id);
+            var eliminado = await _sesionRepository.Eliminar(id);
+            if (!eliminado)
+                throw new KeyNotFoundException($"No se encontro la sesión con ID {id}.");
+
+            return true;
         }
 
 
@@ -124,7 +131,7 @@ namespace Services
 
             if (sesion == null)
             {
-                throw new ArgumentException("La sesion con ID" + id + " no fue encontrada.");
+                throw new KeyNotFoundException($"La sesión con ID {id} no fue encontrada.");
             }
 
          var sesionDto = _mapper.Map<SesionDTO>(sesion);

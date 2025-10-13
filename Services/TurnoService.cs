@@ -37,11 +37,11 @@ namespace Services
         }
 
 
-        public async Task<TurnoDto> ActualizarTurnoAsync(TurnoDto turnoDto)
+        public async Task<TurnoDto> ActualizarTurnoAsync(int id,TurnoDto turnoDto)
         {
-            var turnoExistente = await _turnoRepository.GetById(turnoDto.Id);
+            var turnoExistente = await _turnoRepository.GetById(id);
             if (turnoExistente == null)
-                return null;
+            { throw new KeyNotFoundException("Turno no encontrado"); }
 
             // Actualiza solo las propiedades del DTO sobre la entidad existente
             _mapper.Map(turnoDto, turnoExistente);
@@ -54,24 +54,22 @@ namespace Services
 
         public async Task MarcarComoPagadoAsync(int turnoId, string metodoPago)
         {
-            var turno = await GetTurnoAsync(turnoId);
-            if (turno == null) throw new Exception("Turno no encontrado");
-            if (turno.Estado == "pagado") throw new Exception("El turno ya está pagado");
+            var turno = await _turnoRepository.GetById(turnoId)
+                ?? throw new KeyNotFoundException("Turno no encontrado");
 
-            var pago = new PagoDto
+            if (turno.Estado == "Pagado")
+                throw new ArgumentException("El turno ya está pagado");
+
+            await _pagoService.CrearPago(new PagoDto
             {
                 TurnoId = turnoId,
                 MetodoPago = metodoPago,
                 Fecha = DateTime.Now,
-                Monto = turno.Precio 
-            };
+                Monto = turno.Precio
+            });
 
-            await _pagoService.CrearPago(pago);
-
-            turno.Estado = "pagado";
-           
-
-            await ActualizarTurnoAsync(turno);
+            turno.Estado = "Pagado";
+            await _turnoRepository.Actualizar(turno);
         }
 
 
@@ -106,7 +104,7 @@ namespace Services
                         if (dto.ObraSocialId.HasValue && pacienteAbuscar.ObraSocialId != dto.ObraSocialId)
                         {
                             pacienteAbuscar.ObraSocialId = dto.ObraSocialId;
-                            await _pacienteService.ActualizarPacienteAsync(pacienteAbuscar);
+                            await _pacienteService.ActualizarPacienteAsync(pacienteAbuscar.Id,pacienteAbuscar);
                         }
                     }
                 }
@@ -146,7 +144,7 @@ namespace Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                throw new Exception($"Error al crear el turno. Detalle: {ex.Message}", ex);
+                throw new InvalidOperationException($"Error al crear el turno: {ex.Message}", ex);
             } 
             
             }
@@ -159,7 +157,7 @@ namespace Services
             if (turnoAeliminar == null)
             {
                 
-                return false;
+               throw new KeyNotFoundException("No se encontro el turno");
             }
             await _turnoRepository.Eliminar(id);
             return true;
@@ -172,7 +170,7 @@ namespace Services
          var turnoAbuscar = await _turnoRepository.GetById(id);
             if (turnoAbuscar == null)
             {
-                throw new Exception("No se encontro el turno");
+                throw new KeyNotFoundException("No se encontro el turno");
             }
             var turnoDto = _mapper.Map<TurnoDto>(turnoAbuscar);
 

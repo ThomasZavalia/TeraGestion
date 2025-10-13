@@ -22,10 +22,6 @@ namespace Infraestructure
         {
             var sesionEncontada = await _context.Sesiones.FindAsync(sesion.Id);
 
-            if (sesionEncontada == null)
-            {
-                throw new ArgumentException("Sesion no encontrada");
-            }
             sesionEncontada.PacienteId = sesion.PacienteId;
             sesionEncontada.TurnoId = sesion.TurnoId;
             sesionEncontada.FechaHoraInicio = sesion.FechaHoraInicio;
@@ -42,7 +38,7 @@ namespace Infraestructure
         public async Task<Sesion> Agregar(Sesion sesion)
         {
 
-            _context.Sesiones.Add(sesion);
+            _context.Sesiones.AddAsync(sesion);
             await _context.SaveChangesAsync();
 
             
@@ -55,10 +51,7 @@ namespace Infraestructure
         {
             var sesionEncontrada = await _context.Sesiones.FindAsync(id);
 
-            if (sesionEncontrada == null)
-            {
-                throw new ArgumentException("Sesion no encontrada");
-            }
+           
 
             _context.Sesiones.Remove(sesionEncontrada);
             await _context.SaveChangesAsync();

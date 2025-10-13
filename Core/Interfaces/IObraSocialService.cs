@@ -17,7 +17,7 @@ namespace Core.Interfaces
         public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync();
 
         public Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto);
-        public Task<ObraSocialDto> ActualizarObraSocialAsync(ObraSocialDto obraSocialDto);
+        public Task<ObraSocialDto> ActualizarObraSocialAsync(int id,ObraSocialDto obraSocialDto);
         public Task<bool> EliminarObraSocialAsync(int id);
 
 

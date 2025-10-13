@@ -13,7 +13,7 @@ namespace Core.Interfaces
         public Task<SesionDTO> GetSesionByIdAsync(int id);
         public Task<IEnumerable<SesionDTO>> GetSesionesAsync();
         public Task<SesionDTO> CrearSesionAsync(SesionDTO sesionDTO);
-        public Task<SesionDTO> ActualizarSesionAsync( SesionDTO sesionDTO);
+        public Task<SesionDTO> ActualizarSesionAsync(int id, SesionDTO sesionDTO);
         public Task<bool> EliminarSesionAsync(int id);
 
 
