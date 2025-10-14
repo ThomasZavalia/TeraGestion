@@ -39,7 +39,7 @@ namespace Services
                     return obraSocial.PrecioTurno;
             }
 
-            // Si no tiene obra social o no se encuentra, usar precio base
+          
             return PrecioBaseSinObraSocial;
         }
 
@@ -66,13 +66,12 @@ namespace Services
 
             if (obraSocialExistente == null)
             {
-                return null;
+                throw new KeyNotFoundException("Obra social no encontrada");
             }
 
-            // Mapear los valores del DTO sobre la entidad existente
+            
             _mapper.Map(obraSocialDto, obraSocialExistente);
 
-            // Actualizar directamente la obra social existente
             var obraSocialActualizada = _obraSocialRepository.Actualizar(obraSocialExistente);
 
             return _mapper.Map<Task<ObraSocialDto>>(obraSocialActualizada);
@@ -83,7 +82,7 @@ namespace Services
             var obraSocial = await _obraSocialRepository.GetById(id);
             if(obraSocial == null)
             {
-                return false;
+                throw  new KeyNotFoundException("Obra social no encontrada");
             }
             await _obraSocialRepository.Eliminar(id);
             return true;

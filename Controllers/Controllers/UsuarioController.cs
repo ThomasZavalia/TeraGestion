@@ -18,6 +18,7 @@ namespace Controllers.Controllers
           
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUsuario(int id)
         {
@@ -26,7 +27,7 @@ namespace Controllers.Controllers
             return Ok(usuario);
         }
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<IActionResult> GetUsuarios()
         {
@@ -43,6 +44,7 @@ namespace Controllers.Controllers
             return CreatedAtAction(nameof(GetUsuario), new { id = nuevoUsuario.Id }, nuevoUsuario);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] UsuarioActualizarDto dto)
         {
@@ -51,6 +53,8 @@ namespace Controllers.Controllers
 
             return Ok(usuarioActualizado); // Devuelve solo los campos del usuario (sin PasswordHash)
         }
+
+        [Authorize(Roles = "Admin")]
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarUsuario(int id)
