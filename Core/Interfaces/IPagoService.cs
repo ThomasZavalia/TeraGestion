@@ -16,6 +16,7 @@ namespace Core.Interfaces
         public Task<PagoDto> CrearPago(PagoDto pago);
         public Task<Pago> ActualizarPago(Pago pago);
         public Task<bool> EliminarPago(int id);
+        public Task<IEnumerable<Pago>> GetPagosSinDto();
 
     }
 }

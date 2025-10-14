@@ -16,6 +16,7 @@ namespace Core.Interfaces
         public Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto);
         public Task<PacienteDTO> ActualizarPacienteAsync(int id,PacienteDTO paciente);
         public Task<bool> EliminarPacienteAsync(int id);
+        public Task<IEnumerable<Paciente>> GetPacientesSinDto();
 
     }
 }

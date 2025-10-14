@@ -49,7 +49,7 @@ namespace Controllers.Controllers
             {
                 Username = registerDto.Username,
                 PasswordHash = registerDto.Password,
-                Rol = "User",// Asignás un rol por defecto
+                Rol = "User",
                 Email = registerDto.Email
             };
 

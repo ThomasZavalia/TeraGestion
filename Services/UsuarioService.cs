@@ -62,7 +62,7 @@ namespace Services
         {
             var usuarios = await _usuarioRepository.ObtenerTodos();
             var usuario = usuarios.FirstOrDefault(u => u.Username == username);
-            if (usuario == null) { throw new KeyNotFoundException("Usuario no encontrado"); }
+            if (usuario == null) { return null; }
             return usuario;
         }
 

@@ -16,6 +16,7 @@ namespace Core.Interfaces
         public Task<TurnoDto> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
         public Task<TurnoDto> ActualizarTurnoAsync(int id,TurnoDto turno);
         public Task<bool> EliminarTurnoAsync(int id);
+        public Task<IEnumerable<Turno>> GetTurnosSinDto();
 
         public Task MarcarComoPagadoAsync(int turnoId, string metodo);
 

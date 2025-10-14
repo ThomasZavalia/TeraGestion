@@ -122,5 +122,11 @@ namespace Services
                         DNI = dto.DNI
                   };
             }
+
+        public async Task<IEnumerable<Paciente>> GetPacientesSinDto() 
+        {
+
+            return await _pacienteRepository.ObtenerTodos();
+        }
     }
 }

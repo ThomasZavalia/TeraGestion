@@ -102,5 +102,9 @@ namespace Services
 
             return pagosDto;
         }
+        public async  Task<IEnumerable<Pago>> GetPagosSinDto()
+        {
+            return await _pagoRepository.ObtenerTodos();
+        }
     }
 }

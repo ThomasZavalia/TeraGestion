@@ -183,5 +183,9 @@ namespace Services
           var turnosDto = _mapper.Map<IEnumerable<TurnoDto>>(turnos);
             return turnosDto;
         }
+        public async Task<IEnumerable<Turno>> GetTurnosSinDto() 
+        {
+        return await _turnoRepository.ObtenerTodos();
+        }
     }
 }

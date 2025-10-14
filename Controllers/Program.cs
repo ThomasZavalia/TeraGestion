@@ -38,6 +38,7 @@ builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<ISesionService, SesionService>();
 builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
+builder.Services.AddScoped<IReportesService,ReportesService>();
 
 builder.Services.AddCors(options =>
 {
