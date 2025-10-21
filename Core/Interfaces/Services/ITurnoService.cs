@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface ITurnoService
     {
         public Task<TurnoDto> GetTurnoAsync(int id);
         public Task<IEnumerable<TurnoDto>> GetTurnosAsync();
         public Task<TurnoDto> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
-        public Task<TurnoDto> ActualizarTurnoAsync(int id,TurnoDto turno);
+        public Task<TurnoDto> ActualizarTurnoAsync(int id, TurnoDto turno);
         public Task<bool> EliminarTurnoAsync(int id);
         public Task<IEnumerable<Turno>> GetTurnosSinDto();
 

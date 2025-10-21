@@ -1,5 +1,6 @@
 ﻿using Core.DTOs.Pago.Output;
 using Core.Entidades;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SQLitePCL;
@@ -11,8 +12,8 @@ namespace Controllers.Controllers
     public class PagoController : ControllerBase
     {
 
-        private readonly Core.Interfaces.IPagoService _pagoService;
-        public PagoController(Core.Interfaces.IPagoService pagoService)
+        private readonly IPagoService _pagoService;
+        public PagoController(IPagoService pagoService)
         {
             _pagoService = pagoService;
         }

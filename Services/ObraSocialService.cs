@@ -2,8 +2,8 @@
 using Core.DTOs.ObraSocial;
 using Core.DTOs.Paciente;
 using Core.Entidades;
-using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;

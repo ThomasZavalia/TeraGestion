@@ -2,6 +2,7 @@
 using Core.DTOs.Turno;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,8 +14,8 @@ namespace Controllers.Controllers
     public class TurnoController : ControllerBase
     {
 
-        private readonly Core.Interfaces.ITurnoService _turnoService;
-        public TurnoController(Core.Interfaces.ITurnoService turnoService)
+        private readonly ITurnoService _turnoService;
+        public TurnoController(ITurnoService turnoService)
         {
             _turnoService = turnoService;
         }

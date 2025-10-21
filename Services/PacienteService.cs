@@ -1,8 +1,8 @@
 ﻿using Core.Entidades;
-using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Core.DTOs.Paciente;
 using AutoMapper;
+using Core.Interfaces.Services;
 
 namespace Services
 {

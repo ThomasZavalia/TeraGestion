@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.Sesion;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface ISesionService
     {

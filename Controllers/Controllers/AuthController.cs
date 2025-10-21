@@ -1,6 +1,6 @@
 ﻿using Core.DTOs;
 using Core.Entidades;
-using Core.Interfaces;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Services;
@@ -32,8 +32,18 @@ namespace Controllers.Controllers
                 return Unauthorized("Credenciales inválidas");
 
             var token = GenerateJwtToken(usuario);
-            return Ok(new { token });
 
+       
+            var userDto = new
+            {
+                Id = usuario.Id,
+                Username = usuario.Username,
+                Email = usuario.Email,
+               
+            };
+
+            
+            return Ok(new { token = token, user = userDto });
         }
 
         [HttpPost("register")]

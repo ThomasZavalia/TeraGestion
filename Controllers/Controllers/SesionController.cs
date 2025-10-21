@@ -1,4 +1,5 @@
 ﻿using Core.DTOs.Sesion;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,8 +10,8 @@ namespace Controllers.Controllers
     public class SesionController : ControllerBase
     {
 
-        private readonly Core.Interfaces.ISesionService _sesionService;
-        public SesionController(Core.Interfaces.ISesionService sesionService)
+        private readonly ISesionService _sesionService;
+        public SesionController(ISesionService sesionService)
         {
             _sesionService = sesionService;
         }

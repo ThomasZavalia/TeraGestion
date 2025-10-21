@@ -1,7 +1,7 @@
 ﻿using Core.DTOs.Usuario.Input;
 using Core.Entidades;
-using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;

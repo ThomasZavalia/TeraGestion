@@ -2,8 +2,8 @@
 using Core.DTOs;
 using Core.DTOs.Pago.Output;
 using Core.Entidades;
-using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,6 +1,6 @@
 ﻿using Core.DTOs.Paciente;
 using Core.Entidades;
-using Core.Interfaces;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

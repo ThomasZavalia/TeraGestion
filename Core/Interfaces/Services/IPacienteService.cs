@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.Paciente;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface IPacienteService
     {
@@ -14,7 +14,7 @@ namespace Core.Interfaces
         public Task<PacienteDTO> GetPacientePorDniAsync(string dni);
         public Task<IEnumerable<PacienteDTO>> GetPacientesAsync();
         public Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto);
-        public Task<PacienteDTO> ActualizarPacienteAsync(int id,PacienteDTO paciente);
+        public Task<PacienteDTO> ActualizarPacienteAsync(int id, PacienteDTO paciente);
         public Task<bool> EliminarPacienteAsync(int id);
         public Task<IEnumerable<Paciente>> GetPacientesSinDto();
 

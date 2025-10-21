@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface IObraSocialService
     {
@@ -17,7 +17,7 @@ namespace Core.Interfaces
         public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync();
 
         public Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto);
-        public Task<ObraSocialDto> ActualizarObraSocialAsync(int id,ObraSocialDto obraSocialDto);
+        public Task<ObraSocialDto> ActualizarObraSocialAsync(int id, ObraSocialDto obraSocialDto);
         public Task<bool> EliminarObraSocialAsync(int id);
 
 

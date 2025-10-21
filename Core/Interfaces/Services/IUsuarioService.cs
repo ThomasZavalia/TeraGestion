@@ -7,14 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Interfaces
+namespace Core.Interfaces.Services
 {
     public interface IUsuarioService
     {
         public Task<Usuario> GetUsuarioById(int id);
         public Task<IEnumerable<Usuario>> GetUsuarios();
         public Task<Usuario> CrearUsuario(Usuario usuario);
-        public Task<Usuario> ActualizarUsuario(int id,UsuarioActualizarDto usuario);
+        public Task<Usuario> ActualizarUsuario(int id, UsuarioActualizarDto usuario);
         public Task<bool> EliminarUsuario(int id);
         public Task<Usuario> GetByName(string username);
 

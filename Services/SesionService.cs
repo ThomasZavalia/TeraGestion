@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Core.DTOs.Sesion;
 using Core.Entidades;
-using Core.Interfaces;
 using Core.Interfaces.Repositorios;
+using Core.Interfaces.Services;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;

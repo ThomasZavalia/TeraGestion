@@ -1,5 +1,6 @@
 ﻿using Core.DTOs.Usuario.Input;
 using Core.Entidades;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -10,9 +11,9 @@ namespace Controllers.Controllers
     [ApiController]
     public class UsuarioController : ControllerBase
     {
-        private readonly Core.Interfaces.IUsuarioService _usuarioService;
+        private readonly IUsuarioService _usuarioService;
         private readonly IConfiguration _configuration;
-        public UsuarioController(Core.Interfaces.IUsuarioService usuarioService, IConfiguration configuration)
+        public UsuarioController(IUsuarioService usuarioService, IConfiguration configuration)
         {
             _usuarioService = usuarioService;
           
