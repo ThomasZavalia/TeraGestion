@@ -1,4 +1,4 @@
-namespace Core.DTOs.Pago
+namespace Core.DTOs.Pago.Input
 {
     public class CrearPagoDTO
     {

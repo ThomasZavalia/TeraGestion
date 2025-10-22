@@ -73,7 +73,7 @@ namespace Services
         }
 
 
-        public async Task<TurnoDto> CrearTurnoAsync(TurnoDtoCreacion dto)
+        public async Task<TurnoCalendarioDto> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
 
@@ -138,7 +138,8 @@ namespace Services
 
 
                 await transaction.CommitAsync();
-                var turnoDto = _mapper.Map<TurnoDto>(turnoCreado);
+                var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id); 
+                var turnoDto = _mapper.Map<TurnoCalendarioDto>(turnoCreado);
                 return turnoDto;
             }
             catch (Exception ex)
@@ -177,10 +178,10 @@ namespace Services
             return turnoDto;
         }
 
-        public async Task<IEnumerable<TurnoDto>> GetTurnosAsync()
+        public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync()
         {
            var turnos = await _turnoRepository.ObtenerTodos();
-          var turnosDto = _mapper.Map<IEnumerable<TurnoDto>>(turnos);
+          var turnosDto = _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
             return turnosDto;
         }
         public async Task<IEnumerable<Turno>> GetTurnosSinDto() 

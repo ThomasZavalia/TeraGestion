@@ -18,5 +18,7 @@ namespace Core.Interfaces.Services
         public Task<bool> EliminarPacienteAsync(int id);
         public Task<IEnumerable<Paciente>> GetPacientesSinDto();
 
+        Task<IEnumerable<PacienteSimpleDto>> BuscarPacientesAsync(string query);
+
     }
 }

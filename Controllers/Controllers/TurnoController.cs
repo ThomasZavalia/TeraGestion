@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.DTOs.Pago.Input;
 using Core.DTOs.Turno;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
@@ -67,9 +68,9 @@ namespace Controllers.Controllers
         }
 
         [HttpPost("{id}/pagar")]
-        public async Task<IActionResult> MarcarComoPagado(int id, [FromBody] string metodoPago)
+        public async Task<IActionResult> MarcarComoPagado(int id, [FromBody] PagoRequestDto request)
         {
-            await _turnoService.MarcarComoPagadoAsync(id, metodoPago);
+            await _turnoService.MarcarComoPagadoAsync(id, request.MetodoPago);
                 return Ok("Turno marcado como pagado correctamente");
             
             

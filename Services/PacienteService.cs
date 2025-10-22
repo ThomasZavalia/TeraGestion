@@ -77,7 +77,7 @@ namespace Services
            if (dni == null) { throw new ArgumentException("Obligatorio introducir el dni"); }
             var pacientes = await _pacienteRepository.ObtenerTodos();
           var paciente = pacientes.FirstOrDefault(p => p.DNI == dni);
-            if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+           
             return MapToDto(paciente);
 
         }
@@ -127,6 +127,12 @@ namespace Services
         {
 
             return await _pacienteRepository.ObtenerTodos();
+        }
+
+        public async Task<IEnumerable<PacienteSimpleDto>> BuscarPacientesAsync(string query)
+        {
+            var pacientes = await _pacienteRepository.BuscarAsync(query);
+            return _mapper.Map<IEnumerable<PacienteSimpleDto>>(pacientes);
         }
     }
 }

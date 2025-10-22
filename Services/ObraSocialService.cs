@@ -1,33 +1,29 @@
 ﻿using AutoMapper;
 using Core.DTOs.ObraSocial;
-using Core.DTOs.Paciente;
 using Core.Entidades;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Services
 {
     public class ObraSocialService : IObraSocialService
     {
-
         private readonly IObraSocialRepository _obraSocialRepository;
-        private const decimal PrecioBaseSinObraSocial = 5m;
-       private readonly IMapper _mapper;
+        private const decimal PrecioBaseSinObraSocial = 5m; // Asegúrate de que este precio sea correcto
+        private readonly IMapper _mapper;
 
-        public ObraSocialService(IObraSocialRepository obraSocialRepository,IMapper mapper)
+        public ObraSocialService(IObraSocialRepository obraSocialRepository, IMapper mapper)
         {
             _obraSocialRepository = obraSocialRepository;
             _mapper = mapper;
         }
 
-        public async Task<ObraSocial> GetByIdAsync(int id)
+        public async Task<ObraSocialDto> GetByIdAsync(int id)
         {
-            return await _obraSocialRepository.GetById(id);
+            var obraSocial =  await _obraSocialRepository.GetById(id);
+            return _mapper.Map<ObraSocialDto>(obraSocial);
         }
 
         public async Task<decimal> CalcularPrecioTurnoAsync(int? obraSocialId)
@@ -38,56 +34,54 @@ namespace Services
                 if (obraSocial != null)
                     return obraSocial.PrecioTurno;
             }
-
-          
             return PrecioBaseSinObraSocial;
         }
 
-        public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync()
-        {
-            var obrasSociales = _obraSocialRepository.ObtenerTodos();
-            return _mapper.Map<Task<IEnumerable<ObraSocialDto>>>(obrasSociales);
 
+        public async Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync()
+        {
+            
+            var obrasSociales = await _obraSocialRepository.ObtenerTodos();
+            
+            return _mapper.Map<IEnumerable<ObraSocialDto>>(obrasSociales);
         }
 
-        public Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto)
+        public async Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto)
         {
-
             var nuevaObraSocial = _mapper.Map<ObraSocial>(obraSocialDto);
-            var obraSocialCreada = _obraSocialRepository.Agregar(nuevaObraSocial);
-            return _mapper.Map<Task<ObraSocialDto>>(obraSocialCreada);
-
+            // 1. AWAIT
+            var obraSocialCreada = await _obraSocialRepository.Agregar(nuevaObraSocial);
+            // 2. Mapear el resultado
+            return _mapper.Map<ObraSocialDto>(obraSocialCreada);
         }
 
-        public Task<ObraSocialDto> ActualizarObraSocialAsync(int id,ObraSocialDto obraSocialDto)
+        public async Task<ObraSocialDto> ActualizarObraSocialAsync(int id, ObraSocialDto obraSocialDto)
         {
-
-            var obraSocialExistente = _obraSocialRepository.GetById(id).Result;
-
+          
+            var obraSocialExistente = await _obraSocialRepository.GetById(id);
             if (obraSocialExistente == null)
             {
                 throw new KeyNotFoundException("Obra social no encontrada");
             }
 
-            
             _mapper.Map(obraSocialDto, obraSocialExistente);
 
-            var obraSocialActualizada = _obraSocialRepository.Actualizar(obraSocialExistente);
+     
+            var obraSocialActualizada = await _obraSocialRepository.Actualizar(obraSocialExistente);
 
-            return _mapper.Map<Task<ObraSocialDto>>(obraSocialActualizada);
+           
+            return _mapper.Map<ObraSocialDto>(obraSocialActualizada);
         }
 
         public async Task<bool> EliminarObraSocialAsync(int id)
         {
             var obraSocial = await _obraSocialRepository.GetById(id);
-            if(obraSocial == null)
+            if (obraSocial == null)
             {
-                throw  new KeyNotFoundException("Obra social no encontrada");
+                throw new KeyNotFoundException("Obra social no encontrada");
             }
-            await _obraSocialRepository.Eliminar(id);
-            return true;
-
+           
+            return await _obraSocialRepository.Eliminar(id);
         }
     }
 }
-

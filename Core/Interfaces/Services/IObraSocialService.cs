@@ -12,7 +12,7 @@ namespace Core.Interfaces.Services
 {
     public interface IObraSocialService
     {
-        Task<ObraSocial> GetByIdAsync(int id);
+        Task<ObraSocialDto> GetByIdAsync(int id);
         Task<decimal> CalcularPrecioTurnoAsync(int? id);
         public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAsync();
 

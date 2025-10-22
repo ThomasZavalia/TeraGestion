@@ -66,12 +66,22 @@ namespace Infraestructure
         }
 
         public async Task<IEnumerable<Turno>> ObtenerTodos()
-        { 
-          return await _context.Turnos.AsNoTracking().ToListAsync();
+        {
+            return await _context.Turnos
+                           .Include(t => t.Paciente)
+                           .ToListAsync();
 
         }
 
-       
+        public async Task<Turno?> GetByIdConPaciente(int id)
+        {
+          
+            return await _context.Turnos
+                                 .Include(t => t.Paciente) 
+                                 .FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+
     }
  
  } 

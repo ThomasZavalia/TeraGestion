@@ -64,5 +64,27 @@ namespace Infraestructure
         {
               return await _context.Pacientes.ToListAsync();
         }
+
+
+        public async Task<IEnumerable<Paciente>> BuscarAsync(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                return new List<Paciente>();
+            }
+
+            var normalizedQuery = query.ToLower().Trim();
+
+            return await _context.Pacientes
+                .Where(p =>
+                    p.Nombre.ToLower().Contains(normalizedQuery) ||
+                    p.Apellido.ToLower().Contains(normalizedQuery) ||
+                    p.DNI.Contains(normalizedQuery)
+                )
+                .OrderBy(p => p.Apellido)
+                .ThenBy(p => p.Nombre)
+                .Take(10) // Limitamos a 10 resultados para el dropdown
+                .ToListAsync();
+        }
     }
 }

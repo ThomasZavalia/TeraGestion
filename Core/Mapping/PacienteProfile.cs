@@ -15,6 +15,8 @@ namespace Core.Mapping
         {
             CreateMap<PacienteDTO, Paciente>();
             CreateMap<Paciente, PacienteDTO>();
+
+            CreateMap<Paciente, PacienteSimpleDto>();
         }
     }
 }

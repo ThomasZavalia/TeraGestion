@@ -60,6 +60,13 @@ namespace Controllers.Controllers
               return NoContent();
         }
 
+        [HttpGet("buscar")] 
+        public async Task<ActionResult<IEnumerable<PacienteSimpleDto>>> BuscarPacientes([FromQuery] string query)
+        {
+            var pacientes = await _pacienteService.BuscarPacientesAsync(query);
+            return Ok(pacientes);
+        }
+
 
     }
 }
