@@ -81,6 +81,15 @@ namespace Infraestructure
                                  .FirstOrDefaultAsync(t => t.Id == id);
         }
 
+       
+        public async Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date)
+        {
+            
+            return await _context.Turnos
+                                 .Where(t => t.FechaHora.Date == date.Date)
+                                 .ToListAsync();
+        }
+
 
     }
  

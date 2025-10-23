@@ -188,5 +188,27 @@ namespace Services
         {
         return await _turnoRepository.ObtenerTodos();
         }
+
+        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
+        {
+            
+            var allSlots = new List<string>
+    {
+        "16:00", "17:00", "18:00", "19:00", "20:00"
+    };
+
+           
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(date);
+
+            
+            var bookedSlots = turnosDelDia
+                .Select(t => t.FechaHora.ToString("HH:mm"))
+                .ToHashSet(); 
+
+            // 4. Filtra la lista total y devuelve solo los que NO están en bookedSlots
+            var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
+
+            return availableSlots;
+        }
     }
 }

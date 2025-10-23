@@ -20,5 +20,7 @@ namespace Core.Interfaces.Services
 
         public Task MarcarComoPagadoAsync(int turnoId, string metodo);
 
+        Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
+
     }
 }

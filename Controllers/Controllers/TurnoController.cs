@@ -75,5 +75,12 @@ namespace Controllers.Controllers
             
             
         }
+
+        [HttpGet("disponibilidad")]
+        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTime fecha)
+        {
+            var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
+            return Ok(slots);
+        }
     }
 }

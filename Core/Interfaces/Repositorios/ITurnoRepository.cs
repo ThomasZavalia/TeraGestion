@@ -10,5 +10,8 @@ namespace Core.Interfaces.Repositorios
     public interface ITurnoRepository : IRepository<Entidades.Turno>
     {
         Task<Turno?> GetByIdConPaciente(int id);
+       
+            Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date);
+        
     }
 }
