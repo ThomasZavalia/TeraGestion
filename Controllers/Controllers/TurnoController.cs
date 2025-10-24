@@ -50,7 +50,7 @@ namespace Controllers.Controllers
         
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDto turnoDto)
+        public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDtoActualizar turnoDto)
         {
            
             

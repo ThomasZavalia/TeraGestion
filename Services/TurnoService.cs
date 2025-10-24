@@ -37,19 +37,36 @@ namespace Services
         }
 
 
-        public async Task<TurnoDto> ActualizarTurnoAsync(int id,TurnoDto turnoDto)
+        public async Task<TurnoCalendarioDto> ActualizarTurnoAsync(int id,TurnoDtoActualizar dto)
         {
-            var turnoExistente = await _turnoRepository.GetById(id);
+            var turnoExistente = await _turnoRepository.GetByIdConPaciente(id);
             if (turnoExistente == null)
             { throw new KeyNotFoundException("Turno no encontrado"); }
 
-            // Actualiza solo las propiedades del DTO sobre la entidad existente
-            _mapper.Map(turnoDto, turnoExistente);
+          
 
-            var turnoActualizado = await _turnoRepository.Actualizar(turnoExistente);
+            // Lógica de Precio/OS (Ajusta según tus reglas de negocio)
+            if (dto.EsParticular)
+            {
+                turnoExistente.Precio = dto.Precio; // Toma el precio manual del DTO
+                turnoExistente.ObraSocialId = null; // Borra la OS
+            }
+            else
+            {
+                // Si NO es particular, usa la OS del DTO y recalcula precio
+                turnoExistente.ObraSocialId = dto.ObraSocialId;
+                // Recalcula SIEMPRE el precio basado en la OS para evitar inconsistencias
+                turnoExistente.Precio = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
+            }
 
-            // Devuelve el DTO actualizado (por si el repositorio cambia algo, como Fecha o Estado)
-            return _mapper.Map<TurnoDto>(turnoActualizado);
+            
+            
+
+           
+            await _turnoRepository.Actualizar(turnoExistente);
+
+            // Mapea la entidad actualizada (que ya tiene Paciente) al DTO de respuesta
+            return _mapper.Map<TurnoCalendarioDto>(turnoExistente);
         }
 
         public async Task MarcarComoPagadoAsync(int turnoId, string metodoPago)
@@ -196,14 +213,15 @@ namespace Services
     {
         "16:00", "17:00", "18:00", "19:00", "20:00"
     };
-
+            var fechaUtc = date.ToUniversalTime().Date;
            
-            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(date);
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
 
-            
+
             var bookedSlots = turnosDelDia
-                .Select(t => t.FechaHora.ToString("HH:mm"))
-                .ToHashSet(); 
+         // Convierte la FechaHora (que puede ser UTC) a la hora local del servidor ANTES de formatear
+         .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm"))
+         .ToHashSet();
 
             // 4. Filtra la lista total y devuelve solo los que NO están en bookedSlots
             var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));

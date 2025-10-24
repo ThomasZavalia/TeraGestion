@@ -53,7 +53,7 @@ namespace Infraestructure
             modelBuilder.Entity<Turno>(entity =>
             {
                 entity.HasKey(t => t.Id);
-                entity.Property(t => t.FechaHora).HasColumnType("timestamp");
+                modelBuilder.Entity<Turno>().Property(t => t.FechaHora).HasColumnType("timestamp with time zone");
                 entity.Property(t => t.Precio).HasColumnType("decimal(10,2)");
                 entity.HasOne(t => t.Paciente)
                       .WithMany(p => p.Turnos)

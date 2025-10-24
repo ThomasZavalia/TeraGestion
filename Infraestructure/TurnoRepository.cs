@@ -21,14 +21,8 @@ namespace Infraestructure
 
         public async Task<Turno> Actualizar(Turno turno)
         {
-       var turnoExistente= await _context.Turnos.FindAsync(turno.Id);
-            turnoExistente.FechaHora = turno.FechaHora;
-            turnoExistente.Estado = turno.Estado;
-            turnoExistente.Precio = turno.Precio;
-            turnoExistente.PacienteId = turno.PacienteId;
-            turnoExistente.ObraSocialId = turno.ObraSocialId;
             await _context.SaveChangesAsync();
-            return turnoExistente;
+            return turno;
         }
 
         public async Task<Turno> Agregar(Turno turno)
