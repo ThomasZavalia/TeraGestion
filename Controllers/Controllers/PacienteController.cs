@@ -60,7 +60,7 @@ namespace Controllers.Controllers
               return NoContent();
         }
 
-        [HttpGet("buscar")] 
+        [HttpGet("buscar")]
         public async Task<ActionResult<IEnumerable<PacienteSimpleDto>>> BuscarPacientes([FromQuery] string query)
         {
             var pacientes = await _pacienteService.BuscarPacientesAsync(query);
@@ -68,6 +68,26 @@ namespace Controllers.Controllers
         }
 
 
+
+
+        [HttpGet("{id}/detalles")]
+        public async Task<ActionResult<PacienteDetalleDTO>> GetPacienteDetallesAsync(int id)
+        {
+            try
+            {
+                var pacienteDetalle = await _pacienteService.GetPacienteDetallesAsync(id);
+
+                return Ok(pacienteDetalle);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ocurrió un error al obtener los detalles del paciente. {ex.Message}");
+            }
+        }
     }
 }
 

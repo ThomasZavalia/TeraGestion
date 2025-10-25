@@ -11,5 +11,7 @@ namespace Core.Interfaces.Repositorios
     {
 
         Task<IEnumerable<Paciente>> BuscarAsync(string query);
+
+        Task<Paciente> GetDetallesByIdAsync(int id);
     }
 }

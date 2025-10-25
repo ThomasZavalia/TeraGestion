@@ -86,5 +86,23 @@ namespace Infraestructure
                 .Take(10) // Limitamos a 10 resultados para el dropdown
                 .ToListAsync();
         }
+
+
+
+        public async Task<Paciente> GetDetallesByIdAsync(int id)
+        {
+            var paciente = await _context.Pacientes.Include(p => p.ObraSocial)
+                                                   .Include(p => p.Sesiones)
+                                                   .ThenInclude(s => s.Turno)
+                                                   .ThenInclude(t => t.Pagos)
+                                                   .AsNoTracking()
+                                                   .FirstOrDefaultAsync(p => p.Id == id);
+
+            return paciente;
+        }
+
+
+
+
     }
 }

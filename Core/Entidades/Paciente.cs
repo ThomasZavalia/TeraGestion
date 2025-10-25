@@ -21,5 +21,7 @@ namespace Core.Entidades
 
         public ICollection<Turno> Turnos { get; set; } = new List<Turno>();
 
+        public ICollection<Sesion> Sesiones { get; set; } = new List<Sesion>();
+
     }
 }

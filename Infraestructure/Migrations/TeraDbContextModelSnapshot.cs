@@ -100,7 +100,7 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("Monto")
+                    b.Property<decimal?>("Monto")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("TurnoId")

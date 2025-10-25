@@ -20,5 +20,7 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<PacienteSimpleDto>> BuscarPacientesAsync(string query);
 
+        Task<PacienteDetalleDTO> GetPacienteDetallesAsync(int id);
+
     }
 }

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-    [Migration("20251009213407_CambiarTodo")]
-    partial class CambiarTodo
+    [Migration("20251020230945_NuevaMigracion")]
+    partial class NuevaMigracion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -43,7 +43,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ObraSocial");
+                    b.ToTable("ObrasSociales", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
@@ -103,7 +103,7 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("Monto")
+                    b.Property<decimal?>("Monto")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("TurnoId")
@@ -172,7 +172,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("PacienteId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("Precio")
+                    b.Property<decimal?>("Precio")
                         .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");

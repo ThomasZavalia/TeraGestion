@@ -134,5 +134,20 @@ namespace Services
             var pacientes = await _pacienteRepository.BuscarAsync(query);
             return _mapper.Map<IEnumerable<PacienteSimpleDto>>(pacientes);
         }
+
+
+
+
+        public async Task<PacienteDetalleDTO> GetPacienteDetallesAsync(int id)
+        {
+            var paciente = await _pacienteRepository.GetDetallesByIdAsync(id);
+
+            if (paciente == null)
+            {
+                throw new KeyNotFoundException("Paciente no encontrado");
+            }
+
+            return _mapper.Map<PacienteDetalleDTO>(paciente);
+        }
     }
 }
