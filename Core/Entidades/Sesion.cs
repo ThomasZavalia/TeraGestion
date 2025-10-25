@@ -11,7 +11,7 @@ namespace Core.Entidades
         public int Id { get; set; }
         public DateTime FechaHoraInicio { get; set; }
 
-        public string Asistencia { get; set; } // Ejemplo: "Asistió", "No asistió", "Reprogramado"
+        public string Asistencia { get; set; } 
         public string Notas { get; set; }
 
         public int PacienteId { get; set; }

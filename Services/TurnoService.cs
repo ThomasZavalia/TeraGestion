@@ -45,10 +45,10 @@ namespace Services
 
           
 
-            // Lógica de Precio/OS (Ajusta según tus reglas de negocio)
+            
             if (dto.EsParticular)
             {
-                turnoExistente.Precio = dto.Precio; // Toma el precio manual del DTO
+                turnoExistente.Precio = dto.Precio; 
                 turnoExistente.ObraSocialId = null; // Borra la OS
             }
             else
@@ -65,7 +65,7 @@ namespace Services
            
             await _turnoRepository.Actualizar(turnoExistente);
 
-            // Mapea la entidad actualizada (que ya tiene Paciente) al DTO de respuesta
+           
             return _mapper.Map<TurnoCalendarioDto>(turnoExistente);
         }
 
@@ -92,82 +92,119 @@ namespace Services
 
         public async Task<TurnoCalendarioDto> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
+           
+            if (!dto.PacienteId.HasValue && string.IsNullOrWhiteSpace(dto.DNI))
+            {
+                throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente (incluyendo DNI).");
+            }
+            if (!dto.PacienteId.HasValue && (string.IsNullOrWhiteSpace(dto.NombrePaciente) || string.IsNullOrWhiteSpace(dto.ApellidoPaciente)))
+            {
+                throw new ArgumentException("Nombre y Apellido son requeridos para un nuevo paciente.");
+            }
+            if (dto.EsParticular && !dto.Precio.HasValue)
+            {
+                throw new ArgumentException("Se debe especificar un precio para turnos particulares.");
+            }
+            if (!dto.EsParticular && !dto.ObraSocialId.HasValue)
+            {
+                throw new ArgumentException("Se debe seleccionar una Obra Social para turnos no particulares.");
+            }
+
+            
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
 
-            try {
-                PacienteDTO pacienteAbuscar;
-
+            try
+            {
+                PacienteDTO pacienteAsignado;
                 if (dto.PacienteId.HasValue)
                 {
-                    pacienteAbuscar = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
+                    pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
+                    if (pacienteAsignado == null)
+                    {
+                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto
+                        throw new KeyNotFoundException($"No se encontró el paciente con ID {dto.PacienteId.Value}.");
+                    }
+
+                    if (dto.ObraSocialId.HasValue && pacienteAsignado.ObraSocialId != dto.ObraSocialId && !dto.EsParticular)
+                    {
+                        pacienteAsignado.ObraSocialId = dto.ObraSocialId;
+                        await _pacienteService.ActualizarPacienteAsync(pacienteAsignado.Id, pacienteAsignado);
+                    }
                 }
                 else
                 {
-                    pacienteAbuscar = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
+                    var pacienteExistente = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
 
-                    if (pacienteAbuscar == null)
+                    if (pacienteExistente != null)
                     {
-                        var nuevoPaciente = new PacienteDTO
-                        {
-                            DNI = dto.DNI,
-                            Nombre = dto.NombrePaciente,
-                            Apellido = dto.ApellidoPaciente,
-                            ObraSocialId = dto.ObraSocialId
-                        };
-                        pacienteAbuscar = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto (Esta era la causa de tu error)
+                        throw new ArgumentException($"Ya existe un paciente registrado con el DNI {dto.DNI}. Por favor, seleccione 'Paciente Existente'.");
                     }
-                    else
+
+                    var nuevoPacienteDto = new PacienteDTO
                     {
-                        if (dto.ObraSocialId.HasValue && pacienteAbuscar.ObraSocialId != dto.ObraSocialId)
-                        {
-                            pacienteAbuscar.ObraSocialId = dto.ObraSocialId;
-                            await _pacienteService.ActualizarPacienteAsync(pacienteAbuscar.Id,pacienteAbuscar);
-                        }
+                        DNI = dto.DNI,
+                        Nombre = dto.NombrePaciente,
+                        Apellido = dto.ApellidoPaciente,
+                        ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
+                    };
+                    pacienteAsignado = await _pacienteService.CrearPacienteAsync(nuevoPacienteDto);
+
+                    if (pacienteAsignado == null)
+                    {
+                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto
+                        throw new InvalidOperationException("Error inesperado al intentar crear el nuevo paciente.");
                     }
                 }
-                
+
 
                 decimal precioTurno;
-
-                if (dto.EsParticular && dto.Precio.HasValue) 
+                if (dto.EsParticular)
                 {
                     precioTurno = dto.Precio.Value;
                 }
                 else
                 {
-                    precioTurno= await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
-
+                    precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
                 }
 
-               
 
                 var turno = new Turno
                 {
-
                     FechaHora = dto.Fecha,
-                    PacienteId = pacienteAbuscar.Id,
+                    PacienteId = pacienteAsignado.Id,
                     Precio = precioTurno,
                     Estado = "Pendiente",
-                    ObraSocialId = dto.ObraSocialId
-
+                    ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
                 };
-               var turnoCreado = await _turnoRepository.Agregar(turno);
 
+                var turnoCreado = await _turnoRepository.Agregar(turno);
 
+                // Si todo va bien, se hace Commit (perfecto)
                 await transaction.CommitAsync();
-                var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id); 
-                var turnoDto = _mapper.Map<TurnoCalendarioDto>(turnoCreado);
-                return turnoDto;
+
+
+                var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
+                if (turnoConPaciente == null)
+                {
+                    
+                    throw new InvalidOperationException("No se pudo recuperar el turno recién creado con los datos del paciente.");
+                }
+
+                var turnoDtoRespuesta = _mapper.Map<TurnoCalendarioDto>(turnoConPaciente);
+                return turnoDtoRespuesta;
             }
-            catch (Exception ex)
+            catch (Exception) 
             {
+               
                 await transaction.RollbackAsync();
-                throw new InvalidOperationException($"Error al crear el turno: {ex.Message}", ex);
-            } 
-            
+
+               
+                throw;
             }
-          
-        
+        }
+
+
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {

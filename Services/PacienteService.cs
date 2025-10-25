@@ -134,5 +134,17 @@ namespace Services
             var pacientes = await _pacienteRepository.BuscarAsync(query);
             return _mapper.Map<IEnumerable<PacienteSimpleDto>>(pacientes);
         }
+
+        public async Task<bool> CheckDniExistsAsync(string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
+            {
+                return false; // No se puede verificar un DNI vacío
+            }
+
+
+            var paciente = await GetPacientePorDniAsync(dni);
+            return paciente != null;
+        }
     }
 }

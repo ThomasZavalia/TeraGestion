@@ -68,6 +68,21 @@ namespace Controllers.Controllers
         }
 
 
+        [HttpGet("check-dni")]
+      
+        public async Task<IActionResult> CheckDni([FromQuery] string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
+            {
+                return BadRequest(new { message = "DNI no provisto." });
+            }
+            var exists = await _pacienteService.CheckDniExistsAsync(dni);
+
+            // Devolver un objeto es más claro para el frontend
+            return Ok(new { exists = exists });
+        }
+
+
     }
 }
 
