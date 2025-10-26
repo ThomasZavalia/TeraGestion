@@ -82,5 +82,14 @@ namespace Controllers.Controllers
             var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
             return Ok(slots);
         }
+
+        [HttpGet("hoy")] 
+        public async Task<IActionResult> GetTurnosDeHoy()
+        {
+
+            var hoyUtc = DateTime.UtcNow;
+            var turnos = await _turnoService.GetTurnosDelDiaAsync(hoyUtc);
+            return Ok(turnos); 
+        }
     }
 }

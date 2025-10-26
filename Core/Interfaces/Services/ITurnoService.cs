@@ -22,5 +22,7 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
 
+        Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date);
+
     }
 }

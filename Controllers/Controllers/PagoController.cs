@@ -85,5 +85,15 @@ namespace Controllers.Controllers
                 var eliminado = await _pagoService.EliminarPago(id);
             return NoContent();
         }
+
+        [HttpGet("pagos-filtrados")]
+        public async Task<IActionResult> GetPagos(
+            [FromQuery] DateTime? fechaDesde,
+            [FromQuery] DateTime? fechaHasta,
+            [FromQuery] int? pacienteId)
+        {
+            var pagos = await _pagoService.GetPagosAsync(fechaDesde, fechaHasta, pacienteId);
+            return Ok(pagos); 
+        }
     }
 }

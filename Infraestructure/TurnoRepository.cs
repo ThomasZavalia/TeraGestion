@@ -79,7 +79,8 @@ namespace Infraestructure
         public async Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date)
         {
             
-            return await _context.Turnos
+            return await _context.Turnos.
+                                  Include(t => t.Paciente)
                                  .Where(t => t.FechaHora.Date == date.Date)
                                  .ToListAsync();
         }

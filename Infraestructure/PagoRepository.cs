@@ -53,5 +53,35 @@ namespace Infraestructure
         {
             return await _context.Pagos.ToListAsync();
         }
+
+        public async Task<IEnumerable<Pago>> GetPagosFiltradosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId)
+        {
+            
+            IQueryable<Pago> query = _context.Pagos
+                                             .Include(p => p.Turno)
+                                                .ThenInclude(t => t.Paciente) 
+                                             .AsNoTracking(); 
+
+           
+            if (fechaDesde.HasValue)
+            {
+              
+                query = query.Where(p => p.Fecha.Date >= fechaDesde.Value.Date);
+            }
+            if (fechaHasta.HasValue)
+            {
+               
+                query = query.Where(p => p.Fecha.Date <= fechaHasta.Value.Date);
+            }
+            if (pacienteId.HasValue)
+            {
+                query = query.Where(p => p.Turno.PacienteId == pacienteId.Value);
+            }
+
+            
+            query = query.OrderByDescending(p => p.Fecha);
+
+            return await query.ToListAsync();
+        }
     }
 }

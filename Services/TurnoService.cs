@@ -26,7 +26,7 @@ namespace Services
         private readonly TeraDbContext _teraDbContext;
         private readonly IMapper _mapper;
         private readonly IObraSocialService _obraSocialService;
-        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService, TeraDbContext teraDbContext,IMapper mapper, IObraSocialService obraSocialService)
+        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService, TeraDbContext teraDbContext, IMapper mapper, IObraSocialService obraSocialService)
         {
             _turnoRepository = turnoRepository;
             _pacienteService = pacienteService;
@@ -37,18 +37,18 @@ namespace Services
         }
 
 
-        public async Task<TurnoCalendarioDto> ActualizarTurnoAsync(int id,TurnoDtoActualizar dto)
+        public async Task<TurnoCalendarioDto> ActualizarTurnoAsync(int id, TurnoDtoActualizar dto)
         {
             var turnoExistente = await _turnoRepository.GetByIdConPaciente(id);
             if (turnoExistente == null)
             { throw new KeyNotFoundException("Turno no encontrado"); }
 
-          
 
-            
+
+
             if (dto.EsParticular)
             {
-                turnoExistente.Precio = dto.Precio; 
+                turnoExistente.Precio = dto.Precio;
                 turnoExistente.ObraSocialId = null; // Borra la OS
             }
             else
@@ -59,13 +59,13 @@ namespace Services
                 turnoExistente.Precio = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
             }
 
-            
-            
 
-           
+
+
+
             await _turnoRepository.Actualizar(turnoExistente);
 
-           
+
             return _mapper.Map<TurnoCalendarioDto>(turnoExistente);
         }
 
@@ -92,7 +92,7 @@ namespace Services
 
         public async Task<TurnoCalendarioDto> CrearTurnoAsync(TurnoDtoCreacion dto)
         {
-           
+
             if (!dto.PacienteId.HasValue && string.IsNullOrWhiteSpace(dto.DNI))
             {
                 throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente (incluyendo DNI).");
@@ -110,7 +110,7 @@ namespace Services
                 throw new ArgumentException("Se debe seleccionar una Obra Social para turnos no particulares.");
             }
 
-            
+
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
 
             try
@@ -187,19 +187,19 @@ namespace Services
                 var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
                 if (turnoConPaciente == null)
                 {
-                    
+
                     throw new InvalidOperationException("No se pudo recuperar el turno recién creado con los datos del paciente.");
                 }
 
                 var turnoDtoRespuesta = _mapper.Map<TurnoCalendarioDto>(turnoConPaciente);
                 return turnoDtoRespuesta;
             }
-            catch (Exception) 
+            catch (Exception)
             {
-               
+
                 await transaction.RollbackAsync();
 
-               
+
                 throw;
             }
         }
@@ -211,8 +211,8 @@ namespace Services
             var turnoAeliminar = await _turnoRepository.GetById(id);
             if (turnoAeliminar == null)
             {
-                
-               throw new KeyNotFoundException("No se encontro el turno");
+
+                throw new KeyNotFoundException("No se encontro el turno");
             }
             await _turnoRepository.Eliminar(id);
             return true;
@@ -222,7 +222,7 @@ namespace Services
 
         public async Task<TurnoDto> GetTurnoAsync(int id)
         {
-         var turnoAbuscar = await _turnoRepository.GetById(id);
+            var turnoAbuscar = await _turnoRepository.GetById(id);
             if (turnoAbuscar == null)
             {
                 throw new KeyNotFoundException("No se encontro el turno");
@@ -234,36 +234,46 @@ namespace Services
 
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync()
         {
-           var turnos = await _turnoRepository.ObtenerTodos();
-          var turnosDto = _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
+            var turnos = await _turnoRepository.ObtenerTodos();
+            var turnosDto = _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
             return turnosDto;
         }
-        public async Task<IEnumerable<Turno>> GetTurnosSinDto() 
+        public async Task<IEnumerable<Turno>> GetTurnosSinDto()
         {
-        return await _turnoRepository.ObtenerTodos();
+            return await _turnoRepository.ObtenerTodos();
         }
 
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
         {
-            
+
             var allSlots = new List<string>
     {
         "16:00", "17:00", "18:00", "19:00", "20:00"
     };
             var fechaUtc = date.ToUniversalTime().Date;
-           
+
             var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
 
 
             var bookedSlots = turnosDelDia
-         // Convierte la FechaHora (que puede ser UTC) a la hora local del servidor ANTES de formatear
+
          .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm"))
          .ToHashSet();
 
-            // 4. Filtra la lista total y devuelve solo los que NO están en bookedSlots
+
             var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
 
             return availableSlots;
+        }
+
+
+        public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date)
+        {
+           
+            var turnos = await _turnoRepository.GetTurnosByDayAsync(date.Date); // Usamos .Date por si acaso
+
+            
+            return _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
         }
     }
 }
