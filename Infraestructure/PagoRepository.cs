@@ -51,7 +51,9 @@ namespace Infraestructure
 
         public async Task <IEnumerable<Pago>> ObtenerTodos()
         {
-            return await _context.Pagos.ToListAsync();
+            return await _context.Pagos
+                          .Include(p => p.Turno) 
+                          .ToListAsync();
         }
 
         public async Task<IEnumerable<Pago>> GetPagosFiltradosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId)

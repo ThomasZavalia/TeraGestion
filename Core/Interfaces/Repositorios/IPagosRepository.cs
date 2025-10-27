@@ -11,5 +11,6 @@ namespace Core.Interfaces.Repositorios
     {
 
         Task<IEnumerable<Pago>> GetPagosFiltradosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId);
+
     }
 }

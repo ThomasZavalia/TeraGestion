@@ -1,4 +1,5 @@
 ﻿using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ReportesController : ControllerBase
     {
 
@@ -36,16 +38,16 @@ namespace Controllers.Controllers
         }
 
         [HttpGet("turnos-por-mes")]
-        public async Task<IActionResult> GetTurnosPorMes()
+        public async Task<IActionResult> GetTurnosPorMes([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
-            var turnosPorMes = await _reportesService.GetTurnosPorMes();
+            var turnosPorMes = await _reportesService.GetTurnosPorMes(fechaDesde, fechaHasta);
             return Ok(turnosPorMes);
         }
 
         [HttpGet("ingresos-por-mes")]
-        public async Task<IActionResult> GetIngresosPorMes()
+        public async Task<IActionResult> GetIngresosPorMes([FromQuery]DateTime? fechaDesde = null, [FromQuery]DateTime? fechaHasta = null)
         {
-            var ingresosPorMes = await _reportesService.GetIngresosPorMes();
+            var ingresosPorMes = await _reportesService.GetIngresosPorMes(fechaDesde, fechaHasta);
             return Ok(ingresosPorMes);
         }
 
