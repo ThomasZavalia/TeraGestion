@@ -20,7 +20,7 @@ namespace Infraestructure
         }
         public async Task<Paciente> Actualizar(Paciente entity)
         {
-            var pacienteEncontrado = await _context.Pacientes.FindAsync(entity.Id);
+           /* var pacienteEncontrado = await _context.Pacientes.FindAsync(entity.Id);
             if (pacienteEncontrado == null)
             { return null; }
             pacienteEncontrado.Nombre = entity.Nombre;
@@ -29,10 +29,14 @@ namespace Infraestructure
            pacienteEncontrado.ObraSocialId = entity.ObraSocialId;
             pacienteEncontrado.Telefono = entity.Telefono;
             pacienteEncontrado.Email = entity.Email;
-            pacienteEncontrado.DNI = entity.DNI;
+            pacienteEncontrado.DNI = entity.DNI;*/
+
+
+            
 
             await _context.SaveChangesAsync();
-              return pacienteEncontrado;
+              //return pacienteEncontrado;
+              return entity;
         }
 
         public async Task<Paciente> Agregar(Paciente entity)

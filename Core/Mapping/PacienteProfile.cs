@@ -13,7 +13,9 @@ namespace Core.Mapping
     {
         public PacienteProfile()
         {
-            CreateMap<PacienteDTO, Paciente>();
+            CreateMap<PacienteDTO, Paciente>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore());
+
             CreateMap<Paciente, PacienteDTO>();
 
             CreateMap<Paciente, PacienteSimpleDto>();
