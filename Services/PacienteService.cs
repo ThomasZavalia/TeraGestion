@@ -18,18 +18,51 @@ namespace Services
         }
 
             public async Task<PacienteDTO> ActualizarPacienteAsync(int id,PacienteDTO pacienteDto)
-            {
-                  if (pacienteDto == null)
+        {
+                /*  if (pacienteDto == null)
                         throw new ArgumentNullException(nameof(pacienteDto));
 
                   if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
                         throw new ArgumentException("Nombre y Apellido son obligatorios");
                   var pacienteExistente = await _pacienteRepository.GetById(id);
             if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+
+            pacienteExistente.ObraSocial = null; // Evitar problemas de seguimiento de entidades
+
+
             _mapper.Map(pacienteDto, pacienteExistente);
            
             var actualizado = await _pacienteRepository.Actualizar(pacienteExistente);
-            return _mapper.Map<PacienteDTO>(actualizado);
+            return _mapper.Map<PacienteDTO>(actualizado);*/
+            
+
+
+            if (pacienteDto == null) throw new ArgumentNullException(nameof(pacienteDto));
+    if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
+        throw new ArgumentException("Nombre y Apellido son obligatorios");
+
+    // 1. Mapea el DTO a una entidad "limpia" (no vigilada).
+    //    El perfil de AutoMapper que ignora 'Id' y 'ObraSocial' es clave aquí.
+    var pacienteParaActualizar = _mapper.Map<Paciente>(pacienteDto);
+
+    // 2. Pasamos el 'id' (de la URL) y los 'nuevos datos' (del DTO)
+    //    al repositorio. Él se encargará de todo.
+    var actualizado = await _pacienteRepository.Actualizar(id, pacienteParaActualizar);
+
+    // 3. Si el repositorio devuelve null, es que no lo encontró.
+    if (actualizado == null) 
+    { 
+        throw new KeyNotFoundException("Paciente no encontrado"); 
+    }
+
+    // 4. Mapea la entidad final (ya guardada) de vuelta a un DTO.
+    return _mapper.Map<PacienteDTO>(actualizado);
+
+
+
+
+
+
         }
 
             public async Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto)
@@ -84,11 +117,11 @@ namespace Services
 
             public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync()
             {
-                  var pacientes = await _pacienteRepository.ObtenerTodos();
-            if (pacientes == null) { throw new ArgumentException("No se encontraron pacientes"); }
+            var pacientes = await _pacienteRepository.ObtenerTodos();
 
-
-            return pacientes.Select(MapToDto);
+            var pacientesDTO = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
+                
+                return pacientesDTO;
             }
 
             private PacienteDTO MapToDto(Paciente paciente)

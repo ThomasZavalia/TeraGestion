@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.Paciente;
+using Core.DTOs.ObraSocial;
 
 namespace Core.Mapping
 {
@@ -17,6 +18,9 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Id, opt => opt.Ignore());
 
             CreateMap<Paciente, PacienteDTO>();
+
+
+            CreateMap<ObraSocial, ObraSocialSimpleDTO>();
 
             CreateMap<Paciente, PacienteSimpleDto>();
 
