@@ -1,5 +1,6 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Infraestructure;
 using Microsoft.EntityFrameworkCore;
 using SQLitePCL;
 using System;
@@ -8,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infraestructure
+namespace Infrastructure.Repositorios
 {
     public class TurnoRepository : ITurnoRepository
     {
@@ -27,9 +28,9 @@ namespace Infraestructure
 
         public async Task<Turno> Agregar(Turno turno)
         {
-          await _context.Turnos.AddAsync(turno);
-           
-           
+            await _context.Turnos.AddAsync(turno);
+
+
             await _context.SaveChangesAsync();
             return turno;
         }
@@ -41,21 +42,21 @@ namespace Infraestructure
             {
                 return false;
             }
-                _context.Turnos.Remove(turnoExistente);
+            _context.Turnos.Remove(turnoExistente);
             await _context.SaveChangesAsync();
             return true;
-            
+
         }
 
-        
+
 
         public async Task<Turno?> GetById(int id)
         {
-           var turnoExistente = await _context.Turnos.FindAsync(id);
+            var turnoExistente = await _context.Turnos.FindAsync(id);
             if (turnoExistente == null)
             {
                 return null;
-        }
+            }
             return turnoExistente;
         }
 
@@ -69,16 +70,16 @@ namespace Infraestructure
 
         public async Task<Turno?> GetByIdConPaciente(int id)
         {
-          
+
             return await _context.Turnos
-                                 .Include(t => t.Paciente) 
+                                 .Include(t => t.Paciente)
                                  .FirstOrDefaultAsync(t => t.Id == id);
         }
 
-       
+
         public async Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date)
         {
-            
+
             return await _context.Turnos.
                                   Include(t => t.Paciente)
                                  .Where(t => t.FechaHora.Date == date.Date)
@@ -87,5 +88,5 @@ namespace Infraestructure
 
 
     }
- 
- } 
+
+}

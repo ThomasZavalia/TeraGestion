@@ -1,4 +1,6 @@
-﻿using Core.DTOs.Usuario.Input;
+﻿using AutoMapper;
+using Core.DTOs.Usuario.Input;
+using Core.DTOs.Usuario.Output;
 using Core.Entidades;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
@@ -15,23 +17,28 @@ namespace Services
     {
 
         private readonly IUsuariosRepository _usuarioRepository;
-        private readonly PasswordHasher<string> _passwordHasher = new();
-        public UsuarioService(IUsuariosRepository usuarioRepository)
+        private readonly IMapper _mapper;
+        
+        private readonly PasswordHasher<Usuario> _passwordHasher = new();
+        public UsuarioService(IUsuariosRepository usuarioRepository,IMapper mapper)
         {
             _usuarioRepository = usuarioRepository;
+            _mapper = mapper;
         }
-        public async Task<Usuario> ActualizarUsuario(int id,UsuarioActualizarDto dto)
+        public async Task<UsuarioDto> ActualizarUsuario(int id, UsuarioActualizarDto dto) 
         {
             var usuarioExistente = await _usuarioRepository.GetById(id);
             if (usuarioExistente == null) throw new KeyNotFoundException("Usuario no encontrado");
-            usuarioExistente.Username = dto.Username;
-            usuarioExistente.Email = dto.Email;
-            usuarioExistente.Rol = dto.Rol;
 
-            return await _usuarioRepository.Actualizar(usuarioExistente);
+           
+            _mapper.Map(dto, usuarioExistente);
+
+            var usuarioActualizado = await _usuarioRepository.Actualizar(usuarioExistente);
+           
+            return _mapper.Map<UsuarioDto>(usuarioActualizado);
         }
 
-       
+
 
 
         public async Task<Usuario> CrearUsuario(Usuario usuario)
@@ -51,11 +58,12 @@ namespace Services
             return resultado;
         }
 
-        public async Task<Usuario> GetUsuarioById(int id)
+        public async Task<UsuarioDto> GetUsuarioById(int id)
         {
-           var usuario = await _usuarioRepository.GetById(id);
+            var usuario = await _usuarioRepository.GetById(id);
             if (usuario == null) { throw new KeyNotFoundException("Usuario no encontrado"); }
-            return usuario;
+            
+            return _mapper.Map<UsuarioDto>(usuario);
         }
 
         public async Task<Usuario> GetByName(string username)
@@ -66,10 +74,11 @@ namespace Services
             return usuario;
         }
 
-        public async Task<IEnumerable<Usuario>> GetUsuarios()
+        public async Task<IEnumerable<UsuarioDto>> GetUsuarios()
         {
             var usuarios = await _usuarioRepository.ObtenerTodos();
-            return usuarios;
+           
+            return _mapper.Map<IEnumerable<UsuarioDto>>(usuarios);
         }
 
         public async Task<Usuario> ValidarCredenciales(string username, string password)
@@ -79,6 +88,44 @@ namespace Services
             var resultado = _passwordHasher.VerifyHashedPassword(null, usuario.PasswordHash, password);
             if (resultado == PasswordVerificationResult.Failed) { return null; }
             return usuario;
+        }
+
+
+        public async Task<UsuarioDto> ActualizarPerfilUsuario(int id, UsuarioPerfilDto dto)
+        {
+            var usuarioExistente = await _usuarioRepository.GetById(id);
+            if (usuarioExistente == null) throw new KeyNotFoundException("Usuario no encontrado");
+
+           
+             var otroUsuario = await GetByName(dto.Username);
+             if (otroUsuario != null && otroUsuario.Id != id) throw new ArgumentException("El nombre de usuario ya está en uso.");
+            //if( otroUsuario.Email == dto.Email && otroUsuario.Id != id) throw new ArgumentException("El email ya está en uso.");
+
+            
+            _mapper.Map(dto, usuarioExistente);
+
+            var usuarioActualizado = await _usuarioRepository.Actualizar(usuarioExistente);
+            return _mapper.Map<UsuarioDto>(usuarioActualizado);
+        }
+
+        public async Task<bool> CambiarContraseña(int id, string contraseñaActual, string contraseñaNueva)
+        {
+            var usuario = await _usuarioRepository.GetById(id);
+            if (usuario == null) { throw new KeyNotFoundException("Usuario no encontrado"); }
+
+           
+            var resultadoVerificacion = _passwordHasher.VerifyHashedPassword(usuario, usuario.PasswordHash, contraseñaActual);
+            if (resultadoVerificacion == PasswordVerificationResult.Failed)
+            {
+                return false; 
+            }
+
+            
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, contraseñaNueva);
+
+           
+            await _usuarioRepository.Actualizar(usuario);
+            return true;
         }
     }
 }

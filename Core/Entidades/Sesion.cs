@@ -12,7 +12,7 @@ namespace Core.Entidades
         public DateTime FechaHoraInicio { get; set; }
 
         public string Asistencia { get; set; } 
-        public string Notas { get; set; }
+        public string? Notas { get; set; }
 
         public int PacienteId { get; set; }
 

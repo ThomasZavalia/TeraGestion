@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure
+namespace Infrastructure.Repositorios
 {
     public class ObraSocialRepository : IObraSocialRepository
     {
