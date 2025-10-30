@@ -24,31 +24,47 @@ namespace Services
 
         }
 
-        public async Task<IEnumerable<ReporteMesDto>> GetTurnosPorMes()
+        public async Task<IEnumerable<ReporteMesDto>> GetTurnosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null) 
         {
-            var turnos = await _turnoService.GetTurnosSinDto();
-            var query = turnos.GroupBy(t => t.FechaHora.Month)
+            var turnosQuery = (await _turnoService.GetTurnosSinDto()).AsQueryable(); 
+
+           
+            if (fechaDesde.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date >= fechaDesde.Value.Date);
+            if (fechaHasta.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date <= fechaHasta.Value.Date);
+
+            var query = turnosQuery
+                .GroupBy(t => new { t.FechaHora.Year, t.FechaHora.Month })
                 .Select(g => new ReporteMesDto
                 {
-                    Mes = new DateTime(1, g.Key, 1).ToString("MMMM"),
+                    
+                    Mes = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")),
                     Valor = g.Count()
                 })
+                .OrderBy(r => r.Mes)
                 .ToList();
 
             return query;
         }
-
-        public async Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes()
+        public async Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
-            var pagos = await _pagoService.GetPagosSinDto();
-            var query = pagos.Where(p => p.Turno != null && p.Turno.Estado.ToLower() == "pagado")
-                .GroupBy(p => p.Fecha.Month)
+            
+            var pagosQuery = (await _pagoService.GetPagosSinDto()).Where(p => p.Turno != null && p.Turno.Estado.ToLower() == "pagado").AsQueryable();
+
+            if (fechaDesde.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date >= fechaDesde.Value.Date);
+            if (fechaHasta.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date <= fechaHasta.Value.Date);
+
+            var query = pagosQuery
+                .GroupBy(p => new { p.Fecha.Year, p.Fecha.Month })
                 .Select(g => new ReporteMesDto
                 {
-                    Mes = new DateTime(1, g.Key, 1).ToString("MMMM"),
-                    Valor = (int)g.Sum(p => p.Monto)
+                    Mes = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")),
+                   
+                    Valor = g.Sum(p => p.Monto ?? 0) 
+                })
+                 .OrderBy(r => r.Mes)
+                .ToList();
 
-                }).ToList();
+
             return query;
         }
 
@@ -82,16 +98,23 @@ namespace Services
 
         public async Task<IEnumerable<ReporteTopPacienteDto>> GetTopPacientes()
         {
-
+            
             var turnos = await _turnoService.GetTurnosSinDto();
-            var query = turnos.Where(t => t.Paciente != null)
-                .GroupBy(t => t.Paciente.Nombre)
-                .Select(g => new ReporteTopPacienteDto
+            var query = turnos.Where(t => t.Paciente != null) 
+                .GroupBy(t => t.PacienteId) 
+                .Select(g => new
                 {
-                    Paciente=g.Key,
+                    PacienteNombreCompleto = $"{g.First().Paciente.Nombre} {g.First().Paciente.Apellido}",
                     Turnos = g.Count()
-
-                }).OrderByDescending(x=>x.Turnos).Take(5).ToList();
+                })
+                .OrderByDescending(x => x.Turnos)
+                .Take(5)
+                .Select(g => new ReporteTopPacienteDto 
+                {
+                    Paciente = g.PacienteNombreCompleto,
+                    Turnos = g.Turnos
+                })
+                .ToList();
             return query;
         }
 

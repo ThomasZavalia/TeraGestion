@@ -8,5 +8,9 @@ namespace Core.DTOs.Turno.Input
 {
     public class TurnoDtoActualizar
     {
+
+        public bool EsParticular { get; set; }
+        public int? ObraSocialId { get; set; }
+        public decimal? Precio { get; set; }
     }
 }

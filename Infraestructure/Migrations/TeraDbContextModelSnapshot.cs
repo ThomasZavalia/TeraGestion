@@ -22,6 +22,98 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Core.Entidades.Disponibilidad", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Disponible")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeSpan?>("HoraFin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeSpan?>("HoraInicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "DiaSemana")
+                        .IsUnique();
+
+                    b.ToTable("Disponibilidades");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            DiaSemana = 0,
+                            Disponible = false,
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -2,
+                            DiaSemana = 1,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -3,
+                            DiaSemana = 2,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -4,
+                            DiaSemana = 3,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -5,
+                            DiaSemana = 4,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -6,
+                            DiaSemana = 5,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -7,
+                            DiaSemana = 6,
+                            Disponible = false,
+                            UsuarioId = 2
+                        });
+                });
+
             modelBuilder.Entity("Core.Entidades.ObraSocial", b =>
                 {
                     b.Property<int>("Id")
@@ -126,10 +218,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHoraInicio")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Notas")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
@@ -161,7 +252,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHora")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ObraSocialId")
                         .HasColumnType("integer");
@@ -208,6 +299,17 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Usuarios", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Entidades.Disponibilidad", b =>
+                {
+                    b.HasOne("Core.Entidades.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
                 });
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>

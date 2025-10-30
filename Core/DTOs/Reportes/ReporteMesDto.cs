@@ -10,7 +10,7 @@ namespace Core.DTOs.Reportes
     {
        
             public string Mes { get; set; } = string.Empty;
-            public int Valor { get; set; }  // puede representar cantidad o monto
+            public decimal Valor { get; set; }  // puede representar cantidad o monto
         
     }
 }

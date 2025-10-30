@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.Pago.Output;
 using Core.Entidades;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SQLitePCL;
@@ -9,6 +10,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PagoController : ControllerBase
     {
 
@@ -84,6 +86,16 @@ namespace Controllers.Controllers
             
                 var eliminado = await _pagoService.EliminarPago(id);
             return NoContent();
+        }
+
+        [HttpGet("pagos-filtrados")]
+        public async Task<IActionResult> GetPagos(
+            [FromQuery] DateTime? fechaDesde,
+            [FromQuery] DateTime? fechaHasta,
+            [FromQuery] int? pacienteId)
+        {
+            var pagos = await _pagoService.GetPagosAsync(fechaDesde, fechaHasta, pacienteId);
+            return Ok(pagos); 
         }
     }
 }

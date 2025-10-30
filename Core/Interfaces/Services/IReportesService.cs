@@ -12,7 +12,9 @@ namespace Core.Interfaces.Services
         public Task<IEnumerable<ReporteTopPacienteDto>> GetTopPacientes();
         public Task<IEnumerable<ReporteMetodoPagoDto>> GetMetodosPagoDto();
         public Task<IEnumerable<ReporteEstadoDto>> GetTurnoPorEstado();
-        public Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes();
-        public Task<IEnumerable<ReporteMesDto>> GetTurnosPorMes();
+        public Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null);
+        public Task<IEnumerable<ReporteMesDto>> GetTurnosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null);
+
+
     }
 }

@@ -17,6 +17,7 @@ namespace Core.Interfaces.Services
         public Task<Pago> ActualizarPago(Pago pago);
         public Task<bool> EliminarPago(int id);
         public Task<IEnumerable<Pago>> GetPagosSinDto();
+        public Task<IEnumerable<PagoDetallesDto>> GetPagosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId);
 
     }
 }

@@ -14,6 +14,6 @@ namespace Core.Entidades
         public string Email { get; set; }
 
         public string PasswordHash { get; set; }
-        public string Rol { get; set; } // Ejemplo: "Admin", "Usuario", "Terapeuta"
+        public string Rol { get; set; } 
     }
 }

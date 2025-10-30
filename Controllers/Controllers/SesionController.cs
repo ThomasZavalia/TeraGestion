@@ -1,5 +1,7 @@
-﻿using Core.DTOs.Sesion;
+﻿using Core.DTOs.Sesion.Input;
+using Core.DTOs.Sesion.Output;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +9,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SesionController : ControllerBase
     {
 
@@ -39,29 +42,25 @@ namespace Controllers.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearSesion([FromBody] SesionDTO sesion)
+        
+        public async Task<IActionResult> CrearSesion([FromBody] SesionCreacionDto dto)
         {
-           
-                var nuevaSesion = await _sesionService.CrearSesionAsync(sesion);
-
-                return Ok(nuevaSesion);
             
-           
+            var nuevaSesionDto = await _sesionService.CrearSesionAsync(dto);
+            
+            return CreatedAtAction(nameof(GetSesion), new { id = nuevaSesionDto.Id }, nuevaSesionDto);
         }
 
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] SesionDTO sesionDTO)
+        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] SesionActualizarDto dto) 
         {
-
-            var sesionActualizada = await _sesionService.ActualizarSesionAsync(id, sesionDTO);
-
-           
-            return Ok(sesionActualizada);
+            var sesionActualizadaDto = await _sesionService.ActualizarSesionAsync(id, dto);
+            return Ok(sesionActualizadaDto);
         }
-    
-        
+
+
 
 
 
