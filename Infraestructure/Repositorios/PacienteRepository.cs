@@ -19,22 +19,46 @@ namespace Infrastructure.Repositorios
         {
             _context = context;
         }
+     
+
+
+       
+            public async Task<Paciente> Actualizar(int id, Paciente entityConNuevosDatos)
+{
+    var pacienteEncontrado = await _context.Pacientes.FindAsync(id);
+    
+    if (pacienteEncontrado == null)
+    { 
+        return null; // El servicio manejará este null
+    }
+    
+    // 2. Copia manualmente los valores
+    pacienteEncontrado.Nombre = entityConNuevosDatos.Nombre;
+    pacienteEncontrado.Apellido = entityConNuevosDatos.Apellido;
+    pacienteEncontrado.FechaNacimiento = entityConNuevosDatos.FechaNacimiento.Date;
+    pacienteEncontrado.ObraSocialId = entityConNuevosDatos.ObraSocialId;
+    pacienteEncontrado.Telefono = entityConNuevosDatos.Telefono;
+    pacienteEncontrado.Email = entityConNuevosDatos.Email;
+    pacienteEncontrado.DNI = entityConNuevosDatos.DNI;
+
+   
+    _context.Entry(pacienteEncontrado).State = EntityState.Modified;
+
+    // 4. EF ahora SÍ ve el estado 'Modified' y guarda.
+    await _context.SaveChangesAsync();
+    return pacienteEncontrado;
+}
+    
         public async Task<Paciente> Actualizar(Paciente entity)
         {
-            var pacienteEncontrado = await _context.Pacientes.FindAsync(entity.Id);
-            if (pacienteEncontrado == null)
-            { return null; }
-            pacienteEncontrado.Nombre = entity.Nombre;
-            pacienteEncontrado.Apellido = entity.Apellido;
-            pacienteEncontrado.FechaNacimiento = entity.FechaNacimiento.Date;
-            pacienteEncontrado.ObraSocialId = entity.ObraSocialId;
-            pacienteEncontrado.Telefono = entity.Telefono;
-            pacienteEncontrado.Email = entity.Email;
-            pacienteEncontrado.DNI = entity.DNI;
+         
+            return await Actualizar(entity.Id, entity);
 
-            await _context.SaveChangesAsync();
-            return pacienteEncontrado;
+            
+
         }
+    
+        
 
         public async Task<Paciente> Agregar(Paciente entity)
         {
@@ -63,7 +87,11 @@ namespace Infrastructure.Repositorios
         public async Task<IEnumerable<Paciente>> ObtenerTodos()
 
         {
-            return await _context.Pacientes.ToListAsync();
+
+            return await _context.Pacientes
+                                 .Include(p => p.ObraSocial)
+                                 .ToListAsync();
+
         }
 
 
@@ -87,5 +115,23 @@ namespace Infrastructure.Repositorios
                 .Take(10) // Limitamos a 10 resultados para el dropdown
                 .ToListAsync();
         }
+
+
+
+        public async Task<Paciente> GetDetallesByIdAsync(int id)
+        {
+            var paciente = await _context.Pacientes.Include(p => p.ObraSocial)
+                                                   .Include(p => p.Sesiones)
+                                                   .ThenInclude(s => s.Turno)
+                                                   .ThenInclude(t => t.Pagos)
+                                                   .AsNoTracking()
+                                                   .FirstOrDefaultAsync(p => p.Id == id);
+
+            return paciente;
+        }
+
+
+
+
     }
 }

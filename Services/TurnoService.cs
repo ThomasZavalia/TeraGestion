@@ -26,7 +26,18 @@ namespace Services
         private readonly TeraDbContext _teraDbContext;
         private readonly IMapper _mapper;
         private readonly IObraSocialService _obraSocialService;
-        public TurnoService(ITurnoRepository turnoRepository, IPacienteService pacienteService, IPagoService pagoService, TeraDbContext teraDbContext, IMapper mapper, IObraSocialService obraSocialService)
+        private readonly ISesionRepository _sesionRepository;
+
+        public TurnoService(
+         ITurnoRepository turnoRepository,
+         IPacienteService pacienteService,
+         IPagoService pagoService,
+         TeraDbContext teraDbContext,
+         IMapper mapper,
+         IObraSocialService obraSocialService,
+         
+         ISesionRepository sesionRepository
+     )
         {
             _turnoRepository = turnoRepository;
             _pacienteService = pacienteService;
@@ -34,6 +45,7 @@ namespace Services
             _teraDbContext = teraDbContext;
             _mapper = mapper;
             _obraSocialService = obraSocialService;
+            _sesionRepository = sesionRepository; 
         }
 
 
@@ -49,13 +61,13 @@ namespace Services
             if (dto.EsParticular)
             {
                 turnoExistente.Precio = dto.Precio;
-                turnoExistente.ObraSocialId = null; // Borra la OS
+                turnoExistente.ObraSocialId = null; 
             }
             else
             {
-                // Si NO es particular, usa la OS del DTO y recalcula precio
+                
                 turnoExistente.ObraSocialId = dto.ObraSocialId;
-                // Recalcula SIEMPRE el precio basado en la OS para evitar inconsistencias
+               
                 turnoExistente.Precio = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
             }
 
@@ -269,11 +281,43 @@ namespace Services
 
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date)
         {
-           
+
             var turnos = await _turnoRepository.GetTurnosByDayAsync(date.Date); // Usamos .Date por si acaso
 
-            
+
             return _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
         }
+
+
+        public async Task<TurnoDetalleDto> GetTurnoDetalleAsync(int id)
+        {
+            var turno = await _turnoRepository.GetByIdConPaciente(id);
+            if (turno == null)
+            {
+                throw new KeyNotFoundException("Turno no encontrado");
+            }
+
+
+            var turnoDto = _mapper.Map<TurnoDetalleDto>(turno);
+
+
+            var sesionExistente = await _sesionRepository.GetByTurnoIdAsync(id);
+
+
+            if (sesionExistente != null)
+            {
+
+                turnoDto.Asistencia = sesionExistente.Asistencia;
+            }
+            else
+            {
+
+                turnoDto.Asistencia = null;
+            }
+
+            return turnoDto;
+        }
+
     }
 }
+

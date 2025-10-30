@@ -92,5 +92,13 @@ namespace Controllers.Controllers
             var turnos = await _turnoService.GetTurnosDelDiaAsync(hoyUtc);
             return Ok(turnos); 
         }
+
+        [HttpGet("{id}/detalle")]
+        public async Task<IActionResult> GetTurnoDetalle(int id)
+        {
+        
+            var turno = await _turnoService.GetTurnoDetalleAsync(id);
+            return Ok(turno);
+        }
     }
 }

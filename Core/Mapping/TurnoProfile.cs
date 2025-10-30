@@ -29,6 +29,9 @@ namespace Core.Mapping
                 // Y estas que ya tenías
                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => src.Paciente.Nombre))
                 .ForMember(dest => dest.PacienteApellido, opt => opt.MapFrom(src => src.Paciente.Apellido));
+
+            CreateMap<Turno, TurnoDetalleDto>()
+            .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"));
         }
     }
 }

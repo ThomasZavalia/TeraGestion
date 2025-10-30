@@ -72,5 +72,17 @@ namespace Controllers.Controllers
             return NoContent();
         }
 
+        [HttpPost("registrar-asistencia")]
+        public async Task<IActionResult> RegistrarAsistencia([FromBody] SesionAsistenciaDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var sesionDto = await _sesionService.RegistrarAsistenciaAsync(dto);
+            return Ok(sesionDto);
+        }
+
     }
 }

@@ -19,6 +19,8 @@ namespace Core.Interfaces.Services
         Task<SesionDTO> ActualizarSesionAsync(int id, SesionActualizarDto dto);
         public Task<bool> EliminarSesionAsync(int id);
 
+        Task<SesionDTO> RegistrarAsistenciaAsync(SesionAsistenciaDto dto);
+
 
     }
 }
