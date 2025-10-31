@@ -12,6 +12,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class TurnoController : ControllerBase
     {
 
@@ -50,7 +51,7 @@ namespace Controllers.Controllers
         
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDto turnoDto)
+        public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDtoActualizar turnoDto)
         {
            
             
@@ -81,6 +82,23 @@ namespace Controllers.Controllers
         {
             var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
             return Ok(slots);
+        }
+
+        [HttpGet("hoy")] 
+        public async Task<IActionResult> GetTurnosDeHoy()
+        {
+
+            var hoyUtc = DateTime.UtcNow;
+            var turnos = await _turnoService.GetTurnosDelDiaAsync(hoyUtc);
+            return Ok(turnos); 
+        }
+
+        [HttpGet("{id}/detalle")]
+        public async Task<IActionResult> GetTurnoDetalle(int id)
+        {
+        
+            var turno = await _turnoService.GetTurnoDetalleAsync(id);
+            return Ok(turno);
         }
     }
 }

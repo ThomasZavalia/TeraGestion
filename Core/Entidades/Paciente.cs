@@ -16,7 +16,7 @@ namespace Core.Entidades
         public string? Email { get; set; }
         public string DNI { get; set; }
 
-        public int? ObraSocialId { get; set; }  // nullable si no tiene
+        public int? ObraSocialId { get; set; }  
         public ObraSocial ObraSocial { get; set; }
 
         public ICollection<Turno> Turnos { get; set; } = new List<Turno>();

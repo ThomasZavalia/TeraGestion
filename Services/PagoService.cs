@@ -106,5 +106,12 @@ namespace Services
         {
             return await _pagoRepository.ObtenerTodos();
         }
+
+        public async Task<IEnumerable<PagoDetallesDto>> GetPagosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId)
+        {
+            var pagos = await _pagoRepository.GetPagosFiltradosAsync(fechaDesde, fechaHasta, pacienteId);
+           
+            return _mapper.Map<IEnumerable<PagoDetallesDto>>(pagos);
+        }
     }
 }

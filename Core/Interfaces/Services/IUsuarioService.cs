@@ -1,5 +1,6 @@
 ﻿using Core.DTOs;
 using Core.DTOs.Usuario.Input;
+using Core.DTOs.Usuario.Output;
 using Core.Entidades;
 using System;
 using System.Collections.Generic;
@@ -11,14 +12,17 @@ namespace Core.Interfaces.Services
 {
     public interface IUsuarioService
     {
-        public Task<Usuario> GetUsuarioById(int id);
-        public Task<IEnumerable<Usuario>> GetUsuarios();
-        public Task<Usuario> CrearUsuario(Usuario usuario);
-        public Task<Usuario> ActualizarUsuario(int id, UsuarioActualizarDto usuario);
-        public Task<bool> EliminarUsuario(int id);
-        public Task<Usuario> GetByName(string username);
+       Task<Usuario> ValidarCredenciales(string username, string password); // Devuelve Entidad solo para Auth
+        Task<Usuario> CrearUsuario(Usuario usuario); // Devuelve Entidad solo al crear? O DTO? Considerar.
 
-        public Task<Usuario> ValidarCredenciales(string username, string password);
+        
+        Task<UsuarioDto> GetUsuarioById(int id); 
+        Task<IEnumerable<UsuarioDto>> GetUsuarios(); 
+        Task<UsuarioDto> ActualizarUsuario(int id, UsuarioActualizarDto dto); 
+        Task<UsuarioDto> ActualizarPerfilUsuario(int id, UsuarioPerfilDto dto);
+        Task<bool> CambiarContraseña(int id, string contraseñaActual, string contraseñaNueva); // ¡Nuevo!
+        Task<bool> EliminarUsuario(int id);
+        Task<Usuario> GetByName(string username);
 
     }
 }

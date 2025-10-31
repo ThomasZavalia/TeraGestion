@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using Core.DTOs.Sesion;
+using Core.DTOs.Sesion.Input;
+using Core.DTOs.Sesion.Output;
 using Core.Entidades;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
@@ -20,7 +21,7 @@ namespace Services
         private readonly IPacienteService _pacienteService;
         private readonly IMapper _mapper;
 
-        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService,IMapper mapper)
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService, IMapper mapper)
         {
             _turnoService = turnoService;
             _sesionRepository = sesionRepository;
@@ -33,21 +34,25 @@ namespace Services
 
 
 
-        public async Task<SesionDTO> ActualizarSesionAsync(int id,SesionDTO sesionDTO)
+        public async Task<SesionDTO> ActualizarSesionAsync(int id, SesionActualizarDto dto)
         {
             var sesionExistente = await _sesionRepository.GetById(id);
-
             if (sesionExistente == null)
             {
-               throw new ArgumentException("Sesion no encontrada");
+                throw new KeyNotFoundException($"Sesión con ID {id} no encontrada.");
             }
 
-            // Mapear los valores del DTO sobre la entidad existente
-            _mapper.Map(sesionDTO, sesionExistente);
 
-            // Actualizar directamente la sesión existente
+            sesionExistente.Notas = dto.Notas;
+
+            if (dto.Asistencia != null)
+            {
+                sesionExistente.Asistencia = dto.Asistencia;
+            }
+
+
+
             var sesionActualizada = await _sesionRepository.Actualizar(sesionExistente);
-
             return _mapper.Map<SesionDTO>(sesionActualizada);
         }
 
@@ -56,46 +61,38 @@ namespace Services
 
 
 
-        public async Task<SesionDTO> CrearSesionAsync(SesionDTO sesionDTO)
+        public async Task<SesionDTO> CrearSesionAsync(SesionCreacionDto dto)
         {
-            if (sesionDTO == null)
+            if (dto == null) throw new ArgumentNullException(nameof(dto));
+
+
+            var sesionExistente = await _sesionRepository.GetByTurnoIdAsync(dto.TurnoId);
+            if (sesionExistente != null)
             {
-                throw new ArgumentNullException(nameof(sesionDTO), "El objeto SesionDTO no puede ser nulo.");
+
+                throw new ArgumentException($"Ya existe una sesión registrada para el turno ID {dto.TurnoId}.");
+
+            }
+
+            var turnoDto = await _turnoService.GetTurnoAsync(dto.TurnoId);
+            if (turnoDto == null)
+            {
+                throw new KeyNotFoundException($"El turno con ID {dto.TurnoId} no fue encontrado.");
             }
 
 
-            var turnoExistente = await _turnoService.GetTurnoAsync(sesionDTO.TurnoId);
-            if (turnoExistente == null)
+            var nuevaSesion = new Sesion
             {
-                throw new ArgumentException("El turno con ID " + sesionDTO.TurnoId + " no fue encontrado.");
-            }
-            var pacienteId = turnoExistente.PacienteId;
-            //var sesionExistente = await GetSesionByIdAsync(sesionDTO.Id);
-            //var pacienteExistente = turnoExistente.Paciente;
+                TurnoId = dto.TurnoId,
+                PacienteId = turnoDto.PacienteId,
+                FechaHoraInicio = turnoDto.FechaHora,
+                Asistencia = dto.Asistencia,
+                Notas = null
+            };
 
-
-           
-
-            
-
-
-
-
-            if (pacienteId != sesionDTO.PacienteId)
-            {
-                throw new ArgumentException("El pacienteId no coincide con el del turno.");
-            }
-
-
-
-
-
-
-            var nuevaSesion = _mapper.Map<Sesion>(sesionDTO);
 
             var sesionCreada = await _sesionRepository.Agregar(nuevaSesion);
             return _mapper.Map<SesionDTO>(sesionCreada);
-
         }
 
 
@@ -126,7 +123,7 @@ namespace Services
             {
                 throw new ArgumentException("El ID es invalido.");
             }
-            
+
             var sesion = await _sesionRepository.GetById(id);
 
             if (sesion == null)
@@ -134,7 +131,7 @@ namespace Services
                 throw new KeyNotFoundException($"La sesión con ID {id} no fue encontrada.");
             }
 
-         var sesionDto = _mapper.Map<SesionDTO>(sesion);
+            var sesionDto = _mapper.Map<SesionDTO>(sesion);
             return sesionDto;
         }
 
@@ -156,6 +153,48 @@ namespace Services
             var sesionesDto = _mapper.Map<IEnumerable<SesionDTO>>(TodasLasSesiones);
 
             return sesionesDto;
+        }
+
+        public async Task<SesionDTO> RegistrarAsistenciaAsync(SesionAsistenciaDto dto)
+        {
+           
+            var sesionExistente = await _sesionRepository.GetByTurnoIdAsync(dto.TurnoId);
+
+            if (sesionExistente != null)
+            {
+                
+
+              
+                var sesionParaActualizar = await _sesionRepository.GetById(sesionExistente.Id);
+
+                sesionParaActualizar.Asistencia = dto.Asistencia;
+                
+                 if (dto.Asistencia == "Ausente") sesionParaActualizar.Notas = "Paciente ausente";
+
+                var sesionActualizada = await _sesionRepository.Actualizar(sesionParaActualizar);
+                return _mapper.Map<SesionDTO>(sesionActualizada);
+            }
+            else
+            {
+
+                var turnoDto = await _turnoService.GetTurnoAsync(dto.TurnoId);
+                if (turnoDto == null)
+                {
+                    throw new KeyNotFoundException($"El turno con ID {dto.TurnoId} no fue encontrado.");
+                }
+
+                var nuevaSesion = new Sesion
+                {
+                    TurnoId = dto.TurnoId,
+                    PacienteId = turnoDto.PacienteId,
+                    FechaHoraInicio = turnoDto.FechaHora,
+                    Asistencia = dto.Asistencia,
+                    Notas = "" 
+                };
+
+                var sesionCreada = await _sesionRepository.Agregar(nuevaSesion);
+                return _mapper.Map<SesionDTO>(sesionCreada);
+            }
         }
     }
 }

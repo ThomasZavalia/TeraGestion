@@ -3,7 +3,7 @@ using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Core.Mapping;
 using Infraestructure;
-using Infrastructure;
+using Infrastructure.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +29,7 @@ builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPagosRepository, PagoRepository>();
 builder.Services.AddScoped<ISesionRepository, SesionRepository>();
 builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
+builder.Services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
 
 
 // Servicios
@@ -39,6 +40,7 @@ builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<ISesionService, SesionService>();
 builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
 builder.Services.AddScoped<IReportesService,ReportesService>();
+builder.Services.AddScoped<IDisponibilidadService, DisponibilidadService>();
 
 builder.Services.AddCors(options =>
 {
@@ -80,6 +82,10 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddAutoMapper(typeof(Core.Mapping.TurnoProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(PagoProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(DisponibilidadProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ObraSocialProfile).Assembly);
+
 
 
 

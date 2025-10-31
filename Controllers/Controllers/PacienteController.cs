@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.Paciente;
 using Core.Entidades;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PacienteController : ControllerBase
     {
         private readonly IPacienteService _pacienteService;
@@ -66,10 +68,6 @@ namespace Controllers.Controllers
             var pacientes = await _pacienteService.BuscarPacientesAsync(query);
             return Ok(pacientes);
         }
-
-
-
-
         [HttpGet("{id}/detalles")]
         public async Task<ActionResult<PacienteDetalleDTO>> GetPacienteDetallesAsync(int id)
         {
@@ -87,6 +85,19 @@ namespace Controllers.Controllers
             {
                 return StatusCode(500, $"Ocurrió un error al obtener los detalles del paciente. {ex.Message}");
             }
+        }
+
+        [HttpGet("check-dni")]
+        public async Task<IActionResult> CheckDni([FromQuery] string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
+            {
+                return BadRequest(new { message = "DNI no provisto." });
+            }
+            var exists = await _pacienteService.CheckDniExistsAsync(dni);
+
+            // Devolver un objeto es más claro para el frontend
+            return Ok(new { exists = exists });
         }
     }
 }

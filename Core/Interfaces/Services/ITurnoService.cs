@@ -14,13 +14,17 @@ namespace Core.Interfaces.Services
         public Task<TurnoDto> GetTurnoAsync(int id);
         public Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync();
         public Task<TurnoCalendarioDto> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
-        public Task<TurnoDto> ActualizarTurnoAsync(int id, TurnoDto turno);
+        public Task<TurnoCalendarioDto> ActualizarTurnoAsync(int id, TurnoDtoActualizar turno);
         public Task<bool> EliminarTurnoAsync(int id);
         public Task<IEnumerable<Turno>> GetTurnosSinDto();
 
         public Task MarcarComoPagadoAsync(int turnoId, string metodo);
 
         Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
+
+        Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date);
+        Task<TurnoDetalleDto> GetTurnoDetalleAsync(int id);
+       
 
     }
 }
