@@ -336,7 +336,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entidades.Sesion", b =>
                 {
                     b.HasOne("Core.Entidades.Paciente", "Paciente")
-                        .WithMany()
+                        .WithMany("Sesiones")
                         .HasForeignKey("PacienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -379,6 +379,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
                 {
+                    b.Navigation("Sesiones");
+
                     b.Navigation("Turnos");
                 });
 

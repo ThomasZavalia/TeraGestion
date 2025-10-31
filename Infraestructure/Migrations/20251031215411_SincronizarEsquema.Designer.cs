@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-    [Migration("20251009213407_CambiarTodo")]
-    partial class CambiarTodo
+    [Migration("20251031215411_SincronizarEsquema")]
+    partial class SincronizarEsquema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,98 @@ namespace Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Entidades.Disponibilidad", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DiaSemana")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("Disponible")
+                        .HasColumnType("boolean");
+
+                    b.Property<TimeSpan?>("HoraFin")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeSpan?>("HoraInicio")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<int>("UsuarioId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "DiaSemana")
+                        .IsUnique();
+
+                    b.ToTable("Disponibilidades");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = -1,
+                            DiaSemana = 0,
+                            Disponible = false,
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -2,
+                            DiaSemana = 1,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -3,
+                            DiaSemana = 2,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -4,
+                            DiaSemana = 3,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -5,
+                            DiaSemana = 4,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -6,
+                            DiaSemana = 5,
+                            Disponible = true,
+                            HoraFin = new TimeSpan(0, 21, 0, 0, 0),
+                            HoraInicio = new TimeSpan(0, 16, 0, 0, 0),
+                            UsuarioId = 2
+                        },
+                        new
+                        {
+                            Id = -7,
+                            DiaSemana = 6,
+                            Disponible = false,
+                            UsuarioId = 2
+                        });
+                });
 
             modelBuilder.Entity("Core.Entidades.ObraSocial", b =>
                 {
@@ -43,7 +135,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ObraSocial");
+                    b.ToTable("ObrasSociales", (string)null);
                 });
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
@@ -103,7 +195,7 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<decimal>("Monto")
+                    b.Property<decimal?>("Monto")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("TurnoId")
@@ -129,10 +221,9 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHoraInicio")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Notas")
-                        .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
@@ -164,7 +255,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("FechaHora")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<int?>("ObraSocialId")
                         .HasColumnType("integer");
@@ -172,7 +263,7 @@ namespace Infrastructure.Migrations
                     b.Property<int>("PacienteId")
                         .HasColumnType("integer");
 
-                    b.Property<decimal>("Precio")
+                    b.Property<decimal?>("Precio")
                         .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
@@ -213,6 +304,17 @@ namespace Infrastructure.Migrations
                     b.ToTable("Usuarios", (string)null);
                 });
 
+            modelBuilder.Entity("Core.Entidades.Disponibilidad", b =>
+                {
+                    b.HasOne("Core.Entidades.Usuario", "Usuario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Usuario");
+                });
+
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
                 {
                     b.HasOne("Core.Entidades.ObraSocial", "ObraSocial")
@@ -237,7 +339,7 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Core.Entidades.Sesion", b =>
                 {
                     b.HasOne("Core.Entidades.Paciente", "Paciente")
-                        .WithMany()
+                        .WithMany("Sesiones")
                         .HasForeignKey("PacienteId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -280,6 +382,8 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Core.Entidades.Paciente", b =>
                 {
+                    b.Navigation("Sesiones");
+
                     b.Navigation("Turnos");
                 });
 
