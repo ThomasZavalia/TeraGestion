@@ -12,13 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-<<<<<<<< HEAD:Infraestructure/Migrations/20251020230945_NuevaMigracion.Designer.cs
-    [Migration("20251020230945_NuevaMigracion")]
-    partial class NuevaMigracion
-========
-    [Migration("20251031215411_SincronizarEsquema")]
-    partial class SincronizarEsquema
->>>>>>>> develop:Infraestructure/Migrations/20251031215411_SincronizarEsquema.Designer.cs
+[Migration("20251020230945_NuevaMigracion")]
+partial class NuevaMigracion
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

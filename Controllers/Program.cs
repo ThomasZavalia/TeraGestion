@@ -23,7 +23,7 @@ builder.Services.AddDbContext<TeraDbContext>(options =>
 
 
 // Repositorios
-builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
+builder.Services.AddScoped<IPacienteRepository, Infraestructure.PacienteRepository>();
 builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPagosRepository, PagoRepository>();
