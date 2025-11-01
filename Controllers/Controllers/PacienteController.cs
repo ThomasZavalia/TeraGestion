@@ -68,6 +68,7 @@ namespace Controllers.Controllers
             var pacientes = await _pacienteService.BuscarPacientesAsync(query);
             return Ok(pacientes);
         }
+
         [HttpGet("{id}/detalles")]
         public async Task<ActionResult<PacienteDetalleDTO>> GetPacienteDetallesAsync(int id)
         {
@@ -99,6 +100,7 @@ namespace Controllers.Controllers
             // Devolver un objeto es más claro para el frontend
             return Ok(new { exists = exists });
         }
+        
     }
 }
 

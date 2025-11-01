@@ -23,12 +23,46 @@ namespace Services
 
         public async Task<PacienteDTO> ActualizarPacienteAsync(int id, PacienteDTO pacienteDto)
         {
+
+            /*  if (pacienteDto == null)
+                    throw new ArgumentNullException(nameof(pacienteDto));
+
+              if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
+                    throw new ArgumentException("Nombre y Apellido son obligatorios");
+              var pacienteExistente = await _pacienteRepository.GetById(id);
+        if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+
+        pacienteExistente.ObraSocial = null; // Evitar problemas de seguimiento de entidades
+
+
+        _mapper.Map(pacienteDto, pacienteExistente);
+
+        var actualizado = await _pacienteRepository.Actualizar(pacienteExistente);
+        return _mapper.Map<PacienteDTO>(actualizado);*/
+
+
+
             if (pacienteDto == null) throw new ArgumentNullException(nameof(pacienteDto));
             if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
                 throw new ArgumentException("Nombre y Apellido son obligatorios");
 
+            // 1. Mapea el DTO a una entidad "limpia" (no vigilada).
+            //    El perfil de AutoMapper que ignora 'Id' y 'ObraSocial' es clave aquí.
             var pacienteParaActualizar = _mapper.Map<Paciente>(pacienteDto);
+
+            // 2. Pasamos el 'id' (de la URL) y los 'nuevos datos' (del DTO)
+            //    al repositorio. Él se encargará de todo.
             var actualizado = await _pacienteRepository.Actualizar(id, pacienteParaActualizar);
+
+            // 3. Si el repositorio devuelve null, es que no lo encontró.
+            if (actualizado == null)
+            {
+                throw new KeyNotFoundException("Paciente no encontrado");
+            }
+
+            // 4. Mapea la entidad final (ya guardada) de vuelta a un DTO.
+            return _mapper.Map<PacienteDTO>(actualizado);
+
 
             if (actualizado == null)
             {
@@ -42,6 +76,7 @@ namespace Services
         {
             try
             {
+
                 var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
                 var creado = await _pacienteRepository.Agregar(nuevoPaciente);
                 return _mapper.Map<PacienteDTO>(creado);
@@ -63,13 +98,13 @@ namespace Services
             await _pacienteRepository.Eliminar(id);
 
             return true;
+
         }
 
         public async Task<PacienteDTO> GetPacienteAsync(int id)
         {
             if (id <= 0)
                 throw new ArgumentException("Id inválido");
-
             var paciente = await _pacienteRepository.GetById(id);
             if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
 
@@ -83,12 +118,15 @@ namespace Services
             var paciente = pacientes.FirstOrDefault(p => p.DNI == dni);
 
             return MapToDto(paciente);
+
         }
 
         public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync()
         {
             var pacientes = await _pacienteRepository.ObtenerTodos();
+
             var pacientesDTO = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
+
             return pacientesDTO;
         }
 
@@ -104,6 +142,7 @@ namespace Services
                 Telefono = paciente.Telefono,
                 Email = paciente.Email,
                 DNI = paciente.DNI,
+
             };
         }
 
@@ -123,6 +162,7 @@ namespace Services
             };
         }
 
+
         public async Task<IEnumerable<Paciente>> GetPacientesSinDto()
         {
             return await _pacienteRepository.ObtenerTodos();
@@ -134,6 +174,7 @@ namespace Services
             return _mapper.Map<IEnumerable<PacienteSimpleDto>>(pacientes);
         }
 
+
         public async Task<PacienteDetalleDTO> GetPacienteDetallesAsync(int id)
         {
             var paciente = await _pacienteRepository.GetDetallesByIdAsync(id);
@@ -144,17 +185,24 @@ namespace Services
             }
 
             return _mapper.Map<PacienteDetalleDTO>(paciente);
+
         }
 
-        public async Task<bool> CheckDniExistsAsync(string dni)
-        {
-            if (string.IsNullOrEmpty(dni))
+            public async Task<bool> CheckDniExistsAsync(string dni)
             {
-                return false; // No se puede verificar un DNI vacío
-            }
+                if (string.IsNullOrEmpty(dni))
+                {
+                    return false;
 
-            var paciente = await GetPacientePorDniAsync(dni);
-            return paciente != null;
+
+                }
+
+
+                var paciente = await GetPacientePorDniAsync(dni);
+                return paciente != null;
+
+            }
         }
-    }
-}
+    } 
+
+
