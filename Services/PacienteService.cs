@@ -24,24 +24,6 @@ namespace Services
         public async Task<PacienteDTO> ActualizarPacienteAsync(int id, PacienteDTO pacienteDto)
         {
 
-            /*  if (pacienteDto == null)
-                    throw new ArgumentNullException(nameof(pacienteDto));
-
-              if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
-                    throw new ArgumentException("Nombre y Apellido son obligatorios");
-              var pacienteExistente = await _pacienteRepository.GetById(id);
-        if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
-
-        pacienteExistente.ObraSocial = null; // Evitar problemas de seguimiento de entidades
-
-
-        _mapper.Map(pacienteDto, pacienteExistente);
-
-        var actualizado = await _pacienteRepository.Actualizar(pacienteExistente);
-        return _mapper.Map<PacienteDTO>(actualizado);*/
-
-
-
             if (pacienteDto == null) throw new ArgumentNullException(nameof(pacienteDto));
             if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
                 throw new ArgumentException("Nombre y Apellido son obligatorios");
@@ -63,13 +45,6 @@ namespace Services
             // 4. Mapea la entidad final (ya guardada) de vuelta a un DTO.
             return _mapper.Map<PacienteDTO>(actualizado);
 
-
-            if (actualizado == null)
-            {
-                throw new KeyNotFoundException("Paciente no encontrado");
-            }
-
-            return _mapper.Map<PacienteDTO>(actualizado);
         }
 
         public async Task<PacienteDTO> CrearPacienteAsync(PacienteDTO pacienteDto)

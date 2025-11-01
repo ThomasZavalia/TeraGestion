@@ -38,14 +38,13 @@ namespace Core.Mapping
 
             // 3. Mapeo principal para Paciente -> PacienteDetalleDto
             CreateMap<Paciente, PacienteDetalleDTO>()
-                .ForMember(dest => dest.ObraSocial, opt => opt.MapFrom(src => src.ObraSocial.Nombre))
+                .ForMember(dest => dest.ObraSocial, opt => opt.MapFrom(src => src.ObraSocial))
                 .ForMember(dest => dest.Sesiones, opt => opt.MapFrom(src => src.Sesiones))
-                .ForMember(dest => dest.Pagos, opt => opt.MapFrom(src =>
-                    src.Sesiones
-                       .Where(s => s.Turno != null && s.Turno.Pagos != null)
-                       .SelectMany(s => s.Turno.Pagos)
-                       .Distinct()
-                ));
+                .ForMember(dest => dest.Pagos, opt => opt.MapFrom(src => src.Sesiones
+                   .Where(s => s.Turno != null && s.Turno.Pagos != null)
+                   .SelectMany(s => s.Turno.Pagos)
+                   .Distinct()
+                 ));
         }
     }
 }

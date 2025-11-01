@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Core.DTOs.ObraSocial;
 using Core.DTOs.Paciente;
 
 
@@ -13,8 +14,10 @@ namespace Core.DTOs.Paciente
         public string Dni { get; set; }
         public string Telefono { get; set; }
         public string Email { get; set; }
-        public string ObraSocial { get; set; }
+        public DateTime FechaNacimiento { get; set; }
 
+
+        public ObraSocialSimpleDTO ObraSocial { get; set; }
 
         public List<SesionHistorialDTO> Sesiones { get; set; }
 
