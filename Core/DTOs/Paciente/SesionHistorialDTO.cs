@@ -7,5 +7,6 @@ namespace Core.DTOs.Paciente
         public int Id { get; set; }
         public DateTime Fecha { get; set; }
         public string Notas { get; set; }
+        public string Asistencia { get; set; }
     }
 }
