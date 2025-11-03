@@ -9,7 +9,7 @@ namespace Controllers.Controllers
 {
     [Route("api/usuario/me/disponibilidad")] 
     [ApiController]
-    [Authorize] // Requiere login para acceder
+    [Authorize] 
     public class DisponibilidadController : ControllerBase
     {
         private readonly IDisponibilidadService _disponibilidadService;

@@ -57,19 +57,20 @@ namespace Services
 
         public async Task<ObraSocialDto> ActualizarObraSocialAsync(int id, ObraSocialDto obraSocialDto)
         {
-          
             var obraSocialExistente = await _obraSocialRepository.GetById(id);
             if (obraSocialExistente == null)
             {
                 throw new KeyNotFoundException("Obra social no encontrada");
             }
 
-            _mapper.Map(obraSocialDto, obraSocialExistente);
-
-     
-            var obraSocialActualizada = await _obraSocialRepository.Actualizar(obraSocialExistente);
+            obraSocialExistente.Nombre = obraSocialDto.Nombre;
+            obraSocialExistente.PrecioTurno = obraSocialDto.PrecioTurno;
+           
 
            
+            var obraSocialActualizada = await _obraSocialRepository.Actualizar(obraSocialExistente);
+
+            
             return _mapper.Map<ObraSocialDto>(obraSocialActualizada);
         }
 

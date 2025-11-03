@@ -55,5 +55,13 @@ namespace Infrastructure.Repositorios
 
             await _context.SaveChangesAsync();
         }
+
+
+        public async Task<Disponibilidad?> GetByUserIdAndDayAsync(int userId, DayOfWeek dayOfWeek)
+        {
+            return await _context.Disponibilidades
+                                 .AsNoTracking()
+                                 .FirstOrDefaultAsync(d => d.UsuarioId == userId && d.DiaSemana == dayOfWeek);
+        }
     }
 }

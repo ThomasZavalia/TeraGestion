@@ -21,16 +21,11 @@ namespace Infrastructure.Repositorios
 
         public async Task<ObraSocial> Actualizar(ObraSocial entity)
         {
-            var existente = await _context.ObrasSociales.FindAsync(entity.Id);
-            if (existente == null) return null;
-
-            existente.Nombre = entity.Nombre;
-            existente.PrecioTurno = entity.PrecioTurno;
-
+           
+            _context.Entry(entity).State = EntityState.Modified; 
             await _context.SaveChangesAsync();
-            return existente;
+            return entity;
         }
-
         public async Task<ObraSocial> Agregar(ObraSocial entity)
         {
             await _context.ObrasSociales.AddAsync(entity);
@@ -49,8 +44,9 @@ namespace Infrastructure.Repositorios
 
         public async Task<ObraSocial> GetById(int id)
         {
+           
             return await _context.ObrasSociales
-                .AsNoTracking()
+                // .AsNoTracking() 
                 .FirstOrDefaultAsync(o => o.Id == id);
         }
 

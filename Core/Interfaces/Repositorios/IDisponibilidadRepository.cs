@@ -13,5 +13,7 @@ namespace Core.Interfaces.Repositorios
         
         Task UpdateDisponibilidadAsync(IEnumerable<Disponibilidad> disponibilidades);
 
+        Task<Disponibilidad?> GetByUserIdAndDayAsync(int userId, DayOfWeek dayOfWeek);
+
     }
 }

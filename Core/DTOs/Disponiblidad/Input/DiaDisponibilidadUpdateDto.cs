@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.Validation;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -11,22 +12,21 @@ namespace Core.DTOs.Disponiblidad.Input
     {
         [Required]
         public DayOfWeek DiaSemana { get; set; }
-        public bool Disponible { get; set; } = true;
+        public bool Disponible { get; set; }
 
+      
+        [ValidTimeFormat] 
+        public string? HoraInicio { get; set; } 
 
-        [RegularExpression(@"^([01]\d|2[0-3]):([0-5]\d)$", ErrorMessage = "Formato de hora inválido (HH:mm).")]
-        public string HoraInicio { get; set; }
-
-        [RegularExpression(@"^([01]\d|2[0-3]):([0-5]\d)$", ErrorMessage = "Formato de hora inválido (HH:mm).")]
-        public string HoraFin { get; set; }
-
+        [ValidTimeFormat] 
+        public string? HoraFin { get; set; } 
+     
     }
 
-    
     public class DisponibilidadUpdateDto
     {
         [Required]
-        [MinLength(7)] 
+        [MinLength(7, ErrorMessage = "Se deben enviar los 7 días de la semana.")]
         public List<DiaDisponibilidadUpdateDto> Dias { get; set; }
     }
 }

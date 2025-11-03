@@ -7,10 +7,12 @@ using Core.Entidades;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Infraestructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -27,6 +29,8 @@ namespace Services
         private readonly IMapper _mapper;
         private readonly IObraSocialService _obraSocialService;
         private readonly ISesionRepository _sesionRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IDisponibilidadRepository _disponibilidadRepository;
 
         public TurnoService(
          ITurnoRepository turnoRepository,
@@ -35,8 +39,9 @@ namespace Services
          TeraDbContext teraDbContext,
          IMapper mapper,
          IObraSocialService obraSocialService,
-         
-         ISesionRepository sesionRepository
+         ISesionRepository sesionRepository,
+         IHttpContextAccessor httpContextAccessor,
+         IDisponibilidadRepository disponibilidadRepository
      )
         {
             _turnoRepository = turnoRepository;
@@ -45,7 +50,9 @@ namespace Services
             _teraDbContext = teraDbContext;
             _mapper = mapper;
             _obraSocialService = obraSocialService;
-            _sesionRepository = sesionRepository; 
+            _sesionRepository = sesionRepository;
+            _httpContextAccessor = httpContextAccessor;
+            _disponibilidadRepository = disponibilidadRepository;
         }
 
 
@@ -255,6 +262,7 @@ namespace Services
             return await _turnoRepository.ObtenerTodos();
         }
 
+        /*
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
         {
 
@@ -277,12 +285,64 @@ namespace Services
 
             return availableSlots;
         }
+        */
 
+
+        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
+        {
+            var allSlots = new List<string>();
+
+           
+            var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int userId))
+            {
+               
+                return allSlots;
+            }
+
+          
+            var diaDeLaSemana = date.DayOfWeek;
+
+          
+            var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
+
+           
+            if (disponibilidadDia == null || !disponibilidadDia.Disponible ||
+                !disponibilidadDia.HoraInicio.HasValue || !disponibilidadDia.HoraFin.HasValue)
+            {
+                
+                return allSlots; 
+            }
+
+            TimeSpan currentSlotTime = disponibilidadDia.HoraInicio.Value;
+            TimeSpan endTime = disponibilidadDia.HoraFin.Value;
+
+            while (currentSlotTime < endTime)
+            {
+                
+                allSlots.Add(currentSlotTime.ToString(@"hh\:mm"));
+                
+                currentSlotTime = currentSlotTime.Add(TimeSpan.FromHours(1));
+            }
+
+          
+            var fechaUtc = date.ToUniversalTime().Date;
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc); 
+
+            var bookedSlots = turnosDelDia
+                .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm")) 
+                .ToHashSet();
+
+          
+            var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
+
+            return availableSlots;
+        }
 
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date)
         {
 
-            var turnos = await _turnoRepository.GetTurnosByDayAsync(date.Date); // Usamos .Date por si acaso
+            var turnos = await _turnoRepository.GetTurnosByDayAsync(date.Date); 
 
 
             return _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
