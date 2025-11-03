@@ -23,5 +23,7 @@ namespace Core.Interfaces.Services
 
         Task<PacienteDetalleDTO> GetPacienteDetallesAsync(int id);
 
+        Task<IEnumerable<PacienteDTO>> GetPacientesAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes);
+
     }
 }

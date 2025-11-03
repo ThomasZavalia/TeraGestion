@@ -11,13 +11,15 @@ namespace Core.Entidades
         public int Id { get; set; }
         public string Nombre { get; set; }
         public string Apellido { get; set; }
-        public DateTime FechaNacimiento { get; set; }
+        public DateTime? FechaNacimiento { get; set; }
         public string? Telefono { get; set; }
         public string? Email { get; set; }
         public string DNI { get; set; }
 
         public int? ObraSocialId { get; set; }  
         public ObraSocial ObraSocial { get; set; }
+
+        public bool Activo { get; set; } = true;
 
         public ICollection<Turno> Turnos { get; set; } = new List<Turno>();
 

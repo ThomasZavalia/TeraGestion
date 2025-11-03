@@ -14,6 +14,8 @@ namespace Core.Interfaces.Repositorios
 
         Task<Paciente> GetDetallesByIdAsync(int id);
 
+        Task<IEnumerable<Paciente>> ObtenerTodosAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes);
+
 
         //
         Task<Paciente> Actualizar(int id, Paciente entity);

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TeraDbContext))]
-[Migration("20251020230945_NuevaMigracion")]
-partial class NuevaMigracion
+    [Migration("20251103043056_FechaNacimientoNull")]
+    partial class FechaNacimientoNull
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -158,7 +158,7 @@ partial class NuevaMigracion
                     b.Property<string>("Email")
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("FechaNacimiento")
+                    b.Property<DateTime?>("FechaNacimiento")
                         .HasColumnType("date");
 
                     b.Property<string>("Nombre")

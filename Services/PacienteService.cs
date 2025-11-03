@@ -28,21 +28,15 @@ namespace Services
             if (string.IsNullOrWhiteSpace(pacienteDto.Nombre) || string.IsNullOrWhiteSpace(pacienteDto.Apellido))
                 throw new ArgumentException("Nombre y Apellido son obligatorios");
 
-            // 1. Mapea el DTO a una entidad "limpia" (no vigilada).
-            //    El perfil de AutoMapper que ignora 'Id' y 'ObraSocial' es clave aquí.
             var pacienteParaActualizar = _mapper.Map<Paciente>(pacienteDto);
 
-            // 2. Pasamos el 'id' (de la URL) y los 'nuevos datos' (del DTO)
-            //    al repositorio. Él se encargará de todo.
             var actualizado = await _pacienteRepository.Actualizar(id, pacienteParaActualizar);
 
-            // 3. Si el repositorio devuelve null, es que no lo encontró.
             if (actualizado == null)
             {
                 throw new KeyNotFoundException("Paciente no encontrado");
             }
 
-            // 4. Mapea la entidad final (ya guardada) de vuelta a un DTO.
             return _mapper.Map<PacienteDTO>(actualizado);
 
         }
@@ -177,7 +171,18 @@ namespace Services
                 return paciente != null;
 
             }
+
+
+
+        public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes)
+        {
+            
+            var pacientes = await _pacienteRepository.ObtenerTodosAsync(obraSocialId, activo,tienePagosPendientes);
+
+            var pacientesDTO = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
+            return pacientesDTO;
         }
-    } 
+    }
+} 
 
 

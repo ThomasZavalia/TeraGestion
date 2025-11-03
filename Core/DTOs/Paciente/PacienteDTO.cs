@@ -13,7 +13,7 @@ namespace Core.DTOs.Paciente
         [Required]
         public string Apellido { get; set; }
         [DataType(DataType.Date)]
-        public DateTime FechaNacimiento { get; set; }
+        public DateTime? FechaNacimiento { get; set; }
         [Phone]
         public string? Telefono { get; set; }
         [EmailAddress]
@@ -21,8 +21,10 @@ namespace Core.DTOs.Paciente
         [Required]
         public string DNI { get; set; }
 
-        public int? ObraSocialId { get; set; }  // nullable si no tiene
+        public int? ObraSocialId { get; set; } 
 
         public ObraSocialSimpleDTO? ObraSocial { get; set; }
+
+        public bool Activo { get; set; }
     }
 }

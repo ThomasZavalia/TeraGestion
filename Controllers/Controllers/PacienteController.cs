@@ -21,16 +21,22 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPaciente(int id)
         {
-              var paciente = await _pacienteService.GetPacienteAsync(id);
-            
-              return Ok(paciente);
+            var paciente = await _pacienteService.GetPacienteAsync(id);
+
+            return Ok(paciente);
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> GetPacientes()
+        public async Task<IActionResult> GetPacientes(
+            [FromQuery] int? obraSocialId,
+            [FromQuery] bool? activo,
+            [FromQuery] bool? tienePagosPendientes)
+
         {
-              var pacientes = await _pacienteService.GetPacientesAsync();
-              return Ok(pacientes);
+            
+            var pacientes = await _pacienteService.GetPacientesAsync(obraSocialId, activo, tienePagosPendientes);
+            return Ok(pacientes);
         }
 
         [HttpPost]
@@ -100,7 +106,10 @@ namespace Controllers.Controllers
             // Devolver un objeto es más claro para el frontend
             return Ok(new { exists = exists });
         }
-        
+
+
+    
+
     }
 }
 

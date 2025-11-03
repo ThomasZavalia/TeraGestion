@@ -29,13 +29,13 @@ namespace Infrastructure.Repositorios
     
     if (pacienteEncontrado == null)
     { 
-        return null; // El servicio manejará este null
+        return null; 
     }
     
-    // 2. Copia manualmente los valores
+    
     pacienteEncontrado.Nombre = entityConNuevosDatos.Nombre;
     pacienteEncontrado.Apellido = entityConNuevosDatos.Apellido;
-    pacienteEncontrado.FechaNacimiento = entityConNuevosDatos.FechaNacimiento.Date;
+    pacienteEncontrado.FechaNacimiento = entityConNuevosDatos.FechaNacimiento;
     pacienteEncontrado.ObraSocialId = entityConNuevosDatos.ObraSocialId;
     pacienteEncontrado.Telefono = entityConNuevosDatos.Telefono;
     pacienteEncontrado.Email = entityConNuevosDatos.Email;
@@ -44,7 +44,7 @@ namespace Infrastructure.Repositorios
    
     _context.Entry(pacienteEncontrado).State = EntityState.Modified;
 
-    // 4. EF ahora SÍ ve el estado 'Modified' y guarda.
+    
     await _context.SaveChangesAsync();
     return pacienteEncontrado;
 }
@@ -120,12 +120,13 @@ namespace Infrastructure.Repositorios
 
         public async Task<Paciente> GetDetallesByIdAsync(int id)
         {
-            var paciente = await _context.Pacientes.Include(p => p.ObraSocial)
-                                                   .Include(p => p.Sesiones)
-                                                   .ThenInclude(s => s.Turno)
-                                                   .ThenInclude(t => t.Pagos)
-                                                   .AsNoTracking()
-                                                   .FirstOrDefaultAsync(p => p.Id == id);
+            var paciente = await _context.Pacientes
+         .Include(p => p.ObraSocial) 
+         .Include(p => p.Sesiones)                    
+         .Include(p => p.Turnos) 
+             .ThenInclude(t => t.Pagos)                        
+         .AsNoTracking()
+         .FirstOrDefaultAsync(p => p.Id == id);
 
             return paciente;
         }
@@ -133,5 +134,53 @@ namespace Infrastructure.Repositorios
 
 
 
+        public async Task<IEnumerable<Paciente>> ObtenerTodosAsync(int? obraSocialId, bool? activo,bool? tienePagosPendientes)
+        {
+            var query = _context.Pacientes
+                                .Include(p => p.ObraSocial)
+                                .Include (p=>p.Turnos)
+                                .AsQueryable();
+
+
+            if (obraSocialId.HasValue && obraSocialId.Value > 0)
+            {
+                query = query.Where(p => p.ObraSocialId == obraSocialId.Value);
+            }
+
+           
+            if (activo.HasValue)
+            {
+                query = query.Where(p => p.Activo == activo.Value);
+            }
+
+      
+            if (tienePagosPendientes.HasValue)
+            {
+                var hoy = DateTime.UtcNow; 
+
+                if (tienePagosPendientes.Value)
+                {
+                    query = query.Where(p => p.Turnos.Any(
+                        t => t.Estado.ToLower() == "pendiente" && t.FechaHora < hoy
+                    ));
+                }
+                else 
+                {
+                    query = query.Where(p => !p.Turnos.Any(
+                       t => t.Estado.ToLower() == "pendiente" && t.FechaHora < hoy
+                   ));
+                }
+            }
+            
+
+            return await query.OrderBy(p => p.Apellido)
+                                .ThenBy(p => p.Nombre)
+                                .ToListAsync();
+        }
+
+       
     }
+
+
+
 }
