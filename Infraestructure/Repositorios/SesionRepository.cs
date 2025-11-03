@@ -21,7 +21,7 @@ namespace Infrastructure.Repositorios
 
         public async Task<Sesion> Actualizar(Sesion sesion)
         {
-            
+            /*
             var sesionEncontrada = await _context.Sesiones.FindAsync(sesion.Id);
             if (sesionEncontrada == null)
             {
@@ -31,11 +31,12 @@ namespace Infrastructure.Repositorios
 
           
             sesionEncontrada.Asistencia = sesion.Asistencia;
-            sesionEncontrada.Notas = sesion.Notas;
+            sesionEncontrada.Notas = sesion.Notas;*/
            
+           _context.Entry(sesion).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
-            return sesionEncontrada; 
+            return sesion;//sesionEncontrada; 
         }
 
 

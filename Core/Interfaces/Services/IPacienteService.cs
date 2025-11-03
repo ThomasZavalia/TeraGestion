@@ -21,5 +21,7 @@ namespace Core.Interfaces.Services
         Task<IEnumerable<PacienteSimpleDto>> BuscarPacientesAsync(string query);
         Task<bool> CheckDniExistsAsync(string dni);
 
+        Task<PacienteDetalleDTO> GetPacienteDetallesAsync(int id);
+
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Core.DTOs.ObraSocial;
 
 namespace Core.DTOs.Paciente
 {
@@ -21,5 +22,7 @@ namespace Core.DTOs.Paciente
         public string DNI { get; set; }
 
         public int? ObraSocialId { get; set; }  // nullable si no tiene
+
+        public ObraSocialSimpleDTO? ObraSocial { get; set; }
     }
 }

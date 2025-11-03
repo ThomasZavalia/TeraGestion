@@ -62,16 +62,33 @@ namespace Controllers.Controllers
               return NoContent();
         }
 
-        [HttpGet("buscar")] 
+        [HttpGet("buscar")]
         public async Task<ActionResult<IEnumerable<PacienteSimpleDto>>> BuscarPacientes([FromQuery] string query)
         {
             var pacientes = await _pacienteService.BuscarPacientesAsync(query);
             return Ok(pacientes);
         }
 
+        [HttpGet("{id}/detalles")]
+        public async Task<ActionResult<PacienteDetalleDTO>> GetPacienteDetallesAsync(int id)
+        {
+            try
+            {
+                var pacienteDetalle = await _pacienteService.GetPacienteDetallesAsync(id);
+
+                return Ok(pacienteDetalle);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ocurrió un error al obtener los detalles del paciente. {ex.Message}");
+            }
+        }
 
         [HttpGet("check-dni")]
-      
         public async Task<IActionResult> CheckDni([FromQuery] string dni)
         {
             if (string.IsNullOrEmpty(dni))
@@ -83,8 +100,7 @@ namespace Controllers.Controllers
             // Devolver un objeto es más claro para el frontend
             return Ok(new { exists = exists });
         }
-
-
+        
     }
 }
 
