@@ -12,15 +12,15 @@ namespace Core.Interfaces.Services
 {
     public interface IUsuarioService
     {
-       Task<Usuario> ValidarCredenciales(string username, string password); // Devuelve Entidad solo para Auth
-        Task<Usuario> CrearUsuario(Usuario usuario); // Devuelve Entidad solo al crear? O DTO? Considerar.
+       Task<Usuario> ValidarCredenciales(string username, string password); 
+        Task<Usuario> CrearUsuario(Usuario usuario);
 
         
         Task<UsuarioDto> GetUsuarioById(int id); 
         Task<IEnumerable<UsuarioDto>> GetUsuarios(); 
         Task<UsuarioDto> ActualizarUsuario(int id, UsuarioActualizarDto dto); 
         Task<UsuarioDto> ActualizarPerfilUsuario(int id, UsuarioPerfilDto dto);
-        Task<bool> CambiarContraseña(int id, string contraseñaActual, string contraseñaNueva); // ¡Nuevo!
+        Task<bool> CambiarContraseña(int id, string contraseñaActual, string contraseñaNueva); 
         Task<bool> EliminarUsuario(int id);
         Task<Usuario> GetByName(string username);
 

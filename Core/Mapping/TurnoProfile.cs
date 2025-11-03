@@ -26,7 +26,7 @@ namespace Core.Mapping
                 .ForMember(dest => dest.Fecha, 
                            opt => opt.MapFrom(src => src.FechaHora)) 
 
-                // Y estas que ya tenías
+            
                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => src.Paciente.Nombre))
                 .ForMember(dest => dest.PacienteApellido, opt => opt.MapFrom(src => src.Paciente.Apellido));
 

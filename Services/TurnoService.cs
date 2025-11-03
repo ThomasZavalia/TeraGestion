@@ -140,7 +140,7 @@ namespace Services
                     pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                     if (pacienteAsignado == null)
                     {
-                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto
+                
                         throw new KeyNotFoundException($"No se encontró el paciente con ID {dto.PacienteId.Value}.");
                     }
 
@@ -156,7 +156,7 @@ namespace Services
 
                     if (pacienteExistente != null)
                     {
-                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto (Esta era la causa de tu error)
+                       
                         throw new ArgumentException($"Ya existe un paciente registrado con el DNI {dto.DNI}. Por favor, seleccione 'Paciente Existente'.");
                     }
 
@@ -171,7 +171,7 @@ namespace Services
 
                     if (pacienteAsignado == null)
                     {
-                        // await transaction.RollbackAsync(); // <-- MODIFICACIÓN: Eliminamos esto
+                       
                         throw new InvalidOperationException("Error inesperado al intentar crear el nuevo paciente.");
                     }
                 }
@@ -199,7 +199,7 @@ namespace Services
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
 
-                // Si todo va bien, se hace Commit (perfecto)
+               
                 await transaction.CommitAsync();
 
 
@@ -262,30 +262,6 @@ namespace Services
             return await _turnoRepository.ObtenerTodos();
         }
 
-        /*
-        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
-        {
-
-            var allSlots = new List<string>
-    {
-        "16:00", "17:00", "18:00", "19:00", "20:00"
-    };
-            var fechaUtc = date.ToUniversalTime().Date;
-
-            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
-
-
-            var bookedSlots = turnosDelDia
-
-         .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm"))
-         .ToHashSet();
-
-
-            var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
-
-            return availableSlots;
-        }
-        */
 
 
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)

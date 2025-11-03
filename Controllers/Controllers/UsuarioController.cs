@@ -46,16 +46,16 @@ namespace Controllers.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearUsuario([FromBody] Usuario usuario) // Recibe entidad
         {
-            // Considera crear un UsuarioCreacionDto para no recibir ID o Hash
+           
             var nuevoUsuario = await _usuarioService.CrearUsuario(usuario);
             
-            var nuevoUsuarioDto = _mapper.Map<UsuarioDto>(nuevoUsuario); // Necesitas inyectar IMapper aquí
+            var nuevoUsuarioDto = _mapper.Map<UsuarioDto>(nuevoUsuario); 
             return CreatedAtAction(nameof(GetUsuario), new { id = nuevoUsuario.Id }, nuevoUsuarioDto);
         }
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] UsuarioActualizarDto dto) // DTO específico Admin
+        public async Task<IActionResult> ActualizarUsuario(int id, [FromBody] UsuarioActualizarDto dto) 
         {
             var usuarioActualizadoDto = await _usuarioService.ActualizarUsuario(id, dto);
             return Ok(usuarioActualizadoDto);

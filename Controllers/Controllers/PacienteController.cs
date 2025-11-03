@@ -103,7 +103,7 @@ namespace Controllers.Controllers
             }
             var exists = await _pacienteService.CheckDniExistsAsync(dni);
 
-            // Devolver un objeto es más claro para el frontend
+          
             return Ok(new { exists = exists });
         }
 

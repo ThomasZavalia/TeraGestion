@@ -11,7 +11,7 @@ namespace Services
     public class ObraSocialService : IObraSocialService
     {
         private readonly IObraSocialRepository _obraSocialRepository;
-        private const decimal PrecioBaseSinObraSocial = 5m; // Asegúrate de que este precio sea correcto
+        private const decimal PrecioBaseSinObraSocial = 5m; 
         private readonly IMapper _mapper;
 
         public ObraSocialService(IObraSocialRepository obraSocialRepository, IMapper mapper)
@@ -49,9 +49,9 @@ namespace Services
         public async Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto)
         {
             var nuevaObraSocial = _mapper.Map<ObraSocial>(obraSocialDto);
-            // 1. AWAIT
+        
             var obraSocialCreada = await _obraSocialRepository.Agregar(nuevaObraSocial);
-            // 2. Mapear el resultado
+            
             return _mapper.Map<ObraSocialDto>(obraSocialCreada);
         }
 

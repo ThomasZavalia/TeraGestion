@@ -23,7 +23,7 @@ namespace Core.Mapping
 
             
             CreateMap<DiaDisponibilidadUpdateDto, Disponibilidad>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // Ignoramos Id y UsuarioId
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) 
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
                

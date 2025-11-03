@@ -21,22 +21,12 @@ namespace Infrastructure.Repositorios
 
         public async Task<Sesion> Actualizar(Sesion sesion)
         {
-            /*
-            var sesionEncontrada = await _context.Sesiones.FindAsync(sesion.Id);
-            if (sesionEncontrada == null)
-            {
-                
-                throw new KeyNotFoundException($"No se encontró la sesión con ID {sesion.Id} para actualizar.");
-            }
-
-          
-            sesionEncontrada.Asistencia = sesion.Asistencia;
-            sesionEncontrada.Notas = sesion.Notas;*/
+            
            
            _context.Entry(sesion).State = EntityState.Modified;
 
             await _context.SaveChangesAsync();
-            return sesion;//sesionEncontrada; 
+            return sesion;
         }
 
 

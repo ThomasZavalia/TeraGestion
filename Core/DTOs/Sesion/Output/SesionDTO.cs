@@ -15,7 +15,7 @@ namespace Core.DTOs.Sesion.Output
         public DateTime FechaHoraInicio { get; set; }
 
         [Required]
-        public string Asistencia { get; set; } // Ejemplo: "Asistió", "No asistió", "Reprogramado"
+        public string Asistencia { get; set; } 
         public string Notas { get; set; }
 
         [Required]

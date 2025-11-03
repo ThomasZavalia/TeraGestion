@@ -112,7 +112,7 @@ namespace Infrastructure.Repositorios
                 )
                 .OrderBy(p => p.Apellido)
                 .ThenBy(p => p.Nombre)
-                .Take(10) // Limitamos a 10 resultados para el dropdown
+                .Take(10) 
                 .ToListAsync();
         }
 

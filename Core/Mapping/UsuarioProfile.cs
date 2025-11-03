@@ -20,11 +20,11 @@ namespace Core.Mapping
 
            
             CreateMap<UsuarioPerfilDto, Usuario>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore()) // Ignora Id
-                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) // Ignora Hash
-                .ForMember(dest => dest.Rol, opt => opt.Ignore()); // Ignora Rol
+                .ForMember(dest => dest.Id, opt => opt.Ignore()) 
+                .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()) 
+                .ForMember(dest => dest.Rol, opt => opt.Ignore()); 
 
-            // Si tienes UsuarioActualizarDto (para Admin), mapea aquí también
+            
             CreateMap<UsuarioActualizarDto, Usuario>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.PasswordHash, opt => opt.Ignore()); 

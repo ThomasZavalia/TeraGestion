@@ -10,7 +10,7 @@ namespace Core.Entidades
 {
     public class Disponibilidad
     {
-        [Key] // Clave primaria, podría ser compuesta (UserId, DiaSemana) si es One-to-Many
+        [Key] 
         public int Id { get; set; }
 
         [Required]

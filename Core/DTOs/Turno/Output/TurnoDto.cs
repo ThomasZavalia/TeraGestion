@@ -11,12 +11,12 @@ namespace Core.DTOs.Turno.Output
 
         public int Id { get; set; }
         public DateTime FechaHora { get; set; }
-        public string Estado { get; set; } // Ejemplo: "Pendiente", "Completado", "Cancelado"
+        public string Estado { get; set; }  
 
         public decimal Precio { get; set; }
         public int PacienteId { get; set; }
 
-        public int? ObraSocialId { get; set; }  // Para calcular precio si el paciente no tiene
+        public int? ObraSocialId { get; set; } 
 
 
     }

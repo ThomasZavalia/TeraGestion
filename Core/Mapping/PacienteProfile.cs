@@ -28,7 +28,7 @@ namespace Core.Mapping
 
 
 
-            // 1. Mapeo para Sesion -> SesionHistorialDto
+           
             CreateMap<Sesion, SesionHistorialDTO>()
                 .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaHoraInicio))
                 .ForMember(dest => dest.Notas, opt => opt.MapFrom(src => src.Notas));

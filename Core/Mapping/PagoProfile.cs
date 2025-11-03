@@ -18,7 +18,7 @@ namespace Core.Mapping
             CreateMap<Pago, PagoDto>();
 
             CreateMap<Pago, PagoDetallesDto>()
-                // Mapeo explícito para los datos del paciente (asume que Turno y Paciente están incluidos)
+               
                 .ForMember(dest => dest.PacienteId, opt => opt.MapFrom(src => src.Turno.Paciente.Id))
                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => src.Turno.Paciente.Nombre))
                 .ForMember(dest => dest.PacienteApellido, opt => opt.MapFrom(src => src.Turno.Paciente.Apellido));

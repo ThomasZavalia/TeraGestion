@@ -11,6 +11,6 @@ namespace Core.DTOs.Usuario.Input
 
         public string Username { get; set; }
         public string Email { get; set; }
-        public string Rol { get; set; }  // Solo admin puede cambiarlo
+        public string Rol { get; set; }  
     }
 }
