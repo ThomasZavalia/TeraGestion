@@ -118,6 +118,26 @@ namespace Services
             return query;
         }
 
+        public async Task<IEnumerable<ReporteEstadoDto>> GetTurnosPorObraSocial()
+        {
+           
+            var turnos = await _turnoService.GetTurnosSinDto();
+
+            var query = turnos
+               
+                .Where(t => t.ObraSocialId != null && t.ObraSocial != null)
+                .GroupBy(t => t.ObraSocial.Nombre)
+                .Select(g => new ReporteEstadoDto
+                {
+                    Estado = g.Key,
+                    Cantidad = g.Count()
+                })
+                .OrderByDescending(x => x.Cantidad)
+                .ToList();
+
+            return query;
+        }
+
 
 
 

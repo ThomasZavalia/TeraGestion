@@ -93,7 +93,7 @@ namespace Services
             var turno = await _turnoRepository.GetById(turnoId)
                 ?? throw new KeyNotFoundException("Turno no encontrado");
 
-            if (turno.Estado == "Pagado")
+            if (turno.Estado.ToLower() == "pagado") 
                 throw new ArgumentException("El turno ya está pagado");
 
             await _pagoService.CrearPago(new PagoDto
@@ -135,8 +135,11 @@ namespace Services
             try
             {
                 PacienteDTO pacienteAsignado;
+               
                 if (dto.PacienteId.HasValue)
                 {
+
+
                     pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                     if (pacienteAsignado == null)
                     {
@@ -144,9 +147,27 @@ namespace Services
                         throw new KeyNotFoundException($"No se encontró el paciente con ID {dto.PacienteId.Value}.");
                     }
 
+                  
+                    bool necesitaActualizar = false;
+
+                  
                     if (dto.ObraSocialId.HasValue && pacienteAsignado.ObraSocialId != dto.ObraSocialId && !dto.EsParticular)
                     {
                         pacienteAsignado.ObraSocialId = dto.ObraSocialId;
+                        necesitaActualizar = true;
+                    }
+
+                   
+                    if (!pacienteAsignado.Activo)
+                    {
+                        pacienteAsignado.Activo = true; 
+                        necesitaActualizar = true;
+                    }
+
+                   
+                    if (necesitaActualizar)
+                    {
+                       
                         await _pacienteService.ActualizarPacienteAsync(pacienteAsignado.Id, pacienteAsignado);
                     }
                 }
@@ -165,7 +186,8 @@ namespace Services
                         DNI = dto.DNI,
                         Nombre = dto.NombrePaciente,
                         Apellido = dto.ApellidoPaciente,
-                        ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
+                        ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null,
+                        Activo = true
                     };
                     pacienteAsignado = await _pacienteService.CrearPacienteAsync(nuevoPacienteDto);
 
@@ -227,17 +249,34 @@ namespace Services
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-            var turnoAeliminar = await _turnoRepository.GetById(id);
-            if (turnoAeliminar == null)
+            
+            var turnoACancelar = await _turnoRepository.GetById(id);
+            if (turnoACancelar == null)
             {
-
                 throw new KeyNotFoundException("No se encontro el turno");
             }
-            await _turnoRepository.Eliminar(id);
+
+           
+            if (turnoACancelar.Estado.ToLower() == "pagado")
+            {
+                throw new ArgumentException("No se puede cancelar un turno que ya ha sido pagado.");
+            }
+            if (turnoACancelar.Estado.ToLower() == "cancelado")
+            {
+                return true; 
+            }
+
+           
+            turnoACancelar.Estado = "Cancelado";
+
+           
+            await _turnoRepository.Actualizar(turnoACancelar);
+
             return true;
-
-
         }
+
+
+
 
         public async Task<TurnoDto> GetTurnoAsync(int id)
         {
@@ -344,14 +383,36 @@ namespace Services
             {
 
                 turnoDto.Asistencia = sesionExistente.Asistencia;
+                turnoDto.NotasSesion = sesionExistente.Notas;
+                turnoDto.SesionId = sesionExistente.Id;
             }
             else
             {
 
                 turnoDto.Asistencia = null;
+                turnoDto.NotasSesion = null;
+                turnoDto.SesionId = null;
             }
 
             return turnoDto;
+        }
+
+        public async Task<TurnoCalendarioDto> ReprogramarTurnoAsync(int id, DateTime nuevaFecha)
+        {
+            var turno = await _turnoRepository.GetByIdConPaciente(id);
+            if (turno == null) throw new KeyNotFoundException("Turno no encontrado");
+
+            
+            //if (turno.Estado == "Pagado") throw new ArgumentException("No se puede reprogramar un turno pagado");
+
+            
+            turno.FechaHora = nuevaFecha;
+
+          
+            if (turno.Estado == "Cancelado") turno.Estado = "Pendiente";
+
+            await _turnoRepository.Actualizar(turno);
+            return _mapper.Map<TurnoCalendarioDto>(turno);
         }
 
     }

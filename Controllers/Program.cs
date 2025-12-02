@@ -1,8 +1,10 @@
 using Controllers;
+using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Core.Mapping;
 using Infraestructure;
+using Infrastructure.Email;
 using Infrastructure.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
@@ -11,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Services;
 using System.Text;
+using Infrastructure.Email;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -41,6 +44,7 @@ builder.Services.AddScoped<ISesionService, SesionService>();
 builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
 builder.Services.AddScoped<IReportesService,ReportesService>();
 builder.Services.AddScoped<IDisponibilidadService, DisponibilidadService>();
+builder.Services.AddScoped<IEmailService, ResendEmailService>();
 
 builder.Services.AddCors(options =>
 {

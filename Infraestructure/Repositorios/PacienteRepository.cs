@@ -40,9 +40,10 @@ namespace Infrastructure.Repositorios
     pacienteEncontrado.Telefono = entityConNuevosDatos.Telefono;
     pacienteEncontrado.Email = entityConNuevosDatos.Email;
     pacienteEncontrado.DNI = entityConNuevosDatos.DNI;
+    pacienteEncontrado.Activo = entityConNuevosDatos.Activo;
 
-   
-    _context.Entry(pacienteEncontrado).State = EntityState.Modified;
+
+            _context.Entry(pacienteEncontrado).State = EntityState.Modified;
 
     
     await _context.SaveChangesAsync();
@@ -62,7 +63,10 @@ namespace Infrastructure.Repositorios
 
         public async Task<Paciente> Agregar(Paciente entity)
         {
+          
             await _context.Pacientes.AddAsync(entity);
+            entity.Activo = true;
+
             await _context.SaveChangesAsync();
             return entity;
         }
@@ -70,8 +74,7 @@ namespace Infrastructure.Repositorios
         public async Task<bool> Eliminar(int id)
         {
             var paciente = await _context.Pacientes.FindAsync(id);
-            if (paciente == null)
-                return false;
+            if (paciente == null) return false;
             _context.Pacientes.Remove(paciente);
             await _context.SaveChangesAsync();
             return true;
@@ -79,7 +82,9 @@ namespace Infrastructure.Repositorios
 
         public async Task<Paciente>? GetById(int id)
         {
-            return await _context.Pacientes.FindAsync(id);
+            return await _context.Pacientes
+                                  .Include(p => p.ObraSocial) 
+                                  .FirstOrDefaultAsync(p => p.Id == id);
         }
 
 
@@ -105,6 +110,9 @@ namespace Infrastructure.Repositorios
             var normalizedQuery = query.ToLower().Trim();
 
             return await _context.Pacientes
+              
+                .Where(p => p.Activo == true)
+                
                 .Where(p =>
                     p.Nombre.ToLower().Contains(normalizedQuery) ||
                     p.Apellido.ToLower().Contains(normalizedQuery) ||
@@ -112,7 +120,7 @@ namespace Infrastructure.Repositorios
                 )
                 .OrderBy(p => p.Apellido)
                 .ThenBy(p => p.Nombre)
-                .Take(10) 
+                .Take(10)
                 .ToListAsync();
         }
 

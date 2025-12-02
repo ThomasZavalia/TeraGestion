@@ -19,15 +19,16 @@ namespace Controllers.Controllers
             _obraSocialService = obraSocialService;
         }
 
-       
+
         [HttpGet]
         public async Task<IActionResult> GetObrasSociales()
         {
-            var obrasSociales = await _obraSocialService.GetObrasSocialesAsync();
+            
+            var obrasSociales = await _obraSocialService.GetObrasSocialesAdminAsync();
             return Ok(obrasSociales);
         }
 
-       
+
         [HttpGet("{id}/precio")]
         public async Task<IActionResult> GetPrecioTurno(int id)
         {
@@ -67,6 +68,14 @@ namespace Controllers.Controllers
         {
             await _obraSocialService.EliminarObraSocialAsync(id);
             return NoContent();
+        }
+
+        [HttpGet("activas")]
+        public async Task<IActionResult> GetObrasSocialesActivas()
+        {
+           
+            var obrasSociales = await _obraSocialService.GetObrasSocialesAsync();
+            return Ok(obrasSociales);
         }
     }
 }

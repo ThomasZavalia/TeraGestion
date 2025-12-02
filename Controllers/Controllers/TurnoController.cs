@@ -101,5 +101,12 @@ namespace Controllers.Controllers
             var turno = await _turnoService.GetTurnoDetalleAsync(id);
             return Ok(turno);
         }
+
+        [HttpPut("{id}/reprogramar")]
+        public async Task<IActionResult> ReprogramarTurno(int id, [FromBody] TurnoReprogramacionDto dto)
+        {
+            var turnoActualizado = await _turnoService.ReprogramarTurnoAsync(id, dto.NuevaFecha);
+            return Ok(turnoActualizado);
+        }
     }
 }

@@ -13,6 +13,8 @@ namespace Core.Entidades
         public string Nombre { get; set; }
         public decimal PrecioTurno { get; set; }
 
+        public bool Activa { get; set; } = true;
+
         public ICollection<Paciente> Pacientes { get; set; } = new List<Paciente>();
         public ICollection<Turno> Turnos { get; set; }
     }

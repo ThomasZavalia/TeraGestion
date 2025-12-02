@@ -14,8 +14,10 @@ namespace Core.DTOs.Turno.Output
         public string Estado { get; set; } 
         public decimal Precio { get; set; }
 
-       
+
         public string? Asistencia { get; set; }
+        public string? NotasSesion { get; set; } 
+        public int? SesionId { get; set; }
 
     }
 }

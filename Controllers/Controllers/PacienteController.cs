@@ -45,6 +45,7 @@ namespace Controllers.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(ModelState);
                 var creado = await _pacienteService.CrearPacienteAsync(pacienteDto);
+                pacienteDto.Activo = true;
                 if (creado == null)
                     return BadRequest("No se pudo crear el paciente.");
                return Ok(creado);

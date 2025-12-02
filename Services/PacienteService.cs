@@ -45,7 +45,7 @@ namespace Services
         {
             try
             {
-
+                pacienteDto.Activo = true;
                 var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
                 var creado = await _pacienteRepository.Agregar(nuevoPaciente);
                 return _mapper.Map<PacienteDTO>(creado);
@@ -55,19 +55,22 @@ namespace Services
                 throw new Exception("Error al crear el paciente", ex);
             }
         }
-
         public async Task<bool> EliminarPacienteAsync(int id)
         {
             if (id <= 0)
                 throw new ArgumentException("Id inválido");
 
-            var pacienteExistente = await _pacienteRepository.GetById(id);
-            if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+          
+            var paciente = await _pacienteRepository.GetById(id);
+            if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
 
-            await _pacienteRepository.Eliminar(id);
+         
+            paciente.Activo = false; 
+
+           
+            await _pacienteRepository.Actualizar(paciente);
 
             return true;
-
         }
 
         public async Task<PacienteDTO> GetPacienteAsync(int id)

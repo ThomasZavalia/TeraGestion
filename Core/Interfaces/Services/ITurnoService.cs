@@ -24,7 +24,9 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date);
         Task<TurnoDetalleDto> GetTurnoDetalleAsync(int id);
-       
+
+        Task<TurnoCalendarioDto> ReprogramarTurnoAsync(int id, DateTime nuevaFecha);
+
 
     }
 }

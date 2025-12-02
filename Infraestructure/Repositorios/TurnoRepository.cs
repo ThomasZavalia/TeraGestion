@@ -22,6 +22,10 @@ namespace Infrastructure.Repositorios
 
         public async Task<Turno> Actualizar(Turno turno)
         {
+           
+            _context.Entry(turno).State = EntityState.Modified;
+
+         
             await _context.SaveChangesAsync();
             return turno;
         }
@@ -52,19 +56,17 @@ namespace Infrastructure.Repositorios
 
         public async Task<Turno?> GetById(int id)
         {
-            var turnoExistente = await _context.Turnos.FindAsync(id);
-            if (turnoExistente == null)
-            {
-                return null;
-            }
-            return turnoExistente;
+            return await _context.Turnos
+                                 .FirstOrDefaultAsync(t => t.Id == id);
         }
 
         public async Task<IEnumerable<Turno>> ObtenerTodos()
         {
             return await _context.Turnos
-                           .Include(t => t.Paciente)
-                           .ToListAsync();
+                                   .Include(t => t.Paciente)
+                                   .Include(t=>t.ObraSocial)
+                                   .AsNoTracking()
+                                   .ToListAsync();
 
         }
 
@@ -80,10 +82,11 @@ namespace Infrastructure.Repositorios
         public async Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date)
         {
 
-            return await _context.Turnos.
-                                  Include(t => t.Paciente)
-                                 .Where(t => t.FechaHora.Date == date.Date)
-                                 .ToListAsync();
+            return await _context.Turnos
+                                  .Include(t => t.Paciente)
+                                  .Where(t => t.FechaHora.Date == date.Date)
+                                  .AsNoTracking()
+                                  .ToListAsync();
         }
 
 

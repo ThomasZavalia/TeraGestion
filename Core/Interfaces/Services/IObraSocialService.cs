@@ -1,6 +1,7 @@
 ﻿using Core.DTOs.ObraSocial;
 using Core.DTOs.Paciente;
 using Core.Entidades;
+using Core.Interfaces.Repositorios;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,9 @@ namespace Core.Interfaces.Services
         public Task<ObraSocialDto> CrearObraSocialAsync(ObraSocialDto obraSocialDto);
         public Task<ObraSocialDto> ActualizarObraSocialAsync(int id, ObraSocialDto obraSocialDto);
         public Task<bool> EliminarObraSocialAsync(int id);
+
+        public Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAdminAsync();
+       
 
 
     }
