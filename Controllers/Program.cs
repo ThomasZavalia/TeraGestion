@@ -33,6 +33,7 @@ builder.Services.AddScoped<IPagosRepository, PagoRepository>();
 builder.Services.AddScoped<ISesionRepository, SesionRepository>();
 builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
 builder.Services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
+builder.Services.AddScoped<IAusenciaRepository, AusenciaRepository>();
 
 
 // Servicios
@@ -44,7 +45,8 @@ builder.Services.AddScoped<ISesionService, SesionService>();
 builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
 builder.Services.AddScoped<IReportesService,ReportesService>();
 builder.Services.AddScoped<IDisponibilidadService, DisponibilidadService>();
-builder.Services.AddScoped<IEmailService, ResendEmailService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IAusenciaService, AusenciaService>();
 
 builder.Services.AddCors(options =>
 {
@@ -89,6 +91,7 @@ builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(DisponibilidadProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
 builder.Services.AddAutoMapper(typeof(ObraSocialProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(AusenciaProfile).Assembly);
 
 
 

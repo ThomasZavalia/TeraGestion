@@ -4,6 +4,7 @@ using Core.DTOs.Pago.Output;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
+using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Infraestructure;
@@ -31,6 +32,7 @@ namespace Services
         private readonly ISesionRepository _sesionRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IDisponibilidadRepository _disponibilidadRepository;
+        private readonly IEmailService _emailService;
 
         public TurnoService(
          ITurnoRepository turnoRepository,
@@ -41,7 +43,8 @@ namespace Services
          IObraSocialService obraSocialService,
          ISesionRepository sesionRepository,
          IHttpContextAccessor httpContextAccessor,
-         IDisponibilidadRepository disponibilidadRepository
+         IDisponibilidadRepository disponibilidadRepository,
+         IEmailService emailService
      )
         {
             _turnoRepository = turnoRepository;
@@ -53,6 +56,7 @@ namespace Services
             _sesionRepository = sesionRepository;
             _httpContextAccessor = httpContextAccessor;
             _disponibilidadRepository = disponibilidadRepository;
+            _emailService = emailService;
         }
 
 
@@ -249,28 +253,29 @@ namespace Services
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-            
-            var turnoACancelar = await _turnoRepository.GetById(id);
-            if (turnoACancelar == null)
-            {
-                throw new KeyNotFoundException("No se encontro el turno");
-            }
-
            
-            if (turnoACancelar.Estado.ToLower() == "pagado")
-            {
-                throw new ArgumentException("No se puede cancelar un turno que ya ha sido pagado.");
-            }
-            if (turnoACancelar.Estado.ToLower() == "cancelado")
-            {
-                return true; 
-            }
+            var turnoACancelar = await _turnoRepository.GetByIdConPaciente(id);
+
+            if (turnoACancelar == null) throw new KeyNotFoundException("Turno no encontrado");
+            if (turnoACancelar.Estado.ToLower() == "pagado") throw new ArgumentException("No se puede cancelar un turno pagado.");
 
            
             turnoACancelar.Estado = "Cancelado";
+            await _turnoRepository.Actualizar(turnoACancelar);
 
            
-            await _turnoRepository.Actualizar(turnoACancelar);
+            if (!string.IsNullOrEmpty(turnoACancelar.Paciente.Email))
+            {
+                var asunto = "Turno Cancelado";
+                var cuerpo = $@"
+            <p>Hola {turnoACancelar.Paciente.Nombre},</p>
+            <p>Su turno del día <strong>{turnoACancelar.FechaHora:dd/MM/yyyy}</strong> a las <strong>{turnoACancelar.FechaHora:HH:mm} hs</strong> ha sido cancelado.</p>
+            <p>Saludos, TeraGestion.</p>";
+
+               
+                _ = _emailService.SendEmailAsync(turnoACancelar.Paciente.Email, asunto, cuerpo);
+            }
+          
 
             return true;
         }

@@ -20,6 +20,8 @@ namespace Infraestructure
 
         public DbSet<Paciente> Pacientes { get; set; }
 
+        public DbSet<Ausencia> Ausencias { get;set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -126,6 +128,21 @@ namespace Infraestructure
                         HoraFin = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(21, 0, 0) : (TimeSpan?)null // 21:00
                     });
                 }
+            });
+
+            modelBuilder.Entity<Ausencia>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Fecha).HasColumnType("timestamp with time zone");
+                entity.Property(a => a.Motivo).HasMaxLength(500);
+                entity.HasOne(a => a.Usuario)
+                      .WithMany()
+                      .HasForeignKey(a => a.UsuarioId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+
+
+
             });
 
         }
