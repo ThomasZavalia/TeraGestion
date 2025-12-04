@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Turno.Input;
+﻿using Core.DTOs.Public;
+using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
 using System;
@@ -26,6 +27,7 @@ namespace Core.Interfaces.Services
         Task<TurnoDetalleDto> GetTurnoDetalleAsync(int id);
 
         Task<TurnoCalendarioDto> ReprogramarTurnoAsync(int id, DateTime nuevaFecha);
+        Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto);
 
 
     }

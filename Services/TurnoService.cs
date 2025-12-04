@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Core.DTOs.Paciente;
 using Core.DTOs.Pago.Output;
+using Core.DTOs.Public;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
@@ -69,19 +70,11 @@ namespace Services
 
 
 
-            if (dto.EsParticular)
+            if (dto.ObraSocialId.HasValue)
             {
-                turnoExistente.Precio = dto.Precio;
-                turnoExistente.ObraSocialId = null; 
-            }
-            else
-            {
-                
                 turnoExistente.ObraSocialId = dto.ObraSocialId;
-               
                 turnoExistente.Precio = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
             }
-
 
 
 
@@ -118,20 +111,15 @@ namespace Services
 
             if (!dto.PacienteId.HasValue && string.IsNullOrWhiteSpace(dto.DNI))
             {
-                throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente (incluyendo DNI).");
+                throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente.");
             }
-            if (!dto.PacienteId.HasValue && (string.IsNullOrWhiteSpace(dto.NombrePaciente) || string.IsNullOrWhiteSpace(dto.ApellidoPaciente)))
+
+           
+            if (!dto.ObraSocialId.HasValue)
             {
-                throw new ArgumentException("Nombre y Apellido son requeridos para un nuevo paciente.");
+                throw new ArgumentException("Se debe seleccionar una Cobertura (o Particular).");
             }
-            if (dto.EsParticular && !dto.Precio.HasValue)
-            {
-                throw new ArgumentException("Se debe especificar un precio para turnos particulares.");
-            }
-            if (!dto.EsParticular && !dto.ObraSocialId.HasValue)
-            {
-                throw new ArgumentException("Se debe seleccionar una Obra Social para turnos no particulares.");
-            }
+
 
 
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
@@ -139,39 +127,34 @@ namespace Services
             try
             {
                 PacienteDTO pacienteAsignado;
-               
+
                 if (dto.PacienteId.HasValue)
                 {
-
-
+               
                     pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                     if (pacienteAsignado == null)
                     {
-                
                         throw new KeyNotFoundException($"No se encontró el paciente con ID {dto.PacienteId.Value}.");
                     }
 
-                  
                     bool necesitaActualizar = false;
 
-                  
-                    if (dto.ObraSocialId.HasValue && pacienteAsignado.ObraSocialId != dto.ObraSocialId && !dto.EsParticular)
+                   
+                    if (pacienteAsignado.ObraSocialId != dto.ObraSocialId)
                     {
                         pacienteAsignado.ObraSocialId = dto.ObraSocialId;
                         necesitaActualizar = true;
                     }
 
-                   
+                    
                     if (!pacienteAsignado.Activo)
                     {
-                        pacienteAsignado.Activo = true; 
+                        pacienteAsignado.Activo = true;
                         necesitaActualizar = true;
                     }
 
-                   
                     if (necesitaActualizar)
                     {
-                       
                         await _pacienteService.ActualizarPacienteAsync(pacienteAsignado.Id, pacienteAsignado);
                     }
                 }
@@ -190,7 +173,7 @@ namespace Services
                         DNI = dto.DNI,
                         Nombre = dto.NombrePaciente,
                         Apellido = dto.ApellidoPaciente,
-                        ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null,
+                        ObraSocialId =  dto.ObraSocialId,
                         Activo = true
                     };
                     pacienteAsignado = await _pacienteService.CrearPacienteAsync(nuevoPacienteDto);
@@ -203,15 +186,7 @@ namespace Services
                 }
 
 
-                decimal precioTurno;
-                if (dto.EsParticular)
-                {
-                    precioTurno = dto.Precio.Value;
-                }
-                else
-                {
-                    precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
-                }
+                decimal precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
 
 
                 var turno = new Turno
@@ -220,7 +195,7 @@ namespace Services
                     PacienteId = pacienteAsignado.Id,
                     Precio = precioTurno,
                     Estado = "Pendiente",
-                    ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
+                    ObraSocialId = dto.ObraSocialId 
                 };
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
@@ -312,18 +287,25 @@ namespace Services
         {
             var allSlots = new List<string>();
 
-           
+
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
+            int userId;
+
+            if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
             {
                
-                return allSlots;
+                userId = parsedId;
+            }
+            else
+            {
+                
+                userId = 2;
             }
 
-          
+            
             var diaDeLaSemana = date.DayOfWeek;
 
-          
+
             var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
 
            
@@ -418,6 +400,100 @@ namespace Services
 
             await _turnoRepository.Actualizar(turno);
             return _mapper.Map<TurnoCalendarioDto>(turno);
+        }
+
+        public async Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto)
+        {
+            // 1. Validar Disponibilidad Real (Doble chequeo de seguridad)
+            // Usamos tu método existente para ver si el slot sigue libre
+            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date);
+            var horaSolicitada = dto.FechaHora.ToString("HH:mm");
+
+            if (!slots.Contains(horaSolicitada))
+            {
+                throw new InvalidOperationException("Lo sentimos, ese horario ya no está disponible.");
+            }
+
+            using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // 2. Buscar o Crear Paciente ("Match")
+                var paciente = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
+                int pacienteId;
+
+                if (paciente != null)
+                {
+                    // Paciente existe: Usamos su ID
+                    pacienteId = paciente.Id;
+
+                    // Opcional: Actualizar datos de contacto si cambiaron?
+                    // Por ahora mejor no tocamos datos sensibles sin login.
+                }
+                else
+                {
+                    // Paciente nuevo: Lo creamos
+                    var nuevoPaciente = new PacienteDTO
+                    {
+                        Nombre = dto.Nombre,
+                        Apellido = dto.Apellido,
+                        DNI = dto.DNI,
+                        Email = dto.Email,
+                        Telefono = dto.Telefono,
+                        Activo = true
+                        // Obra Social queda null (Particular por defecto al reservar online)
+                    };
+                    var pacienteCreado = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+                    pacienteId = pacienteCreado.Id;
+                }
+
+                // 3. Validar Spam (Un turno por día)
+                var yaTieneTurno = await _turnoRepository.ExisteTurnoPorPacienteYFecha(pacienteId, dto.FechaHora);
+                if (yaTieneTurno)
+                {
+                    throw new InvalidOperationException("Ya tienes un turno reservado para este día.");
+                }
+
+                decimal precioCalculado = 0;
+
+              
+                if (dto.ObraSocialId.HasValue)
+                {
+                    
+                    precioCalculado = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
+                }
+               
+                var turno = new Turno
+                {
+                    FechaHora = dto.FechaHora,
+                    PacienteId = pacienteId,
+                    Estado = "Pendiente",
+
+                   
+                    ObraSocialId = dto.ObraSocialId, 
+                    Precio = precioCalculado        
+                                                     
+                };
+
+                var turnoCreado = await _turnoRepository.Agregar(turno);
+                await transaction.CommitAsync();
+
+                // 5. Enviar Emails (Confirmación)
+                // Al Paciente
+                var cuerpoPaciente = $"<h1>Turno Confirmado</h1><p>Hola {dto.Nombre}, te esperamos el {dto.FechaHora:dd/MM/yyyy} a las {dto.FechaHora:HH:mm} hs.</p>";
+                _ = _emailService.SendEmailAsync(dto.Email, "Confirmación de Turno", cuerpoPaciente);
+
+                // Al Terapeuta (A tu mail configurado)
+                // _ = _emailService.SendEmailAsync("tu_mail@gmail.com", "Nuevo Turno Online", $"El paciente {dto.Nombre} reservó para el {dto.FechaHora}");
+
+                // 6. Retornar
+                var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
+                return _mapper.Map<TurnoCalendarioDto>(turnoConPaciente);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
     }

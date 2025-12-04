@@ -90,6 +90,16 @@ namespace Infrastructure.Repositorios
         }
 
 
+
+        public async Task<bool> ExisteTurnoPorPacienteYFecha(int pacienteId, DateTime fecha)
+        {
+            return await _context.Turnos
+                .AnyAsync(t => t.PacienteId == pacienteId
+                               && t.FechaHora.Date == fecha.Date
+                               && t.Estado.ToLower() != "cancelado");
+        }
     }
+
+
 
 }
