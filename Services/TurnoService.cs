@@ -10,6 +10,7 @@ using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Infraestructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ namespace Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IDisponibilidadRepository _disponibilidadRepository;
         private readonly IEmailService _emailService;
+        private readonly INotificacionService _notificacionService;
+
 
         public TurnoService(
          ITurnoRepository turnoRepository,
@@ -45,7 +48,8 @@ namespace Services
          ISesionRepository sesionRepository,
          IHttpContextAccessor httpContextAccessor,
          IDisponibilidadRepository disponibilidadRepository,
-         IEmailService emailService
+         IEmailService emailService,
+         INotificacionService notificacionService
      )
         {
             _turnoRepository = turnoRepository;
@@ -58,6 +62,7 @@ namespace Services
             _httpContextAccessor = httpContextAccessor;
             _disponibilidadRepository = disponibilidadRepository;
             _emailService = emailService;
+            _notificacionService = notificacionService;
         }
 
 
@@ -404,10 +409,9 @@ namespace Services
 
         public async Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto)
         {
-            // 1. Validar Disponibilidad Real (Doble chequeo de seguridad)
-            // Usamos tu método existente para ver si el slot sigue libre
+            
             var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date);
-            var horaSolicitada = dto.FechaHora.ToString("HH:mm");
+            var horaSolicitada = dto.FechaHora.ToLocalTime().ToString("HH:mm");
 
             if (!slots.Contains(horaSolicitada))
             {
@@ -417,21 +421,24 @@ namespace Services
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
             try
             {
-                // 2. Buscar o Crear Paciente ("Match")
+                
                 var paciente = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
                 int pacienteId;
+                string nombreFinal;
+                string apellidoFinal;
 
                 if (paciente != null)
                 {
-                    // Paciente existe: Usamos su ID
+                    
                     pacienteId = paciente.Id;
+                    nombreFinal = paciente.Nombre;
+                    apellidoFinal = paciente.Apellido;
 
-                    // Opcional: Actualizar datos de contacto si cambiaron?
-                    // Por ahora mejor no tocamos datos sensibles sin login.
+
                 }
                 else
                 {
-                    // Paciente nuevo: Lo creamos
+                    
                     var nuevoPaciente = new PacienteDTO
                     {
                         Nombre = dto.Nombre,
@@ -440,10 +447,12 @@ namespace Services
                         Email = dto.Email,
                         Telefono = dto.Telefono,
                         Activo = true
-                        // Obra Social queda null (Particular por defecto al reservar online)
+                       
                     };
                     var pacienteCreado = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
                     pacienteId = pacienteCreado.Id;
+                    nombreFinal = dto.Nombre;
+                    apellidoFinal = dto.Apellido;
                 }
 
                 // 3. Validar Spam (Un turno por día)
@@ -461,14 +470,14 @@ namespace Services
                     
                     precioCalculado = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
                 }
-               
+                var token = Guid.NewGuid().ToString("N");
+
                 var turno = new Turno
                 {
                     FechaHora = dto.FechaHora,
                     PacienteId = pacienteId,
-                    Estado = "Pendiente",
-
-                   
+                    Estado = "PendienteConfirmacion",
+                    TokenConfirmacion = token,
                     ObraSocialId = dto.ObraSocialId, 
                     Precio = precioCalculado        
                                                      
@@ -477,15 +486,57 @@ namespace Services
                 var turnoCreado = await _turnoRepository.Agregar(turno);
                 await transaction.CommitAsync();
 
-                // 5. Enviar Emails (Confirmación)
-                // Al Paciente
-                var cuerpoPaciente = $"<h1>Turno Confirmado</h1><p>Hola {dto.Nombre}, te esperamos el {dto.FechaHora:dd/MM/yyyy} a las {dto.FechaHora:HH:mm} hs.</p>";
-                _ = _emailService.SendEmailAsync(dto.Email, "Confirmación de Turno", cuerpoPaciente);
 
-                // Al Terapeuta (A tu mail configurado)
+
+                var baseUrl = "http://localhost:5173"; 
+                var link = $"{baseUrl}/confirmar-turno?token={token}&id={turnoCreado.Id}";
+
+                try
+                {
+                    await _notificacionService.CrearNotificacionAsync(
+                        usuarioDestinoId: 2,
+                        titulo: "Nuevo Turno Reservado",
+                        // AQUI USAMOS LAS VARIABLES 'nombreFinal' y 'apellidoFinal'
+                        mensaje: $"El paciente {nombreFinal} {apellidoFinal} ha reservado un turno para el {dto.FechaHora:dd/MM}.",
+                        referenciaId: turnoCreado.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                   
+                    Console.WriteLine($"Error enviando notificación: {ex.Message}");
+                }
+
+                string timeZoneId = "Argentina Standard Time";
+                TimeZoneInfo zonaHoraria;
+
+                try
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+                }
+
+               
+                var fechaUtc = DateTime.SpecifyKind(dto.FechaHora, DateTimeKind.Utc);
+                var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
+
+                var cuerpoPaciente = $@"
+    <h1>Turno Confirmado</h1>
+    <p>Hola {dto.Nombre}, te esperamos el {fechaLocal:dd/MM/yyyy} a las {fechaLocal:HH:mm} hs.</p>
+    <p><strong>Para confirmar tu reserva, por favor haz clic en el siguiente enlace:</strong></p>
+    <p><a href='{link}'>CONFIRMAR MI TURNO</a></p>
+    <p>Si no fuiste tú, ignora este mensaje.</p>";
+
+                _ = _emailService.SendEmailAsync(dto.Email, "Acción Requerida: Confirma tu Turno", cuerpoPaciente);
+
+
                 // _ = _emailService.SendEmailAsync("tu_mail@gmail.com", "Nuevo Turno Online", $"El paciente {dto.Nombre} reservó para el {dto.FechaHora}");
 
-                // 6. Retornar
+
                 var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
                 return _mapper.Map<TurnoCalendarioDto>(turnoConPaciente);
             }
@@ -494,6 +545,28 @@ namespace Services
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<bool> ConfirmarTurnoAsync(int id, string token)
+        {
+            
+            var turno = await _turnoRepository.GetById(id);
+
+            if (turno == null) return false;
+
+            
+            if (turno.TokenConfirmacion == token && turno.Estado == "PendienteConfirmacion")
+            {
+                turno.Estado = "Pendiente"; 
+                turno.TokenConfirmacion = null; 
+
+                await _turnoRepository.Actualizar(turno);
+
+                
+                return true;
+            }
+
+            return false; 
         }
 
     }

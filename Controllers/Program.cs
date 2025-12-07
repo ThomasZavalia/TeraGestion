@@ -15,6 +15,9 @@ using Services;
 using System.Text;
 using Infrastructure.Email;
 using System.Text.Json;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Infrastructure.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,8 @@ builder.Services.AddDbContext<TeraDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSignalR();
 
 
 // Repositorios
@@ -47,6 +52,8 @@ builder.Services.AddScoped<IReportesService,ReportesService>();
 builder.Services.AddScoped<IDisponibilidadService, DisponibilidadService>();
 builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IAusenciaService, AusenciaService>();
+builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
 
 builder.Services.AddCors(options =>
 {
@@ -80,6 +87,22 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+           
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notificaciones"))
+            {
+              
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 
@@ -107,6 +130,20 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    
+    options.AddFixedWindowLimiter(policyName: "PublicPolicy", options =>
+    {
+        options.PermitLimit = 5;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 0; 
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -122,6 +159,8 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 app.UseMiddleware<Controllers.Middlewares.ErrorHandlingMiddleware>();
+app.MapHub<NotificacionesHub>("/hubs/notificaciones");
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

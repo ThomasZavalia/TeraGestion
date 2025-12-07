@@ -22,6 +22,8 @@ namespace Infraestructure
 
         public DbSet<Ausencia> Ausencias { get;set; }
 
+        public DbSet<Notificacion> Notificaciones { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -144,6 +146,8 @@ namespace Infraestructure
 
 
             });
+
+           
 
         }
 

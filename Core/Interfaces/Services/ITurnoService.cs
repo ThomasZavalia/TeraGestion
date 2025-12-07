@@ -29,6 +29,10 @@ namespace Core.Interfaces.Services
         Task<TurnoCalendarioDto> ReprogramarTurnoAsync(int id, DateTime nuevaFecha);
         Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto);
 
+        Task<bool> ConfirmarTurnoAsync(int id,string token);
+
+       
+
 
     }
 }

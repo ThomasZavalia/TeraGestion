@@ -25,6 +25,7 @@ namespace Core.DTOs.Public
         public string? Telefono { get; set; }
 
         public int? ObraSocialId { get; set; }
+        public string? RecaptchaToken { get; set; }
 
 
     }
