@@ -36,6 +36,7 @@ namespace Services
         private readonly IDisponibilidadRepository _disponibilidadRepository;
         private readonly IEmailService _emailService;
         private readonly INotificacionService _notificacionService;
+        private readonly IConfiguracionService _configService;
 
 
         public TurnoService(
@@ -49,7 +50,8 @@ namespace Services
          IHttpContextAccessor httpContextAccessor,
          IDisponibilidadRepository disponibilidadRepository,
          IEmailService emailService,
-         INotificacionService notificacionService
+         INotificacionService notificacionService,
+         IConfiguracionService configService
      )
         {
             _turnoRepository = turnoRepository;
@@ -63,6 +65,7 @@ namespace Services
             _disponibilidadRepository = disponibilidadRepository;
             _emailService = emailService;
             _notificacionService = notificacionService;
+            _configService = configService;
         }
 
 
@@ -193,6 +196,7 @@ namespace Services
 
                 decimal precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
 
+                int duracion = await _configService.GetDuracionAsync(2);
 
                 var turno = new Turno
                 {
@@ -200,7 +204,8 @@ namespace Services
                     PacienteId = pacienteAsignado.Id,
                     Precio = precioTurno,
                     Estado = "Pendiente",
-                    ObraSocialId = dto.ObraSocialId 
+                    ObraSocialId = dto.ObraSocialId ,
+                    Duracion = duracion
                 };
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
@@ -296,6 +301,9 @@ namespace Services
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             int userId;
 
+           
+
+            
             if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
             {
                
@@ -321,18 +329,25 @@ namespace Services
                 return allSlots; 
             }
 
+
+            int duracionMinutos = await _configService.GetDuracionAsync(userId);
+
             TimeSpan currentSlotTime = disponibilidadDia.HoraInicio.Value;
             TimeSpan endTime = disponibilidadDia.HoraFin.Value;
 
             while (currentSlotTime < endTime)
             {
-                
-                allSlots.Add(currentSlotTime.ToString(@"hh\:mm"));
-                
-                currentSlotTime = currentSlotTime.Add(TimeSpan.FromHours(1));
+               
+                if (currentSlotTime.Add(TimeSpan.FromMinutes(duracionMinutos)) <= endTime)
+                {
+                    allSlots.Add(currentSlotTime.ToString(@"hh\:mm"));
+                }
+
+               
+                currentSlotTime = currentSlotTime.Add(TimeSpan.FromMinutes(duracionMinutos));
             }
 
-          
+
             var fechaUtc = date.ToUniversalTime().Date;
             var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc); 
 
@@ -455,7 +470,7 @@ namespace Services
                     apellidoFinal = dto.Apellido;
                 }
 
-                // 3. Validar Spam (Un turno por día)
+               
                 var yaTieneTurno = await _turnoRepository.ExisteTurnoPorPacienteYFecha(pacienteId, dto.FechaHora);
                 if (yaTieneTurno)
                 {
@@ -472,6 +487,8 @@ namespace Services
                 }
                 var token = Guid.NewGuid().ToString("N");
 
+                int duracion = await _configService.GetDuracionAsync(2);
+
                 var turno = new Turno
                 {
                     FechaHora = dto.FechaHora,
@@ -479,8 +496,9 @@ namespace Services
                     Estado = "PendienteConfirmacion",
                     TokenConfirmacion = token,
                     ObraSocialId = dto.ObraSocialId, 
-                    Precio = precioCalculado        
-                                                     
+                    Precio = precioCalculado,
+                    Duracion = duracion
+
                 };
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
@@ -491,21 +509,7 @@ namespace Services
                 var baseUrl = "http://localhost:5173"; 
                 var link = $"{baseUrl}/confirmar-turno?token={token}&id={turnoCreado.Id}";
 
-                try
-                {
-                    await _notificacionService.CrearNotificacionAsync(
-                        usuarioDestinoId: 2,
-                        titulo: "Nuevo Turno Reservado",
-                        // AQUI USAMOS LAS VARIABLES 'nombreFinal' y 'apellidoFinal'
-                        mensaje: $"El paciente {nombreFinal} {apellidoFinal} ha reservado un turno para el {dto.FechaHora:dd/MM}.",
-                        referenciaId: turnoCreado.Id
-                    );
-                }
-                catch (Exception ex)
-                {
-                   
-                    Console.WriteLine($"Error enviando notificación: {ex.Message}");
-                }
+               
 
                 string timeZoneId = "Argentina Standard Time";
                 TimeZoneInfo zonaHoraria;
@@ -549,24 +553,52 @@ namespace Services
 
         public async Task<bool> ConfirmarTurnoAsync(int id, string token)
         {
-            
-            var turno = await _turnoRepository.GetById(id);
+            var turno = await _turnoRepository.GetByIdConPaciente(id);
 
             if (turno == null) return false;
 
-            
             if (turno.TokenConfirmacion == token && turno.Estado == "PendienteConfirmacion")
             {
-                turno.Estado = "Pendiente"; 
-                turno.TokenConfirmacion = null; 
+                turno.Estado = "Pendiente";
+                turno.TokenConfirmacion = null;
 
                 await _turnoRepository.Actualizar(turno);
 
                 
+                string timeZoneId = "Argentina Standard Time";
+                TimeZoneInfo zonaHoraria;
+                try
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+                }
+
+               
+                var fechaUtc = DateTime.SpecifyKind(turno.FechaHora, DateTimeKind.Utc);
+                var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
+             
+                try
+                {
+                    await _notificacionService.CrearNotificacionAsync(
+                        usuarioDestinoId: 2,
+                        titulo: "Turno Confirmado",
+                      
+                        mensaje: $"El paciente {turno.Paciente.Nombre} {turno.Paciente.Apellido} ha confirmado su turno del {fechaLocal:dd/MM} a las {fechaLocal:HH:mm} hs.",
+                        referenciaId: turno.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error notificación: {ex.Message}");
+                }
+
                 return true;
             }
 
-            return false; 
+            return false;
         }
 
     }

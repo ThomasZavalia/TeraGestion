@@ -39,6 +39,7 @@ builder.Services.AddScoped<ISesionRepository, SesionRepository>();
 builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
 builder.Services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
 builder.Services.AddScoped<IAusenciaRepository, AusenciaRepository>();
+builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 
 
 // Servicios
@@ -54,6 +55,7 @@ builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IAusenciaService, AusenciaService>();
 builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 
 builder.Services.AddCors(options =>
 {

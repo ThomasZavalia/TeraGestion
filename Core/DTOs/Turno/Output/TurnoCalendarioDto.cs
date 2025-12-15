@@ -9,12 +9,22 @@ namespace Core.DTOs.Turno.Output
     public class TurnoCalendarioDto
     {
         public int Id { get; set; }
-        public DateTime Fecha { get; set; }
+
+
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public string Title { get; set; }
+
         public string Estado { get; set; }
         public decimal? Precio { get; set; }
         public int PacienteId { get; set; }
-        public string PacienteNombre { get; set;}
+
+        public string PacienteNombre { get; set; }
         public string PacienteApellido { get; set; }
         public int? ObraSocialId { get; set; }
+        public DateTime FechaHora { get; set; }
+        public int Duracion { get; set; }
+
+
     }
 }

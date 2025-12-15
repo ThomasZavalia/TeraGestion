@@ -23,6 +23,8 @@ namespace Core.Entidades
 
         public string? TokenConfirmacion { get; set; }
 
+        public int Duracion { get; set; }
+
         public ICollection<Sesion> Sesiones { get; set; }
         public ICollection<Pago> Pagos { get; set; }
 
