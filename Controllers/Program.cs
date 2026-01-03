@@ -139,10 +139,10 @@ builder.Services.AddRateLimiter(options =>
     
     options.AddFixedWindowLimiter(policyName: "PublicPolicy", options =>
     {
-        options.PermitLimit = 5;
+        options.PermitLimit = 15;
         options.Window = TimeSpan.FromMinutes(1);
         options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-        options.QueueLimit = 0; 
+        options.QueueLimit = 5; 
     });
 });
 

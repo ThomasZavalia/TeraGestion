@@ -37,6 +37,7 @@ namespace Services
         private readonly IEmailService _emailService;
         private readonly INotificacionService _notificacionService;
         private readonly IConfiguracionService _configService;
+        private readonly IAusenciaRepository _ausenciaRepository;
 
 
         public TurnoService(
@@ -51,7 +52,8 @@ namespace Services
          IDisponibilidadRepository disponibilidadRepository,
          IEmailService emailService,
          INotificacionService notificacionService,
-         IConfiguracionService configService
+         IConfiguracionService configService,
+         IAusenciaRepository ausenciaRepository
      )
         {
             _turnoRepository = turnoRepository;
@@ -66,6 +68,7 @@ namespace Services
             _emailService = emailService;
             _notificacionService = notificacionService;
             _configService = configService;
+            _ausenciaRepository = ausenciaRepository;
         }
 
 
@@ -295,72 +298,88 @@ namespace Services
 
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
         {
-            var allSlots = new List<string>();
+            var availableSlots = new List<string>(); // Cambié el nombre para ser más claro
 
-
+            // 1. Obtener Usuario
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             int userId;
-
-           
-
-            
             if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
             {
-               
                 userId = parsedId;
             }
             else
             {
-                
                 userId = 2;
             }
 
-            
+            var fechaUtcBusqueda = date.ToUniversalTime().Date;
+            var tieneAusencia = await _ausenciaRepository.GetByFechaAndUsuarioAsync(fechaUtcBusqueda, userId);
+
+            if (tieneAusencia != null)
+            {
+                // Si hay una ausencia registrada, devolvemos la lista vacía inmediatamente.
+                // El paciente verá que no hay horarios para ese día.
+                return availableSlots;
+            }
+
+            // 2. Obtener Configuración
             var diaDeLaSemana = date.DayOfWeek;
-
-
             var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
 
-           
             if (disponibilidadDia == null || !disponibilidadDia.Disponible ||
                 !disponibilidadDia.HoraInicio.HasValue || !disponibilidadDia.HoraFin.HasValue)
             {
-                
-                return allSlots; 
+                return availableSlots;
             }
 
+            int duracionConfigurada = await _configService.GetDuracionAsync(userId); // Ej: 40 min
 
-            int duracionMinutos = await _configService.GetDuracionAsync(userId);
+            // 3. Obtener los turnos YA AGENDADOS para ese día
+            var fechaUtc = date.ToUniversalTime().Date;
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
 
-            TimeSpan currentSlotTime = disponibilidadDia.HoraInicio.Value;
+            // 4. Generar Slots y Validar Colisiones AL MISMO TIEMPO
+            TimeSpan currentSlotStart = disponibilidadDia.HoraInicio.Value;
             TimeSpan endTime = disponibilidadDia.HoraFin.Value;
 
-            while (currentSlotTime < endTime)
+            while (currentSlotStart < endTime)
             {
-               
-                if (currentSlotTime.Add(TimeSpan.FromMinutes(duracionMinutos)) <= endTime)
+                // Calculamos cuándo terminaría este posible nuevo turno
+                TimeSpan currentSlotEnd = currentSlotStart.Add(TimeSpan.FromMinutes(duracionConfigurada));
+
+                // Verificamos que no se pase del horario laboral de cierre
+                if (currentSlotEnd <= endTime)
                 {
-                    allSlots.Add(currentSlotTime.ToString(@"hh\:mm"));
+                   
+                    bool estaOcupado = turnosDelDia.Any(t =>
+                    {
+                   
+                        var turnoExistenteInicio = t.FechaHora.ToLocalTime().TimeOfDay;
+
+                      
+                        var duracionReal = t.Duracion > 0 ? t.Duracion : 60;
+
+                        var turnoExistenteFin = turnoExistenteInicio.Add(TimeSpan.FromMinutes(duracionReal));
+                       
+                        return turnoExistenteInicio < currentSlotEnd && turnoExistenteFin > currentSlotStart;
+                     
+                    });
+
+                    
+                    if (!estaOcupado)
+                    {
+                        availableSlots.Add(currentSlotStart.ToString(@"hh\:mm"));
+                    }
+
                 }
 
-               
-                currentSlotTime = currentSlotTime.Add(TimeSpan.FromMinutes(duracionMinutos));
+                
+                currentSlotStart = currentSlotStart.Add(TimeSpan.FromMinutes(duracionConfigurada));
+
             }
-
-
-            var fechaUtc = date.ToUniversalTime().Date;
-            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc); 
-
-            var bookedSlots = turnosDelDia
-                .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm")) 
-                .ToHashSet();
-
-          
-            var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
 
             return availableSlots;
         }
-
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date)
         {
 
@@ -602,5 +621,7 @@ namespace Services
         }
 
     }
+
+
 }
 
