@@ -168,5 +168,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<TeraDbContext>();
+        context.Database.Migrate(); // Esto crea las tablas en Postgres de Docker
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error migrando: {ex.Message}");
+    }
+}
 app.Run();
