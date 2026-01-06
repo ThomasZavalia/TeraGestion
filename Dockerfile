@@ -7,8 +7,9 @@ WORKDIR /src
 COPY ["TeraGestion.sln", "./"]
 COPY ["Controllers/Controllers.csproj", "Controllers/"]
 COPY ["Core/Core.csproj", "Core/"]
-COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
+COPY ["Infraestructure/Infrastructure.csproj", "Infraestructure/"]
 COPY ["Services/Services.csproj", "Services/"]
+COPY ["TeraGestion.Tests/TeraGestion.Tests.csproj", "TeraGestion.Tests/"]
 
 # Restauramos los paquetes NuGet
 RUN dotnet restore

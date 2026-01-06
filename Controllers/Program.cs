@@ -18,6 +18,8 @@ using System.Text.Json;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 using Infrastructure.Hubs;
+using Core.Entidades;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -155,7 +157,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 
 
@@ -171,14 +173,43 @@ app.MapControllers();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
+    var context = services.GetRequiredService<TeraDbContext>();
+
+    // 1. Correr migraciones
+    context.Database.Migrate();
+
+    // 2. Verificar si ya hay usuarios (para no duplicar)
+    if (!context.Usuarios.Any())
     {
-        var context = services.GetRequiredService<TeraDbContext>();
-        context.Database.Migrate(); // Esto crea las tablas en Postgres de Docker
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error migrando: {ex.Message}");
+        var hasher = new PasswordHasher<Usuario>();
+        var admin = new Usuario
+        {
+            Id = 2,
+            Username = "admin",
+            Email = "admin@teragestion.com",
+            Rol = "Admin",
+            DuracionTurnoDefault = 40
+        };
+
+        admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");
+
+        context.Usuarios.Add(admin);
+        context.SaveChanges();
+
+     
+        var dias = Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>();
+        foreach (var dia in dias)
+        {
+            context.Set<Disponibilidad>().Add(new Disponibilidad
+            {
+                UsuarioId = admin.Id,
+                DiaSemana = dia,
+                Disponible = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday),
+                HoraInicio = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(16, 0, 0) : null,
+                HoraFin = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(21, 0, 0) : null
+            });
+        }
+        context.SaveChanges();
     }
 }
 app.Run();

@@ -298,7 +298,7 @@ namespace Services
 
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
         {
-            var availableSlots = new List<string>(); // Cambié el nombre para ser más claro
+            var availableSlots = new List<string>(); 
 
             // 1. Obtener Usuario
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -312,17 +312,22 @@ namespace Services
                 userId = 2;
             }
 
+            string timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+        ? "Argentina Standard Time"
+        : "America/Argentina/Buenos_Aires";
+
+            var zonaAr = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
             var fechaUtcBusqueda = date.ToUniversalTime().Date;
             var tieneAusencia = await _ausenciaRepository.GetByFechaAndUsuarioAsync(fechaUtcBusqueda, userId);
 
             if (tieneAusencia != null)
             {
-                // Si hay una ausencia registrada, devolvemos la lista vacía inmediatamente.
-                // El paciente verá que no hay horarios para ese día.
+               
                 return availableSlots;
             }
 
-            // 2. Obtener Configuración
+            
             var diaDeLaSemana = date.DayOfWeek;
             var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
 
@@ -334,11 +339,9 @@ namespace Services
 
             int duracionConfigurada = await _configService.GetDuracionAsync(userId); // Ej: 40 min
 
-            // 3. Obtener los turnos YA AGENDADOS para ese día
             var fechaUtc = date.ToUniversalTime().Date;
             var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
 
-            // 4. Generar Slots y Validar Colisiones AL MISMO TIEMPO
             TimeSpan currentSlotStart = disponibilidadDia.HoraInicio.Value;
             TimeSpan endTime = disponibilidadDia.HoraFin.Value;
 
@@ -353,16 +356,15 @@ namespace Services
                    
                     bool estaOcupado = turnosDelDia.Any(t =>
                     {
-                   
-                        var turnoExistenteInicio = t.FechaHora.ToLocalTime().TimeOfDay;
 
-                      
+                        var fechaLocalTurno = TimeZoneInfo.ConvertTimeFromUtc(t.FechaHora, zonaAr);
+                        var turnoExistenteInicio = fechaLocalTurno.TimeOfDay;
+
                         var duracionReal = t.Duracion > 0 ? t.Duracion : 60;
-
                         var turnoExistenteFin = turnoExistenteInicio.Add(TimeSpan.FromMinutes(duracionReal));
-                       
+
                         return turnoExistenteInicio < currentSlotEnd && turnoExistenteFin > currentSlotStart;
-                     
+
                     });
 
                     
@@ -445,7 +447,13 @@ namespace Services
         {
             
             var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date);
-            var horaSolicitada = dto.FechaHora.ToLocalTime().ToString("HH:mm");
+            var timeZoneId = "America/Argentina/Buenos_Aires";
+            var zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+         
+            var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(dto.FechaHora.ToUniversalTime(), zonaHoraria);
+            var horaSolicitada = fechaLocal.ToString("HH:mm");
+
 
             if (!slots.Contains(horaSolicitada))
             {
@@ -530,8 +538,7 @@ namespace Services
 
                
 
-                string timeZoneId = "Argentina Standard Time";
-                TimeZoneInfo zonaHoraria;
+               
 
                 try
                 {
@@ -545,7 +552,7 @@ namespace Services
 
                
                 var fechaUtc = DateTime.SpecifyKind(dto.FechaHora, DateTimeKind.Utc);
-                var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
+                fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
 
                 var cuerpoPaciente = $@"
     <h1>Turno Confirmado</h1>
