@@ -18,8 +18,12 @@ namespace Core.Entidades
 
         public Paciente Paciente { get; set; }
 
-        public int? ObraSocialId { get; set; }  
+        public int? ObraSocialId { get; set; }
         public ObraSocial ObraSocial { get; set; }
+
+        public string? TokenConfirmacion { get; set; }
+
+        public int Duracion { get; set; }
 
         public ICollection<Sesion> Sesiones { get; set; }
         public ICollection<Pago> Pagos { get; set; }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core.DTOs.Paciente;
+using Core.DTOs;
 
 namespace Core.Interfaces.Services
 {
@@ -25,5 +26,6 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<PacienteDTO>> GetPacientesAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes);
 
+        Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(int pagina, int tamanio);
     }
 }

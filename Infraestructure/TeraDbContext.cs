@@ -20,6 +20,10 @@ namespace Infraestructure
 
         public DbSet<Paciente> Pacientes { get; set; }
 
+        public DbSet<Ausencia> Ausencias { get;set; }
+
+        public DbSet<Notificacion> Notificaciones { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -94,7 +98,6 @@ namespace Infraestructure
 
 
 
-
             modelBuilder.Entity<Disponibilidad>(entity =>
             {
                  
@@ -112,21 +115,25 @@ namespace Infraestructure
                 entity.Property(d => d.HoraInicio).HasColumnType("time without time zone");
                 entity.Property(d => d.HoraFin).HasColumnType("time without time zone");
 
-                
-                var dias = Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>();
-                foreach (var dia in dias)
-                {
-                    entity.HasData(new Disponibilidad
-                    {
-                        Id = -(int)dia - 1, 
-                        UsuarioId = 2, 
-                        DiaSemana = dia,
-                        Disponible = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday), // L-V por defecto
-                        HoraInicio = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(16, 0, 0) : (TimeSpan?)null, // 16:00
-                        HoraFin = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(21, 0, 0) : (TimeSpan?)null // 21:00
-                    });
-                }
+               
             });
+
+            modelBuilder.Entity<Ausencia>(entity =>
+            {
+                entity.HasKey(a => a.Id);
+                entity.Property(a => a.Fecha).HasColumnType("timestamp with time zone");
+                entity.Property(a => a.Motivo).HasMaxLength(500);
+                entity.HasOne(a => a.Usuario)
+                      .WithMany()
+                      .HasForeignKey(a => a.UsuarioId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+
+
+
+            });
+
+           
 
         }
 

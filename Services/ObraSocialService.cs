@@ -31,7 +31,7 @@ namespace Services
             if (obraSocialId.HasValue)
             {
                 var obraSocial = await _obraSocialRepository.GetById(obraSocialId.Value);
-                if (obraSocial != null)
+                if (obraSocial != null && obraSocial.Activa)
                     return obraSocial.PrecioTurno;
             }
             return PrecioBaseSinObraSocial;
@@ -65,6 +65,8 @@ namespace Services
 
             obraSocialExistente.Nombre = obraSocialDto.Nombre;
             obraSocialExistente.PrecioTurno = obraSocialDto.PrecioTurno;
+            obraSocialExistente.Activa = obraSocialDto.Activa;
+
            
 
            
@@ -83,6 +85,12 @@ namespace Services
             }
            
             return await _obraSocialRepository.Eliminar(id);
+        }
+
+        public async Task<IEnumerable<ObraSocialDto>> GetObrasSocialesAdminAsync()
+        {
+            var obrasSociales = await _obraSocialRepository.ObtenerTodasParaAdmin();
+            return _mapper.Map<IEnumerable<ObraSocialDto>>(obrasSociales);
         }
     }
 }

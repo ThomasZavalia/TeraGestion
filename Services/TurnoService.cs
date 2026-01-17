@@ -1,13 +1,16 @@
 ﻿using AutoMapper;
 using Core.DTOs.Paciente;
 using Core.DTOs.Pago.Output;
+using Core.DTOs.Public;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
+using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Infraestructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -31,6 +34,11 @@ namespace Services
         private readonly ISesionRepository _sesionRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IDisponibilidadRepository _disponibilidadRepository;
+        private readonly IEmailService _emailService;
+        private readonly INotificacionService _notificacionService;
+        private readonly IConfiguracionService _configService;
+        private readonly IAusenciaRepository _ausenciaRepository;
+
 
         public TurnoService(
          ITurnoRepository turnoRepository,
@@ -41,7 +49,11 @@ namespace Services
          IObraSocialService obraSocialService,
          ISesionRepository sesionRepository,
          IHttpContextAccessor httpContextAccessor,
-         IDisponibilidadRepository disponibilidadRepository
+         IDisponibilidadRepository disponibilidadRepository,
+         IEmailService emailService,
+         INotificacionService notificacionService,
+         IConfiguracionService configService,
+         IAusenciaRepository ausenciaRepository
      )
         {
             _turnoRepository = turnoRepository;
@@ -53,6 +65,10 @@ namespace Services
             _sesionRepository = sesionRepository;
             _httpContextAccessor = httpContextAccessor;
             _disponibilidadRepository = disponibilidadRepository;
+            _emailService = emailService;
+            _notificacionService = notificacionService;
+            _configService = configService;
+            _ausenciaRepository = ausenciaRepository;
         }
 
 
@@ -65,19 +81,11 @@ namespace Services
 
 
 
-            if (dto.EsParticular)
+            if (dto.ObraSocialId.HasValue)
             {
-                turnoExistente.Precio = dto.Precio;
-                turnoExistente.ObraSocialId = null; 
-            }
-            else
-            {
-                
                 turnoExistente.ObraSocialId = dto.ObraSocialId;
-               
                 turnoExistente.Precio = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
             }
-
 
 
 
@@ -93,7 +101,7 @@ namespace Services
             var turno = await _turnoRepository.GetById(turnoId)
                 ?? throw new KeyNotFoundException("Turno no encontrado");
 
-            if (turno.Estado == "Pagado")
+            if (turno.Estado.ToLower() == "pagado") 
                 throw new ArgumentException("El turno ya está pagado");
 
             await _pagoService.CrearPago(new PagoDto
@@ -114,20 +122,15 @@ namespace Services
 
             if (!dto.PacienteId.HasValue && string.IsNullOrWhiteSpace(dto.DNI))
             {
-                throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente (incluyendo DNI).");
+                throw new ArgumentException("Se debe proporcionar un PacienteId o los datos de un nuevo paciente.");
             }
-            if (!dto.PacienteId.HasValue && (string.IsNullOrWhiteSpace(dto.NombrePaciente) || string.IsNullOrWhiteSpace(dto.ApellidoPaciente)))
+
+           
+            if (!dto.ObraSocialId.HasValue)
             {
-                throw new ArgumentException("Nombre y Apellido son requeridos para un nuevo paciente.");
+                throw new ArgumentException("Se debe seleccionar una Cobertura (o Particular).");
             }
-            if (dto.EsParticular && !dto.Precio.HasValue)
-            {
-                throw new ArgumentException("Se debe especificar un precio para turnos particulares.");
-            }
-            if (!dto.EsParticular && !dto.ObraSocialId.HasValue)
-            {
-                throw new ArgumentException("Se debe seleccionar una Obra Social para turnos no particulares.");
-            }
+
 
 
             using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
@@ -135,18 +138,34 @@ namespace Services
             try
             {
                 PacienteDTO pacienteAsignado;
+
                 if (dto.PacienteId.HasValue)
                 {
+               
                     pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                     if (pacienteAsignado == null)
                     {
-                
                         throw new KeyNotFoundException($"No se encontró el paciente con ID {dto.PacienteId.Value}.");
                     }
 
-                    if (dto.ObraSocialId.HasValue && pacienteAsignado.ObraSocialId != dto.ObraSocialId && !dto.EsParticular)
+                    bool necesitaActualizar = false;
+
+                   
+                    if (pacienteAsignado.ObraSocialId != dto.ObraSocialId)
                     {
                         pacienteAsignado.ObraSocialId = dto.ObraSocialId;
+                        necesitaActualizar = true;
+                    }
+
+                    
+                    if (!pacienteAsignado.Activo)
+                    {
+                        pacienteAsignado.Activo = true;
+                        necesitaActualizar = true;
+                    }
+
+                    if (necesitaActualizar)
+                    {
                         await _pacienteService.ActualizarPacienteAsync(pacienteAsignado.Id, pacienteAsignado);
                     }
                 }
@@ -165,7 +184,8 @@ namespace Services
                         DNI = dto.DNI,
                         Nombre = dto.NombrePaciente,
                         Apellido = dto.ApellidoPaciente,
-                        ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
+                        ObraSocialId =  dto.ObraSocialId,
+                        Activo = true
                     };
                     pacienteAsignado = await _pacienteService.CrearPacienteAsync(nuevoPacienteDto);
 
@@ -177,16 +197,9 @@ namespace Services
                 }
 
 
-                decimal precioTurno;
-                if (dto.EsParticular)
-                {
-                    precioTurno = dto.Precio.Value;
-                }
-                else
-                {
-                    precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
-                }
+                decimal precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
 
+                int duracion = await _configService.GetDuracionAsync(2);
 
                 var turno = new Turno
                 {
@@ -194,7 +207,8 @@ namespace Services
                     PacienteId = pacienteAsignado.Id,
                     Precio = precioTurno,
                     Estado = "Pendiente",
-                    ObraSocialId = !dto.EsParticular ? dto.ObraSocialId : null
+                    ObraSocialId = dto.ObraSocialId ,
+                    Duracion = duracion
                 };
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
@@ -227,17 +241,35 @@ namespace Services
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-            var turnoAeliminar = await _turnoRepository.GetById(id);
-            if (turnoAeliminar == null)
+           
+            var turnoACancelar = await _turnoRepository.GetByIdConPaciente(id);
+
+            if (turnoACancelar == null) throw new KeyNotFoundException("Turno no encontrado");
+            if (turnoACancelar.Estado.ToLower() == "pagado") throw new ArgumentException("No se puede cancelar un turno pagado.");
+
+           
+            turnoACancelar.Estado = "Cancelado";
+            await _turnoRepository.Actualizar(turnoACancelar);
+
+           
+            if (!string.IsNullOrEmpty(turnoACancelar.Paciente.Email))
             {
+                var asunto = "Turno Cancelado";
+                var cuerpo = $@"
+            <p>Hola {turnoACancelar.Paciente.Nombre},</p>
+            <p>Su turno del día <strong>{turnoACancelar.FechaHora:dd/MM/yyyy}</strong> a las <strong>{turnoACancelar.FechaHora:HH:mm} hs</strong> ha sido cancelado.</p>
+            <p>Saludos, TeraGestion.</p>";
 
-                throw new KeyNotFoundException("No se encontro el turno");
+               
+                _ = _emailService.SendEmailAsync(turnoACancelar.Paciente.Email, asunto, cuerpo);
             }
-            await _turnoRepository.Eliminar(id);
+          
+
             return true;
-
-
         }
+
+
+
 
         public async Task<TurnoDto> GetTurnoAsync(int id)
         {
@@ -266,55 +298,89 @@ namespace Services
 
         public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
         {
-            var allSlots = new List<string>();
+            var availableSlots = new List<string>(); 
 
-           
+          
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
+            int userId;
+            if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
             {
-               
-                return allSlots;
+                userId = parsedId;
+            }
+            else
+            {
+                userId = 2;
             }
 
-          
-            var diaDeLaSemana = date.DayOfWeek;
+            string timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+        ? "Argentina Standard Time"
+        : "America/Argentina/Buenos_Aires";
 
-          
+            var zonaAr = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            var fechaUtcBusqueda = date.ToUniversalTime().Date;
+            var tieneAusencia = await _ausenciaRepository.GetByFechaAndUsuarioAsync(fechaUtcBusqueda, userId);
+
+            if (tieneAusencia != null)
+            {
+               
+                return availableSlots;
+            }
+
+            
+            var diaDeLaSemana = date.DayOfWeek;
             var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
 
-           
             if (disponibilidadDia == null || !disponibilidadDia.Disponible ||
                 !disponibilidadDia.HoraInicio.HasValue || !disponibilidadDia.HoraFin.HasValue)
             {
-                
-                return allSlots; 
+                return availableSlots;
             }
 
-            TimeSpan currentSlotTime = disponibilidadDia.HoraInicio.Value;
+            int duracionConfigurada = await _configService.GetDuracionAsync(userId); // Ej: 40 min
+
+            var fechaUtc = date.ToUniversalTime().Date;
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
+
+            TimeSpan currentSlotStart = disponibilidadDia.HoraInicio.Value;
             TimeSpan endTime = disponibilidadDia.HoraFin.Value;
 
-            while (currentSlotTime < endTime)
+            while (currentSlotStart < endTime)
             {
+               
+                TimeSpan currentSlotEnd = currentSlotStart.Add(TimeSpan.FromMinutes(duracionConfigurada));
+
+                if (currentSlotEnd <= endTime)
+                {
+                   
+                    bool estaOcupado = turnosDelDia.Any(t =>
+                    {
+
+                        var fechaLocalTurno = TimeZoneInfo.ConvertTimeFromUtc(t.FechaHora, zonaAr);
+                        var turnoExistenteInicio = fechaLocalTurno.TimeOfDay;
+
+                        var duracionReal = t.Duracion > 0 ? t.Duracion : 60;
+                        var turnoExistenteFin = turnoExistenteInicio.Add(TimeSpan.FromMinutes(duracionReal));
+
+                        return turnoExistenteInicio < currentSlotEnd && turnoExistenteFin > currentSlotStart;
+
+                    });
+
+                    
+                    if (!estaOcupado)
+                    {
+                        availableSlots.Add(currentSlotStart.ToString(@"hh\:mm"));
+                    }
+
+                }
+
                 
-                allSlots.Add(currentSlotTime.ToString(@"hh\:mm"));
-                
-                currentSlotTime = currentSlotTime.Add(TimeSpan.FromHours(1));
+                currentSlotStart = currentSlotStart.Add(TimeSpan.FromMinutes(duracionConfigurada));
+
             }
-
-          
-            var fechaUtc = date.ToUniversalTime().Date;
-            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc); 
-
-            var bookedSlots = turnosDelDia
-                .Select(t => t.FechaHora.ToLocalTime().ToString("HH:mm")) 
-                .ToHashSet();
-
-          
-            var availableSlots = allSlots.Where(slot => !bookedSlots.Contains(slot));
 
             return availableSlots;
         }
-
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date)
         {
 
@@ -344,16 +410,224 @@ namespace Services
             {
 
                 turnoDto.Asistencia = sesionExistente.Asistencia;
+                turnoDto.NotasSesion = sesionExistente.Notas;
+                turnoDto.SesionId = sesionExistente.Id;
             }
             else
             {
 
                 turnoDto.Asistencia = null;
+                turnoDto.NotasSesion = null;
+                turnoDto.SesionId = null;
             }
 
             return turnoDto;
         }
 
+        public async Task<TurnoCalendarioDto> ReprogramarTurnoAsync(int id, DateTime nuevaFecha)
+        {
+            var turno = await _turnoRepository.GetByIdConPaciente(id);
+            if (turno == null) throw new KeyNotFoundException("Turno no encontrado");
+
+            
+           
+
+            
+            turno.FechaHora = nuevaFecha;
+
+          
+            if (turno.Estado == "Cancelado") turno.Estado = "Pendiente";
+
+            await _turnoRepository.Actualizar(turno);
+            return _mapper.Map<TurnoCalendarioDto>(turno);
+        }
+
+        public async Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto)
+        {
+            
+            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date);
+            var timeZoneId = "America/Argentina/Buenos_Aires";
+            var zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+         
+            var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(dto.FechaHora.ToUniversalTime(), zonaHoraria);
+            var horaSolicitada = fechaLocal.ToString("HH:mm");
+
+
+            if (!slots.Contains(horaSolicitada))
+            {
+                throw new InvalidOperationException("Lo sentimos, ese horario ya no está disponible.");
+            }
+
+            using var transaction = await _teraDbContext.Database.BeginTransactionAsync();
+            try
+            {
+                
+                var paciente = await _pacienteService.GetPacientePorDniAsync(dto.DNI);
+                int pacienteId;
+                string nombreFinal;
+                string apellidoFinal;
+
+                if (paciente != null)
+                {
+                    
+                    pacienteId = paciente.Id;
+                    nombreFinal = paciente.Nombre;
+                    apellidoFinal = paciente.Apellido;
+
+
+                }
+                else
+                {
+                    
+                    var nuevoPaciente = new PacienteDTO
+                    {
+                        Nombre = dto.Nombre,
+                        Apellido = dto.Apellido,
+                        DNI = dto.DNI,
+                        Email = dto.Email,
+                        Telefono = dto.Telefono,
+                        Activo = true
+                       
+                    };
+                    var pacienteCreado = await _pacienteService.CrearPacienteAsync(nuevoPaciente);
+                    pacienteId = pacienteCreado.Id;
+                    nombreFinal = dto.Nombre;
+                    apellidoFinal = dto.Apellido;
+                }
+
+               
+                var yaTieneTurno = await _turnoRepository.ExisteTurnoPorPacienteYFecha(pacienteId, dto.FechaHora);
+                if (yaTieneTurno)
+                {
+                    throw new InvalidOperationException("Ya tienes un turno reservado para este día.");
+                }
+
+                decimal precioCalculado = 0;
+
+              
+                if (dto.ObraSocialId.HasValue)
+                {
+                    
+                    precioCalculado = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
+                }
+                var token = Guid.NewGuid().ToString("N");
+
+                int duracion = await _configService.GetDuracionAsync(2);
+
+                var turno = new Turno
+                {
+                    FechaHora = dto.FechaHora,
+                    PacienteId = pacienteId,
+                    Estado = "PendienteConfirmacion",
+                    TokenConfirmacion = token,
+                    ObraSocialId = dto.ObraSocialId, 
+                    Precio = precioCalculado,
+                    Duracion = duracion
+
+                };
+
+                var turnoCreado = await _turnoRepository.Agregar(turno);
+                await transaction.CommitAsync();
+
+
+
+                var baseUrl = "http://localhost:5173"; 
+                var link = $"{baseUrl}/confirmar-turno?token={token}&id={turnoCreado.Id}";
+
+               
+
+               
+
+                try
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+                }
+
+               
+                var fechaUtc = DateTime.SpecifyKind(dto.FechaHora, DateTimeKind.Utc);
+                fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
+
+                var cuerpoPaciente = $@"
+    <h1>Turno Confirmado</h1>
+    <p>Hola {dto.Nombre}, te esperamos el {fechaLocal:dd/MM/yyyy} a las {fechaLocal:HH:mm} hs.</p>
+    <p><strong>Para confirmar tu reserva, por favor haz clic en el siguiente enlace:</strong></p>
+    <p><a href='{link}'>CONFIRMAR MI TURNO</a></p>
+    <p>Si no fuiste tú, ignora este mensaje.</p>";
+
+                _ = _emailService.SendEmailAsync(dto.Email, "Acción Requerida: Confirma tu Turno", cuerpoPaciente);
+
+
+             
+
+
+                var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
+                return _mapper.Map<TurnoCalendarioDto>(turnoConPaciente);
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<bool> ConfirmarTurnoAsync(int id, string token)
+        {
+            var turno = await _turnoRepository.GetByIdConPaciente(id);
+
+            if (turno == null) return false;
+
+            if (turno.TokenConfirmacion == token && turno.Estado == "PendienteConfirmacion")
+            {
+                turno.Estado = "Pendiente";
+                turno.TokenConfirmacion = null;
+
+                await _turnoRepository.Actualizar(turno);
+
+                
+                string timeZoneId = "Argentina Standard Time";
+                TimeZoneInfo zonaHoraria;
+                try
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                }
+                catch (TimeZoneNotFoundException)
+                {
+                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
+                }
+
+               
+                var fechaUtc = DateTime.SpecifyKind(turno.FechaHora, DateTimeKind.Utc);
+                var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
+             
+                try
+                {
+                    await _notificacionService.CrearNotificacionAsync(
+                        usuarioDestinoId: 2,
+                        titulo: "Turno Confirmado",
+                      
+                        mensaje: $"El paciente {turno.Paciente.Nombre} {turno.Paciente.Apellido} ha confirmado su turno del {fechaLocal:dd/MM} a las {fechaLocal:HH:mm} hs.",
+                        referenciaId: turno.Id
+                    );
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error notificación: {ex.Message}");
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
     }
+
+
 }
 

@@ -51,6 +51,13 @@ namespace Controllers.Controllers
             return Ok(ingresosPorMes);
         }
 
+        [HttpGet("turnos-por-obrasocial")]
+        public async Task<IActionResult> GetTurnosPorObraSocial()
+        {
+            var reporte = await _reportesService.GetTurnosPorObraSocial();
+            return Ok(reporte);
+        }
+
 
     }
 }

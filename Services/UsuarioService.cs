@@ -99,7 +99,7 @@ namespace Services
            
              var otroUsuario = await GetByName(dto.Username);
              if (otroUsuario != null && otroUsuario.Id != id) throw new ArgumentException("El nombre de usuario ya está en uso.");
-            //if( otroUsuario.Email == dto.Email && otroUsuario.Id != id) throw new ArgumentException("El email ya está en uso.");
+           
 
             
             _mapper.Map(dto, usuarioExistente);

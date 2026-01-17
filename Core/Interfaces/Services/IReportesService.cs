@@ -14,6 +14,8 @@ namespace Core.Interfaces.Services
         public Task<IEnumerable<ReporteEstadoDto>> GetTurnoPorEstado();
         public Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null);
         public Task<IEnumerable<ReporteMesDto>> GetTurnosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null);
+        Task<IEnumerable<ReporteEstadoDto>> GetTurnosPorObraSocial(); 
+                                                                      
 
 
     }

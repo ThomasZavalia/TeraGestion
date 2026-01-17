@@ -12,6 +12,7 @@ namespace Core.Interfaces.Repositorios
         Task<Turno?> GetByIdConPaciente(int id);
        
             Task<IEnumerable<Turno>> GetTurnosByDayAsync(DateTime date);
-        
+        Task<bool> ExisteTurnoPorPacienteYFecha(int pacienteId, DateTime fecha);
+
     }
 }

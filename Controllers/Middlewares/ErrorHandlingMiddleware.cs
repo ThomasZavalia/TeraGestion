@@ -35,7 +35,7 @@ namespace Controllers.Middlewares
             }
             catch (Exception ex)
             {
-                // Cualquier otro error no controlado
+            
                 _logger.LogError(ex, "Unhandled exception");
 
                 await HandleExceptionAsync(context, ex, HttpStatusCode.InternalServerError, hideDetails: !_env.IsDevelopment());

@@ -86,7 +86,7 @@ namespace Services
                 TurnoId = dto.TurnoId,
                 PacienteId = turnoDto.PacienteId,
                 FechaHoraInicio = DateTime.SpecifyKind(turnoDto.FechaHora, DateTimeKind.Utc),
-                //FechaHoraInicio = turnoDto.FechaHora,
+              
                 Asistencia = dto.Asistencia,
                 Notas = null
             };

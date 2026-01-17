@@ -17,21 +17,33 @@ namespace Core.Mapping
         public TurnoProfile()
         {
             CreateMap<TurnoDto, Turno>();
-           
             CreateMap<Turno, TurnoDto>();
 
-          
-            CreateMap<Turno, TurnoCalendarioDto>()
-               
-                .ForMember(dest => dest.Fecha, 
-                           opt => opt.MapFrom(src => src.FechaHora)) 
 
-            
-                .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => src.Paciente.Nombre))
-                .ForMember(dest => dest.PacienteApellido, opt => opt.MapFrom(src => src.Paciente.Apellido));
+            CreateMap<Turno, TurnoCalendarioDto>()
+     .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+
+     .ForMember(dest => dest.Start, opt => opt.MapFrom(src => src.FechaHora))
+     .ForMember(dest => dest.FechaHora, opt => opt.MapFrom(src => src.FechaHora)) // Por seguridad
+    .ForMember(dest => dest.End, opt => opt.MapFrom(src =>
+        src.FechaHora.AddMinutes(src.Duracion > 0 ? src.Duracion : 40)))
+
+    .ForMember(dest => dest.Duracion, opt => opt.MapFrom(src => src.Duracion))
+
+
+     .ForMember(dest => dest.Title, opt => opt.MapFrom(src =>
+         $"{src.Paciente.Nombre} {src.Paciente.Apellido}"))
+
+     .ForMember(dest => dest.Estado, opt => opt.MapFrom(src => src.Estado)) 
+     .ForMember(dest => dest.Precio, opt => opt.MapFrom(src => src.Precio))
+     .ForMember(dest => dest.PacienteId, opt => opt.MapFrom(src => src.PacienteId))
+     .ForMember(dest => dest.ObraSocialId, opt => opt.MapFrom(src => src.ObraSocialId))
+   
+     ;
+
 
             CreateMap<Turno, TurnoDetalleDto>()
-            .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"));
+                .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"));
         }
     }
 }

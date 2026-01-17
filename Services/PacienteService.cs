@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Threading.Tasks;
+using Core.DTOs;
 
 namespace Services
 {
@@ -45,7 +46,7 @@ namespace Services
         {
             try
             {
-
+                pacienteDto.Activo = true;
                 var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
                 var creado = await _pacienteRepository.Agregar(nuevoPaciente);
                 return _mapper.Map<PacienteDTO>(creado);
@@ -55,19 +56,22 @@ namespace Services
                 throw new Exception("Error al crear el paciente", ex);
             }
         }
-
         public async Task<bool> EliminarPacienteAsync(int id)
         {
             if (id <= 0)
                 throw new ArgumentException("Id inválido");
 
-            var pacienteExistente = await _pacienteRepository.GetById(id);
-            if (pacienteExistente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
 
-            await _pacienteRepository.Eliminar(id);
+            var paciente = await _pacienteRepository.GetById(id);
+            if (paciente == null) { throw new KeyNotFoundException("Paciente no encontrado"); }
+
+
+            paciente.Activo = false;
+
+
+            await _pacienteRepository.Actualizar(paciente);
 
             return true;
-
         }
 
         public async Task<PacienteDTO> GetPacienteAsync(int id)
@@ -157,32 +161,48 @@ namespace Services
 
         }
 
-            public async Task<bool> CheckDniExistsAsync(string dni)
+        public async Task<bool> CheckDniExistsAsync(string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
             {
-                if (string.IsNullOrEmpty(dni))
-                {
-                    return false;
+                return false;
 
-
-                }
-
-
-                var paciente = await GetPacientePorDniAsync(dni);
-                return paciente != null;
 
             }
+
+
+            var paciente = await GetPacientePorDniAsync(dni);
+            return paciente != null;
+
+        }
 
 
 
         public async Task<IEnumerable<PacienteDTO>> GetPacientesAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes)
         {
-            
-            var pacientes = await _pacienteRepository.ObtenerTodosAsync(obraSocialId, activo,tienePagosPendientes);
+
+            var pacientes = await _pacienteRepository.ObtenerTodosAsync(obraSocialId, activo, tienePagosPendientes);
 
             var pacientesDTO = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
             return pacientesDTO;
         }
+
+        public async Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(int pagina, int tamanio)
+        {
+
+            var pagedEntities = await _pacienteRepository.GetPaginadosAsync(pagina, tamanio);
+
+            var itemsDto = _mapper.Map<IEnumerable<PacienteDTO>>(pagedEntities.Items);
+
+
+            return new PagedResult<PacienteDTO>
+            {
+                Items = itemsDto,
+                CantidadTotal = pagedEntities.CantidadTotal,
+                NumeroPagina = pagedEntities.NumeroPagina,
+                TamanioPagina = pagedEntities.TamanioPagina
+            };
+
+        }
     }
-} 
-
-
+}
