@@ -1,4 +1,5 @@
-﻿using Core.DTOs.Paciente;
+﻿using Core.DTOs;
+using Core.DTOs.Paciente;
 using Core.Entidades;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -108,8 +109,15 @@ namespace Controllers.Controllers
             return Ok(new { exists = exists });
         }
 
+        [HttpGet("paginated")]
+        public async Task<ActionResult<PagedResult<PacienteDTO>>> GetPacientes([FromQuery] int pagina = 1, [FromQuery] int tamanio = 10)
+        {
+            var result = await _pacienteService.GetPacientesPaginadosAsync(pagina, tamanio);
+            return Ok(result);
+        }
 
-    
+
+
 
     }
 }

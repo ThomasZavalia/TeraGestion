@@ -27,8 +27,7 @@ namespace Services
             {
                 var secret = _config["Recaptcha:SecretKey"];
 
-                // DEBUG: Verifica que la clave se leyó (no la imprimas completa por seguridad)
-                Console.WriteLine($"[Recaptcha] Validando token. Clave secreta termina en: ...{secret?.Substring(Math.Max(0, secret.Length - 5))}");
+              
 
                 var response = await _httpClient.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secret}&response={token}", null);
 

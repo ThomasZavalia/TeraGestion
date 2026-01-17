@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Infraestructure;
+using Core.DTOs;
 
 namespace Infrastructure.Repositorios
 {
@@ -186,7 +187,27 @@ namespace Infrastructure.Repositorios
                                 .ToListAsync();
         }
 
-       
+        public async Task<PagedResult<Paciente>> GetPaginadosAsync(int numeroPagina, int tamanio)
+        {
+            var query = _context.Pacientes.AsQueryable();
+
+            var total = await query.CountAsync();
+            var items = await query
+                .OrderBy(p => p.Nombre) 
+                .Skip((numeroPagina - 1) * tamanio)
+                .Take(tamanio)
+                .ToListAsync();
+
+            return new PagedResult<Paciente>
+            {
+                Items = items,
+                CantidadTotal = total,
+                NumeroPagina = numeroPagina,
+               TamanioPagina = tamanio
+            };
+        }
+
+
     }
 
 

@@ -1,4 +1,5 @@
-﻿using Core.Entidades;
+﻿using Core.DTOs;
+using Core.Entidades;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,5 +21,7 @@ namespace Core.Interfaces.Repositorios
         //
         Task<Paciente> Actualizar(int id, Paciente entity);
         //
+
+        Task<PagedResult<Paciente>> GetPaginadosAsync(int numeroPagina, int tamanioPagina);
     }
 }

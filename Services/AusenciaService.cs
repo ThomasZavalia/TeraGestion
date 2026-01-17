@@ -16,10 +16,10 @@ namespace Services
     public class AusenciaService : IAusenciaService
     {
         private readonly IAusenciaRepository _ausenciaRepository;
-        private readonly ITurnoRepository _turnoRepository; // Para buscar/cancelar turnos
+        private readonly ITurnoRepository _turnoRepository; 
         private readonly IEmailService _emailService;
         private readonly IMapper _mapper;
-        private readonly TeraDbContext _context; // Para transacción
+        private readonly TeraDbContext _context; 
 
         public AusenciaService(
             IAusenciaRepository ausenciaRepository,

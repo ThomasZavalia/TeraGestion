@@ -39,10 +39,7 @@ namespace Services
             await _context.Notificaciones.AddAsync(notificacion);
             await _context.SaveChangesAsync();
 
-            // 2. Enviar en Tiempo Real (SignalR)
-            // Enviamos el evento "RecibirNotificacion" al usuario específico.
-            // NOTA: Esto asume que cuando el usuario se conecta al front, su "UserIdentifier" es su ID (lo veremos en el Front).
-            // Si eso falla al principio, probaremos con .All para testear.
+            
 
             await _hubContext.Clients.User(usuarioDestinoId.ToString())
                 .SendAsync("RecibirNotificacion", new

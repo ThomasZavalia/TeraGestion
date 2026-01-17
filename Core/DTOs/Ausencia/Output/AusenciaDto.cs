@@ -12,7 +12,7 @@ namespace Core.DTOs.Ausencia.Output
         public int Id { get; set; }
 
         [Required]
-        public DateTime Fecha { get; set; } // El día que no trabaja
+        public DateTime Fecha { get; set; } 
 
         [Required]
         public string Motivo { get; set; }

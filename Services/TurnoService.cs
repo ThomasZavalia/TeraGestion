@@ -300,7 +300,7 @@ namespace Services
         {
             var availableSlots = new List<string>(); 
 
-            // 1. Obtener Usuario
+          
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             int userId;
             if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
@@ -347,10 +347,9 @@ namespace Services
 
             while (currentSlotStart < endTime)
             {
-                // Calculamos cuándo terminaría este posible nuevo turno
+               
                 TimeSpan currentSlotEnd = currentSlotStart.Add(TimeSpan.FromMinutes(duracionConfigurada));
 
-                // Verificamos que no se pase del horario laboral de cierre
                 if (currentSlotEnd <= endTime)
                 {
                    
@@ -431,7 +430,7 @@ namespace Services
             if (turno == null) throw new KeyNotFoundException("Turno no encontrado");
 
             
-            //if (turno.Estado == "Pagado") throw new ArgumentException("No se puede reprogramar un turno pagado");
+           
 
             
             turno.FechaHora = nuevaFecha;
@@ -564,7 +563,7 @@ namespace Services
                 _ = _emailService.SendEmailAsync(dto.Email, "Acción Requerida: Confirma tu Turno", cuerpoPaciente);
 
 
-                // _ = _emailService.SendEmailAsync("tu_mail@gmail.com", "Nuevo Turno Online", $"El paciente {dto.Nombre} reservó para el {dto.FechaHora}");
+             
 
 
                 var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);

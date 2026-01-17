@@ -26,14 +26,14 @@ namespace Infrastructure.Email
         {
             try
             {
-                // Leemos la config
+             
                 var settings = _configuration.GetSection("SmtpSettings");
                 var server = settings["Server"];
                 var port = int.Parse(settings["Port"]);
                 var senderEmail = settings["SenderEmail"];
                 var senderName = settings["SenderName"];
                 var username = settings["Username"];
-                var password = settings["Password"]; // La App Password de Google
+                var password = settings["Password"]; 
 
 
                 using (var client = new SmtpClient(server, port))
@@ -65,8 +65,7 @@ namespace Infrastructure.Email
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR CRÍTICO AL ENVIAR EMAIL: {ex.Message}");
-                // Para desarrollo, es útil ver la excepción interna
+               
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
