@@ -1,4 +1,8 @@
-﻿using Core.Interfaces;
+﻿using Core.DTOs;
+using Core.DTOs.Paciente;
+using Core.Entidades;
+using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +10,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PacienteController : ControllerBase
     {
         private readonly IPacienteService _pacienteService;
@@ -17,33 +22,103 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPaciente(int id)
         {
-            throw new NotImplementedException();
+            var paciente = await _pacienteService.GetPacienteAsync(id);
+
+            return Ok(paciente);
         }
 
+
         [HttpGet]
-        public async Task<IActionResult> GetPacientes()
+        public async Task<IActionResult> GetPacientes(
+            [FromQuery] int? obraSocialId,
+            [FromQuery] bool? activo,
+            [FromQuery] bool? tienePagosPendientes)
+
         {
-            throw new NotImplementedException();
+            
+            var pacientes = await _pacienteService.GetPacientesAsync(obraSocialId, activo, tienePagosPendientes);
+            return Ok(pacientes);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CrearPaciente([FromBody] Core.Entidades.Paciente paciente)
+        public async Task<IActionResult> CrearPaciente([FromBody] PacienteDTO pacienteDto)
         {
-            throw new NotImplementedException();
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+                var creado = await _pacienteService.CrearPacienteAsync(pacienteDto);
+                pacienteDto.Activo = true;
+                if (creado == null)
+                    return BadRequest("No se pudo crear el paciente.");
+               return Ok(creado);
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] Core.Entidades.Paciente paciente)
+        public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] PacienteDTO paciente)
         {
-            throw new NotImplementedException();
+                if (!ModelState.IsValid)
+                    return BadRequest(ModelState);
+             
+                var actualizado = await _pacienteService.ActualizarPacienteAsync(id,paciente);
+                return Ok(actualizado);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPaciente(int id)
         {
-            throw new NotImplementedException();
+              var eliminado = await _pacienteService.EliminarPacienteAsync(id);
+             
+              return NoContent();
         }
+
+        [HttpGet("buscar")]
+        public async Task<ActionResult<IEnumerable<PacienteSimpleDto>>> BuscarPacientes([FromQuery] string query)
+        {
+            var pacientes = await _pacienteService.BuscarPacientesAsync(query);
+            return Ok(pacientes);
+        }
+
+        [HttpGet("{id}/detalles")]
+        public async Task<ActionResult<PacienteDetalleDTO>> GetPacienteDetallesAsync(int id)
+        {
+            try
+            {
+                var pacienteDetalle = await _pacienteService.GetPacienteDetallesAsync(id);
+
+                return Ok(pacienteDetalle);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Ocurrió un error al obtener los detalles del paciente. {ex.Message}");
+            }
+        }
+
+        [HttpGet("check-dni")]
+        public async Task<IActionResult> CheckDni([FromQuery] string dni)
+        {
+            if (string.IsNullOrEmpty(dni))
+            {
+                return BadRequest(new { message = "DNI no provisto." });
+            }
+            var exists = await _pacienteService.CheckDniExistsAsync(dni);
+
+          
+            return Ok(new { exists = exists });
+        }
+
+        [HttpGet("paginated")]
+        public async Task<ActionResult<PagedResult<PacienteDTO>>> GetPacientes([FromQuery] int pagina = 1, [FromQuery] int tamanio = 10)
+        {
+            var result = await _pacienteService.GetPacientesPaginadosAsync(pagina, tamanio);
+            return Ok(result);
+        }
+
+
 
 
     }
 }
+

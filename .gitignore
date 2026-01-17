@@ -11,6 +11,9 @@ obj/
 .nuget/
 packages/
 
+# Ignorar las migraciones de EF
+Infraestructure/Migrations/
+
 appsettings.Development.json
 appsettings.Local.json
 *.db

@@ -1,17 +1,35 @@
-using Core.Interfaces;
+using Controllers;
+using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
+using Core.Interfaces.Services;
+using Core.Mapping;
 using Infraestructure;
+using Infrastructure.Email;
+using Infrastructure.Repositorios;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Services;
+using System.Text;
+using Infrastructure.Email;
+using System.Text.Json;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
+using Infrastructure.Hubs;
+using Core.Entidades;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddDbContext<TeraDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddSignalR();
 
 
 // Repositorios
@@ -20,6 +38,10 @@ builder.Services.AddScoped<ITurnoRepository, TurnoRepository>();
 builder.Services.AddScoped<IUsuariosRepository, UsuarioRepository>();
 builder.Services.AddScoped<IPagosRepository, PagoRepository>();
 builder.Services.AddScoped<ISesionRepository, SesionRepository>();
+builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
+builder.Services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
+builder.Services.AddScoped<IAusenciaRepository, AusenciaRepository>();
+builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
 
 
 // Servicios
@@ -28,17 +50,103 @@ builder.Services.AddScoped<ITurnoService, TurnoService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<IPagoService, PagoService>();
 builder.Services.AddScoped<ISesionService, SesionService>();
+builder.Services.AddScoped<IObraSocialService, ObraSocialService>();
+builder.Services.AddScoped<IReportesService,ReportesService>();
+builder.Services.AddScoped<IDisponibilidadService, DisponibilidadService>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<IAusenciaService, AusenciaService>();
+builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
+builder.Services.AddScoped<INotificacionService, NotificacionService>();
+builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173", "http://localhost:5033")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+var key = Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]);
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(key)
+    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+
+           
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notificaciones"))
+            {
+              
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+});
+
+
+
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+builder.Services.AddAutoMapper(typeof(Core.Mapping.TurnoProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(PagoProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(DisponibilidadProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(ObraSocialProfile).Assembly);
+builder.Services.AddAutoMapper(typeof(AusenciaProfile).Assembly);
 
 
 
 
 
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    options.JsonSerializerOptions.WriteIndented = true;
+   
+});
 
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    
+    options.AddFixedWindowLimiter(policyName: "PublicPolicy", options =>
+    {
+        options.PermitLimit = 15;
+        options.Window = TimeSpan.FromMinutes(1);
+        options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        options.QueueLimit = 5; 
+    });
+});
 
 var app = builder.Build();
 
@@ -49,10 +157,59 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
+
+
+app.UseCors("AllowFrontend");
+app.UseMiddleware<Controllers.Middlewares.ErrorHandlingMiddleware>();
+app.MapHub<NotificacionesHub>("/hubs/notificaciones");
+app.UseRateLimiter();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<TeraDbContext>();
 
+    
+    context.Database.Migrate();
+
+
+    if (!context.Usuarios.Any())
+    {
+        var hasher = new PasswordHasher<Usuario>();
+        var admin = new Usuario
+        {
+            Id = 2,
+            Username = "admin",
+            Email = "admin@teragestion.com",
+            Rol = "Admin",
+            DuracionTurnoDefault = 40
+        };
+
+        admin.PasswordHash = hasher.HashPassword(admin, "Admin123!");
+
+        context.Usuarios.Add(admin);
+        context.SaveChanges();
+
+     
+        var dias = Enum.GetValues(typeof(DayOfWeek)).Cast<DayOfWeek>();
+        foreach (var dia in dias)
+        {
+            context.Set<Disponibilidad>().Add(new Disponibilidad
+            {
+                UsuarioId = admin.Id,
+                DiaSemana = dia,
+                Disponible = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday),
+                HoraInicio = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(16, 0, 0) : null,
+                HoraFin = (dia >= DayOfWeek.Monday && dia <= DayOfWeek.Friday) ? new TimeSpan(21, 0, 0) : null
+            });
+        }
+        context.SaveChanges();
+    }
+}
 app.Run();

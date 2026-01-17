@@ -11,12 +11,24 @@ namespace Core.Entidades
 
         public int Id { get; set; }
         public DateTime FechaHora { get; set; }
-        public string Estado { get; set; } // Ejemplo: "Pendiente", "Completado", "Cancelado"
+        public string Estado { get; set; } 
 
-        public decimal Precio { get; set; }
+        public decimal? Precio { get; set; }
         public int PacienteId { get; set; }
 
         public Paciente Paciente { get; set; }
 
+        public int? ObraSocialId { get; set; }
+        public ObraSocial ObraSocial { get; set; }
+
+        public string? TokenConfirmacion { get; set; }
+
+        public int Duracion { get; set; }
+
+        public ICollection<Sesion> Sesiones { get; set; }
+        public ICollection<Pago> Pagos { get; set; }
+
     }
+
 }
+

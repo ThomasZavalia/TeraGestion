@@ -10,8 +10,8 @@ namespace Core.Entidades
     {
         public int Id { get; set; }
         public DateTime Fecha { get; set; }
-        public decimal Monto { get; set; }
-        public string MetodoPago { get; set; } // Ejemplo: "Efectivo", "Tarjeta", "Transferencia"
+        public decimal? Monto { get; set; }
+        public string MetodoPago { get; set; } 
         public int TurnoId { get; set; }
         public Turno Turno { get; set; }
     }

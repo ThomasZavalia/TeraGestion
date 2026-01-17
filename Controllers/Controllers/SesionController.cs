@@ -1,15 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Core.DTOs.Sesion.Input;
+using Core.DTOs.Sesion.Output;
+using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class SesionController : ControllerBase
     {
 
-        private readonly Core.Interfaces.ISesionService _sesionService;
-        public SesionController(Core.Interfaces.ISesionService sesionService)
+        private readonly ISesionService _sesionService;
+        public SesionController(ISesionService sesionService)
         {
             _sesionService = sesionService;
         }
@@ -17,27 +22,66 @@ namespace Controllers.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetSesion(int id)
         {
-            throw new NotImplementedException();
+           
+                var sesion = await _sesionService.GetSesionByIdAsync(id);
+                return Ok(sesion);
+          
         }
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetSesiones()
         {
-            throw new NotImplementedException();
+            
+                var sesiones = await _sesionService.GetSesionesAsync();
+                return Ok(sesiones);
+           
         }
+
+
+
         [HttpPost]
-        public async Task<IActionResult> CrearSesion([FromBody] Core.Entidades.Sesion sesion)
+        
+        public async Task<IActionResult> CrearSesion([FromBody] SesionCreacionDto dto)
         {
-            throw new NotImplementedException();
+            
+            var nuevaSesionDto = await _sesionService.CrearSesionAsync(dto);
+            
+            return CreatedAtAction(nameof(GetSesion), new { id = nuevaSesionDto.Id }, nuevaSesionDto);
         }
+
+
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] Core.Entidades.Sesion sesion)
+        public async Task<IActionResult> ActualizarSesion(int id, [FromBody] SesionActualizarDto dto) 
         {
-            throw new NotImplementedException();
+            var sesionActualizadaDto = await _sesionService.ActualizarSesionAsync(id, dto);
+            return Ok(sesionActualizadaDto);
         }
+
+
+
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarSesion(int id)
         {
-            throw new NotImplementedException();
+            
+                var resultado = await _sesionService.EliminarSesionAsync(id);
+            return NoContent();
+        }
+
+        [HttpPost("registrar-asistencia")]
+        public async Task<IActionResult> RegistrarAsistencia([FromBody] SesionAsistenciaDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var sesionDto = await _sesionService.RegistrarAsistenciaAsync(dto);
+            return Ok(sesionDto);
         }
 
     }
