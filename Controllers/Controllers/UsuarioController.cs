@@ -43,6 +43,7 @@ namespace Controllers.Controllers
         }
 
         [AllowAnonymous]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CrearUsuario([FromBody] Usuario usuario) 
         {
@@ -70,6 +71,8 @@ namespace Controllers.Controllers
             return NoContent();
         }
 
+
+       
         [HttpGet("me")] 
         public async Task<IActionResult> GetMyProfile()
         {
@@ -114,7 +117,13 @@ namespace Controllers.Controllers
             return Ok(new { message = "Contraseña actualizada correctamente." });
         }
 
-
+        [AllowAnonymous]
+        [HttpGet("terapeutas")]
+        public async Task<IActionResult> GetTerapeutasParaSelect()
+        {
+            var terapeutas = await _usuarioService.GetTerapeutasDisponibles();
+            return Ok(terapeutas);
+        }
 
     }
 }

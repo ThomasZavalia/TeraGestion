@@ -46,7 +46,7 @@ namespace Controllers.Controllers
             return Ok(obraSocial);
         }
 
-     
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CrearObraSocial([FromBody] ObraSocialDto obraSocialDto)
         {
@@ -54,7 +54,7 @@ namespace Controllers.Controllers
             return CreatedAtAction(nameof(GetObraSocial), new { id = nuevaObraSocial.Id }, nuevaObraSocial);
         }
 
-      
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarObraSocial(int id, [FromBody] ObraSocialDto obraSocialDto)
         {
@@ -62,7 +62,7 @@ namespace Controllers.Controllers
             return Ok(obraSocialActualizada);
         }
 
-       
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarObraSocial(int id)
         {

@@ -27,6 +27,8 @@ namespace Core.DTOs.Public
         public int? ObraSocialId { get; set; }
         public string? RecaptchaToken { get; set; }
 
+        public int TerapeutaId { get; set; }
+
 
     }
 }

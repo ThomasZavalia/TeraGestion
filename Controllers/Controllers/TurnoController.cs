@@ -78,10 +78,10 @@ namespace Controllers.Controllers
             
         }
 
-        [HttpGet("disponibilidad")]
-        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTime fecha)
+        [HttpGet("disponibilidad/{terapeutaId}")]
+        public async Task<IActionResult> GetDisponibilidad([FromQuery] DateTime fecha,int terapeutaId)
         {
-            var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
+            var slots = await _turnoService.GetAvailableSlotsAsync(fecha,terapeutaId);
             return Ok(slots);
         }
 

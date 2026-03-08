@@ -10,7 +10,7 @@ namespace Controllers.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = "Admin,Secretaria")]
     public class PagoController : ControllerBase
     {
 
@@ -19,7 +19,7 @@ namespace Controllers.Controllers
         {
             _pagoService = pagoService;
         }
-
+        
         
 
         [HttpGet("{id}")]

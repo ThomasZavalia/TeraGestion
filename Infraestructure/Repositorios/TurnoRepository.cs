@@ -65,6 +65,7 @@ namespace Infrastructure.Repositorios
             return await _context.Turnos
                                    .Include(t => t.Paciente)
                                    .Include(t=>t.ObraSocial)
+                                   .Include(t=>t.Terapeuta)
                                    .AsNoTracking()
                                    .ToListAsync();
 
@@ -75,6 +76,7 @@ namespace Infrastructure.Repositorios
 
             return await _context.Turnos
                                  .Include(t => t.Paciente)
+                                 .Include(t=>t.Terapeuta)
                                  .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -98,6 +100,27 @@ namespace Infrastructure.Repositorios
                                && t.FechaHora.Date == fecha.Date
                                && t.Estado.ToLower() != "cancelado");
         }
+
+        public async Task<IEnumerable<Turno>> GetTurnosByDayAndTerapeutaAsync(DateTime fecha, int terapeutaId)
+        {
+            return await _context.Turnos
+                .Where(t => t.FechaHora.Date == fecha.Date && t.TerapeutaId == terapeutaId && t.Estado != "Cancelado")
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Turno>> GetTurnosByTerapeutaAsync(int terapeutaId)
+        {
+            return await _context.Turnos
+                .Include(t => t.Paciente)
+                .Include(t => t.ObraSocial)
+                .Include(t => t.Terapeuta)
+                .Where(t => t.TerapeutaId == terapeutaId)
+                .ToListAsync();
+        }
+
+        
+
+
     }
 
 

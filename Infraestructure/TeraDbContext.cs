@@ -69,6 +69,10 @@ namespace Infraestructure
                       .WithMany(o => o.Turnos)
                       .HasForeignKey(t => t.ObraSocialId)
                       .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(t => t.Terapeuta)
+                      .WithMany() 
+                      .HasForeignKey(t => t.TerapeutaId)
+              .       OnDelete(DeleteBehavior.Restrict);
             });
 
             // Sesion
@@ -78,8 +82,8 @@ namespace Infraestructure
                 entity.Property(s => s.FechaHoraInicio).HasColumnType("timestamp with time zone"); 
                 entity.Property(s => s.Notas).HasMaxLength(1000);
                 entity.HasOne(s => s.Turno)
-                      .WithMany(t => t.Sesiones)
-                      .HasForeignKey(s => s.TurnoId)
+                      .WithOne(t => t.Sesion)
+                      .HasForeignKey<Sesion>(s => s.TurnoId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 

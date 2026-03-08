@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.DTOs.Usuario.Input;
 using Core.Entidades;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -28,21 +29,22 @@ namespace Controllers.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var usuario = await _usuarioService.ValidarCredenciales(loginDto.Username, loginDto.Password);
+
             if (usuario == null)
-                return Unauthorized("Credenciales inválidas");
+            {
+                return BadRequest(new { error = "Usuario o contraseña incorrectos." });
+            }
 
             var token = GenerateJwtToken(usuario);
 
-       
             var userDto = new
             {
                 Id = usuario.Id,
                 Username = usuario.Username,
                 Email = usuario.Email,
-               
+                Rol = usuario.Rol
             };
 
-            
             return Ok(new { token = token, user = userDto });
         }
 
@@ -97,6 +99,37 @@ namespace Controllers.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] OlvidoClaveDto dto)
+        {
+            var usuario = await _usuarioService.SolicitarRecuperacionClave(dto.Email);
+
+            if (usuario == null)
+            {
+               
+                var random = new Random();
+                await Task.Delay(random.Next(1000, 3000));
+
+                return Ok(new { message = "Si el correo existe, se ha enviado un enlace de recuperación." });
+            }
+
+            return Ok(new { message = "Si el email existe, se han enviado las instrucciones." });
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ReiniciarClaveDto dto)
+        {
+            if (dto.NuevaPassword != dto.ConfirmarPassword)
+                return BadRequest("Las contraseñas no coinciden.");
+
+            var resultado = await _usuarioService.RestablecerClave(dto.Token, dto.NuevaPassword);
+
+            if (!resultado)
+                return BadRequest("El enlace de recuperación es inválido o ha expirado.");
+
+            return Ok(new { message = "Contraseña restablecida exitosamente." });
         }
     }
     

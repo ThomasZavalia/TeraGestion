@@ -75,8 +75,34 @@ namespace Infrastructure.Repositorios
             return usuarios;
         }
 
+        public async Task<Usuario> GetByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == email);
+        }
 
+        public async Task<Usuario> GetByResetTokenAsync(string token)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.ResetToken == token);
+        }
 
+        public async Task<IEnumerable<Usuario>> GetTerapeutasDisponibles()
+        {
+            return await _context.Usuarios
+                .Where(u => u.Rol == "Terapeuta")
+                .ToListAsync();
+
+            
+        }
+
+        public async Task<List<Turno>> GetTurnosRendimientoAsync(int terapeutaId, DateTime fechaInicioMes)
+        {
+            
+            return await _context.Turnos
+                .Include(t => t.Paciente)
+                .Include(t=>t.Sesion)
+                .Where(t => t.TerapeutaId == terapeutaId && t.FechaHora >= fechaInicioMes)
+                .ToListAsync();
+        }
     }
 
 }

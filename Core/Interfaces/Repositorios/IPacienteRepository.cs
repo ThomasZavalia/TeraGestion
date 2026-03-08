@@ -18,9 +18,9 @@ namespace Core.Interfaces.Repositorios
         Task<IEnumerable<Paciente>> ObtenerTodosAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes);
 
 
-        //
+        
         Task<Paciente> Actualizar(int id, Paciente entity);
-        //
+        
 
         Task<PagedResult<Paciente>> GetPaginadosAsync(int numeroPagina, int tamanioPagina);
     }

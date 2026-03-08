@@ -17,5 +17,10 @@ namespace Core.Entidades
         public string Rol { get; set; }
 
         public int DuracionTurnoDefault { get; set; } = 60;
+
+      public string? ResetToken { get; set; }
+       public DateTime? ResetTokenExpiry { get; set; }
+        public string? Nombre { get; set; }
+        public string? Apellido { get; set; }
     }
 }

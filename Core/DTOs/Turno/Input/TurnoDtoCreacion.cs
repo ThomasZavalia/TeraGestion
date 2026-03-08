@@ -23,7 +23,9 @@ namespace Core.DTOs.Turno.Input
         public decimal? Precio { get; set; } 
         [Required]
         public DateTime Fecha { get; set; }
-       
+
+        public int TerapeutaId { get; set; }
+
 
 
     }

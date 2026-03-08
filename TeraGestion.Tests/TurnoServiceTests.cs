@@ -40,7 +40,7 @@ public class TurnoServiceTests
     {
         var options = new DbContextOptionsBuilder<TeraDbContext>()
         .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-        .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)) // <-- AGREGÁ ESTA LÍNEA
+        .ConfigureWarnings(x => x.Ignore(InMemoryEventId.TransactionIgnoredWarning)) 
         .Options;
 
         _teraDbContext = new TeraDbContext(options);
@@ -91,8 +91,9 @@ public class TurnoServiceTests
     {
         // ARRANGE
         var fecha = new DateTime(2025, 12, 20);
+        var terapeutaId = 2;
 
-        
+
         _configServiceMock.Setup(c => c.GetDuracionAsync(It.IsAny<int>())).ReturnsAsync(40);
 
         
@@ -106,7 +107,7 @@ public class TurnoServiceTests
                                .ReturnsAsync(dispo);
 
         // ACT
-        var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
+        var slots = await _turnoService.GetAvailableSlotsAsync(fecha,2);
 
         // ASSERT
         Assert.NotNull(slots);
@@ -117,8 +118,9 @@ public class TurnoServiceTests
     public async Task GetAvailableSlots_DeberiaMostrarHorario_SiEmpiezaJustoCuandoTerminaElOtro()
     {
         // ARRANGE
-        var fecha = new DateTime(2025, 12, 20); // Sábado
+        var fecha = new DateTime(2025, 12, 20); 
         _configServiceMock.Setup(c => c.GetDuracionAsync(It.IsAny<int>())).ReturnsAsync(30);
+        var terapeutaId = 2;
 
 
         var dispo = new Disponibilidad
@@ -141,7 +143,7 @@ public class TurnoServiceTests
         _turnoRepoMock.Setup(r => r.GetTurnosByDayAsync(It.IsAny<DateTime>())).ReturnsAsync(turnos);
 
         // ACT
-        var slots = await _turnoService.GetAvailableSlotsAsync(fecha);
+        var slots = await _turnoService.GetAvailableSlotsAsync(fecha,terapeutaId);
 
         // ASSERT
        

@@ -4,6 +4,7 @@ using Core.DTOs.Pago.Output;
 using Core.DTOs.Public;
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
+using Core.DTOs.Usuario.Output;
 using Core.Entidades;
 using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
@@ -199,7 +200,7 @@ namespace Services
 
                 decimal precioTurno = await _obraSocialService.CalcularPrecioTurnoAsync(dto.ObraSocialId);
 
-                int duracion = await _configService.GetDuracionAsync(2);
+                int duracion = await _configService.GetDuracionAsync(dto.TerapeutaId);
 
                 var turno = new Turno
                 {
@@ -208,7 +209,8 @@ namespace Services
                     Precio = precioTurno,
                     Estado = "Pendiente",
                     ObraSocialId = dto.ObraSocialId ,
-                    Duracion = duracion
+                    Duracion = duracion,
+                    TerapeutaId = dto.TerapeutaId
                 };
 
                 var turnoCreado = await _turnoRepository.Agregar(turno);
@@ -285,7 +287,22 @@ namespace Services
 
         public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync()
         {
-            var turnos = await _turnoRepository.ObtenerTodos();
+            var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userRole = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
+
+            int userId = int.Parse(userIdString ?? "0");
+
+            IEnumerable<Turno> turnos;
+
+            if (userRole == "Admin" || userRole == "Secretaria")
+            {
+                turnos = await _turnoRepository.ObtenerTodos(); 
+            }
+            else
+            { 
+                turnos = await _turnoRepository.GetTurnosByTerapeutaAsync(userId);
+            }
+
             var turnosDto = _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
             return turnosDto;
         }
@@ -296,40 +313,31 @@ namespace Services
 
 
 
-        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date)
+        public async Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date,int terapeutaId)
         {
-            var availableSlots = new List<string>(); 
+            var availableSlots = new List<string>();
+
 
           
-            var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            int userId;
-            if (!string.IsNullOrEmpty(userIdString) && int.TryParse(userIdString, out int parsedId))
-            {
-                userId = parsedId;
-            }
-            else
-            {
-                userId = 2;
-            }
 
             string timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
-        ? "Argentina Standard Time"
-        : "America/Argentina/Buenos_Aires";
+                ? "Argentina Standard Time"
+                : "America/Argentina/Buenos_Aires";
 
             var zonaAr = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
             var fechaUtcBusqueda = date.ToUniversalTime().Date;
-            var tieneAusencia = await _ausenciaRepository.GetByFechaAndUsuarioAsync(fechaUtcBusqueda, userId);
+
+            var tieneAusencia = await _ausenciaRepository.GetByFechaAndUsuarioAsync(fechaUtcBusqueda, terapeutaId);
 
             if (tieneAusencia != null)
             {
-               
                 return availableSlots;
             }
 
-            
             var diaDeLaSemana = date.DayOfWeek;
-            var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(userId, diaDeLaSemana);
+
+            var disponibilidadDia = await _disponibilidadRepository.GetByUserIdAndDayAsync(terapeutaId, diaDeLaSemana);
 
             if (disponibilidadDia == null || !disponibilidadDia.Disponible ||
                 !disponibilidadDia.HoraInicio.HasValue || !disponibilidadDia.HoraFin.HasValue)
@@ -337,10 +345,10 @@ namespace Services
                 return availableSlots;
             }
 
-            int duracionConfigurada = await _configService.GetDuracionAsync(userId); // Ej: 40 min
+            int duracionConfigurada = await _configService.GetDuracionAsync(terapeutaId);
 
             var fechaUtc = date.ToUniversalTime().Date;
-            var turnosDelDia = await _turnoRepository.GetTurnosByDayAsync(fechaUtc);
+            var turnosDelDia = await _turnoRepository.GetTurnosByDayAndTerapeutaAsync(fechaUtc, terapeutaId);
 
             TimeSpan currentSlotStart = disponibilidadDia.HoraInicio.Value;
             TimeSpan endTime = disponibilidadDia.HoraFin.Value;
@@ -445,7 +453,7 @@ namespace Services
         public async Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto)
         {
             
-            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date);
+            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date,dto.TerapeutaId);
             var timeZoneId = "America/Argentina/Buenos_Aires";
             var zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
@@ -513,7 +521,7 @@ namespace Services
                 }
                 var token = Guid.NewGuid().ToString("N");
 
-                int duracion = await _configService.GetDuracionAsync(2);
+                int duracion = await _configService.GetDuracionAsync(dto.TerapeutaId);
 
                 var turno = new Turno
                 {
@@ -523,7 +531,8 @@ namespace Services
                     TokenConfirmacion = token,
                     ObraSocialId = dto.ObraSocialId, 
                     Precio = precioCalculado,
-                    Duracion = duracion
+                    Duracion = duracion,
+                    TerapeutaId = dto.TerapeutaId
 
                 };
 
@@ -608,7 +617,7 @@ namespace Services
                 try
                 {
                     await _notificacionService.CrearNotificacionAsync(
-                        usuarioDestinoId: 2,
+                        usuarioDestinoId: turno.TerapeutaId,
                         titulo: "Turno Confirmado",
                       
                         mensaje: $"El paciente {turno.Paciente.Nombre} {turno.Paciente.Apellido} ha confirmado su turno del {fechaLocal:dd/MM} a las {fechaLocal:HH:mm} hs.",
@@ -626,6 +635,7 @@ namespace Services
             return false;
         }
 
+       
     }
 
 

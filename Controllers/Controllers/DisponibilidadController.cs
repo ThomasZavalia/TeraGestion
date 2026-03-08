@@ -49,5 +49,13 @@ namespace Controllers.Controllers
             return Ok(new { message = "Disponibilidad actualizada correctamente." });
           
         }
+
+        [HttpGet("terapeuta/{terapeutaId}")]
+        [Authorize(Roles = "Admin,Secretaria")] 
+        public async Task<IActionResult> GetDisponibilidadTerapeuta(int terapeutaId)
+        {
+            var disponibilidad = await _disponibilidadService.GetDisponibilidadAsync(terapeutaId);
+            return Ok(disponibilidad);
+        }
     }
 }

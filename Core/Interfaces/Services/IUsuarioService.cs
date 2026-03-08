@@ -24,5 +24,10 @@ namespace Core.Interfaces.Services
         Task<bool> EliminarUsuario(int id);
         Task<Usuario> GetByName(string username);
 
+        Task<bool> SolicitarRecuperacionClave(string email);
+        Task<bool> RestablecerClave(string token, string nuevaClave);
+
+        Task<IEnumerable<TerapeutaListaDto>> GetTerapeutasDisponibles();
+
     }
 }

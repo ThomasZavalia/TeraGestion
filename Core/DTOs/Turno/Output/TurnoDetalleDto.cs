@@ -19,5 +19,8 @@ namespace Core.DTOs.Turno.Output
         public string? NotasSesion { get; set; } 
         public int? SesionId { get; set; }
 
+        public int TerapeutaId { get; set; }
+        public string TerapeutaNombreCompleto { get; set; }
+
     }
 }

@@ -25,8 +25,11 @@ namespace Core.Entidades
 
         public int Duracion { get; set; }
 
-        public ICollection<Sesion> Sesiones { get; set; }
+        public Sesion? Sesion { get; set; }
         public ICollection<Pago> Pagos { get; set; }
+
+        public int TerapeutaId { get; set; }
+        public Usuario Terapeuta { get; set; }
 
     }
 

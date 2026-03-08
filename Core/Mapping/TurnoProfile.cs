@@ -38,12 +38,19 @@ namespace Core.Mapping
      .ForMember(dest => dest.Precio, opt => opt.MapFrom(src => src.Precio))
      .ForMember(dest => dest.PacienteId, opt => opt.MapFrom(src => src.PacienteId))
      .ForMember(dest => dest.ObraSocialId, opt => opt.MapFrom(src => src.ObraSocialId))
-   
-     ;
+      .ForMember(dest => dest.TerapeutaNombre,
+                       opt => opt.MapFrom(src => src.Terapeuta.Nombre))
+            .ForMember(dest => dest.TerapeutaApellido,
+                       opt => opt.MapFrom(src => src.Terapeuta.Apellido));
+            
+
+            
 
 
             CreateMap<Turno, TurnoDetalleDto>()
-                .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"));
+                .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"))
+                .ForMember(dest => dest.TerapeutaNombreCompleto, opt => opt.MapFrom(src =>
+        src.Terapeuta != null ? $"{src.Terapeuta.Nombre} {src.Terapeuta.Apellido}" : "Sin asignar")); ;
         }
     }
 }

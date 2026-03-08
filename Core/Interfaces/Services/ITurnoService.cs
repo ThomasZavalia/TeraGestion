@@ -21,7 +21,7 @@ namespace Core.Interfaces.Services
 
         public Task MarcarComoPagadoAsync(int turnoId, string metodo);
 
-        Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date);
+        Task<IEnumerable<string>> GetAvailableSlotsAsync(DateTime date,int terapeutaId);
 
         Task<IEnumerable<TurnoCalendarioDto>> GetTurnosDelDiaAsync(DateTime date);
         Task<TurnoDetalleDto> GetTurnoDetalleAsync(int id);
@@ -31,7 +31,9 @@ namespace Core.Interfaces.Services
 
         Task<bool> ConfirmarTurnoAsync(int id,string token);
 
-       
+        
+
+
 
 
     }

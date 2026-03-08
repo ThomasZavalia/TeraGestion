@@ -25,6 +25,11 @@ namespace Core.DTOs.Turno.Output
         public DateTime FechaHora { get; set; }
         public int Duracion { get; set; }
 
+        public int TerapeutaId { get; set; }
+
+        public string TerapeutaNombre { get; set; }
+        public string TerapeutaApellido { get; set; }
+
 
     }
 }
