@@ -125,5 +125,15 @@ namespace Controllers.Controllers
             return Ok(terapeutas);
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/blanquear-clave")]
+        public async Task<IActionResult> BlanquearClaveAdmin(int id, [FromBody] CambiarContraseñaDto dto)
+        {
+            var success = await _usuarioService.BlanquearClaveAdminAsync(id, dto.ContraseñaNueva);
+            if (!success) return BadRequest(new { message = "Error al resetear la clave." });
+
+            return Ok(new { message = "Clave del usuario reseteada con éxito." });
+        }
+
     }
 }

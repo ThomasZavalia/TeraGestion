@@ -15,7 +15,10 @@ namespace Core.Mapping
         public PagoProfile()
         {
             CreateMap<PagoDto, Pago>();
-            CreateMap<Pago, PagoDto>();
+            CreateMap<Pago, PagoDto>()
+                
+                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => src.Turno.Paciente.Nombre))
+                 .ForMember(dest => dest.PacienteApellido, opt => opt.MapFrom(src => src.Turno.Paciente.Apellido));
 
             CreateMap<Pago, PagoDetallesDto>()
                

@@ -8,9 +8,10 @@ namespace Core.DTOs.Reportes
 {
     public class ReporteMesDto
     {
-       
-            public string Mes { get; set; } = string.Empty;
-            public decimal Valor { get; set; }  
-        
+        public string Mes { get; set; }
+        public decimal Valor { get; set; }
+        public decimal TotalFacturado { get; set; }
+        public decimal PagoTerapeutas { get; set; }
+        public decimal GananciaClinica { get; set; }
     }
 }

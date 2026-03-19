@@ -23,6 +23,7 @@ namespace Infraestructure
         public DbSet<Ausencia> Ausencias { get;set; }
 
         public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<Auditoria> Auditorias { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

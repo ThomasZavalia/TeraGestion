@@ -29,5 +29,7 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<TerapeutaListaDto>> GetTerapeutasDisponibles();
 
+        Task<bool> BlanquearClaveAdminAsync(int id, string nuevaClave);
+
     }
 }

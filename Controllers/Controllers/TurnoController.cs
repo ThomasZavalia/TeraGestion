@@ -36,20 +36,32 @@ namespace Controllers.Controllers
          var turnos = await _turnoService.GetTurnosAsync();
             return Ok(turnos);
         }
+
         [HttpPost]
         public async Task<IActionResult> CrearTurno([FromBody] TurnoDtoCreacion turno)
         {
-            
-         var turnoCreado = await _turnoService.CrearTurnoAsync(turno);
-            if (turnoCreado == null)
+            try
             {
-                return BadRequest("No se pudo crear el turno");
+                var turnoCreado = await _turnoService.CrearTurnoAsync(turno);
+
+                return Ok(turnoCreado);
             }
-            return Ok(turnoCreado);
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
-            
-           
-        
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            { 
+                return StatusCode(500, new { message = "Ocurrió un error inesperado en el servidor." });
+            }
+        }
+
+
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarTurno(int id, [FromBody]TurnoDtoActualizar turnoDto)

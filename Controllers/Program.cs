@@ -1,25 +1,27 @@
 using Controllers;
+using Core.Entidades;
+using Core.Interfaces;
 using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Core.Mapping;
 using Infraestructure;
 using Infrastructure.Email;
+using Infrastructure.Email;
+using Infrastructure.Hubs;
 using Infrastructure.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using Services;
+using Services.BackgroundJobs;
 using System.Text;
-using Infrastructure.Email;
 using System.Text.Json;
-using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
-using Infrastructure.Hubs;
-using Core.Entidades;
-using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +44,7 @@ builder.Services.AddScoped<IObraSocialRepository, ObraSocialRepository>();
 builder.Services.AddScoped<IDisponibilidadRepository, DisponibilidadRepository>();
 builder.Services.AddScoped<IAusenciaRepository, AusenciaRepository>();
 builder.Services.AddScoped<IConfiguracionRepository, ConfiguracionRepository>();
+builder.Services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
 
 
 // Servicios
@@ -58,6 +61,10 @@ builder.Services.AddScoped<IAusenciaService, AusenciaService>();
 builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
+builder.Services.AddHttpContextAccessor(); 
+builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
+
+builder.Services.AddHostedService<TurnoCleanupService>();
 
 builder.Services.AddCors(options =>
 {
@@ -110,19 +117,16 @@ builder.Services.AddAuthentication(options =>
 });
 
 
-
-builder.Services.AddAutoMapper(typeof(Program).Assembly);
-builder.Services.AddAutoMapper(typeof(Core.Mapping.TurnoProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(PagoProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(SesionProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(DisponibilidadProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(UsuarioProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(ObraSocialProfile).Assembly);
-builder.Services.AddAutoMapper(typeof(AusenciaProfile).Assembly);
-
-
-
-
+builder.Services.AddAutoMapper(config => { },
+    typeof(Program).Assembly,
+    typeof(Core.Mapping.TurnoProfile).Assembly,
+    typeof(PagoProfile).Assembly,
+    typeof(SesionProfile).Assembly,
+    typeof(DisponibilidadProfile).Assembly,
+    typeof(UsuarioProfile).Assembly,
+    typeof(ObraSocialProfile).Assembly,
+    typeof(AusenciaProfile).Assembly
+);
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -168,6 +172,7 @@ app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<Controllers.Middlewares.CheckUsuarioActivoMiddleware>();
 
 app.MapControllers();
 using (var scope = app.Services.CreateScope())

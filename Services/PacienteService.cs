@@ -8,6 +8,7 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using Core.DTOs;
+using Core.Interfaces;
 
 namespace Services
 {
@@ -15,11 +16,13 @@ namespace Services
     {
         private readonly IPacienteRepository _pacienteRepository;
         private readonly IMapper _mapper;
+        private readonly IAuditoriaService _auditoriaService;
 
-        public PacienteService(IPacienteRepository pacienteRepository, IMapper mapper)
+        public PacienteService(IPacienteRepository pacienteRepository, IMapper mapper,IAuditoriaService auditoriaService)
         {
             _pacienteRepository = pacienteRepository;
             _mapper = mapper;
+            _auditoriaService = auditoriaService;
         }
 
         public async Task<PacienteDTO> ActualizarPacienteAsync(int id, PacienteDTO pacienteDto)
@@ -49,6 +52,13 @@ namespace Services
                 pacienteDto.Activo = true;
                 var nuevoPaciente = _mapper.Map<Paciente>(pacienteDto);
                 var creado = await _pacienteRepository.Agregar(nuevoPaciente);
+                await _auditoriaService.RegistrarAsync(
+                accion: "CREACION",
+                modulo: "Pacientes",
+                entidad: "Paciente",
+                entidadId: creado.Id,
+                descripcion: $"Creo al paciente {creado.Nombre} {creado.Apellido} (DNI: {creado.DNI})."
+ );
                 return _mapper.Map<PacienteDTO>(creado);
             }
             catch (Exception ex)
@@ -70,6 +80,14 @@ namespace Services
 
 
             await _pacienteRepository.Actualizar(paciente);
+
+            await _auditoriaService.RegistrarAsync(
+            accion: "DESACTIVACION",
+            modulo: "Pacientes",
+            entidad: "Paciente",
+            entidadId: paciente.Id,
+         descripcion: $"Desactivó al paciente {paciente.Nombre} {paciente.Apellido} (DNI: {paciente.DNI})."
+);
 
             return true;
         }
@@ -187,22 +205,23 @@ namespace Services
             return pacientesDTO;
         }
 
-        public async Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(int pagina, int tamanio)
+        public async Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(
+      int pagina, int tamanio, string? busqueda, int? obraSocialId, bool? activo, bool? tienePagosPendientes)
         {
+            var (pacientes, totalItems) = await _pacienteRepository.GetPacientesPaginadosYFiltradosAsync(
+                pagina, tamanio, busqueda, obraSocialId, activo, tienePagosPendientes);
 
-            var pagedEntities = await _pacienteRepository.GetPaginadosAsync(pagina, tamanio);
+            var pacientesDto = _mapper.Map<IEnumerable<PacienteDTO>>(pacientes);
 
-            var itemsDto = _mapper.Map<IEnumerable<PacienteDTO>>(pagedEntities.Items);
-
+            int totalPages = (int)Math.Ceiling(totalItems / (double)tamanio);
 
             return new PagedResult<PacienteDTO>
             {
-                Items = itemsDto,
-                CantidadTotal = pagedEntities.CantidadTotal,
-                NumeroPagina = pagedEntities.NumeroPagina,
-                TamanioPagina = pagedEntities.TamanioPagina
+                Items = pacientesDto,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                CurrentPage = pagina
             };
-
         }
     }
 }

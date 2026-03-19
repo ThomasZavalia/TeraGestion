@@ -68,7 +68,7 @@ namespace Services
                 foreach (var turno in turnosAfectados)
                 {
                    
-                    if (turno.Estado.ToLower() == "pendiente")
+                    if (turno.Estado.ToLower() == "reservado")
                     {
                         
                         turno.Estado = "Cancelado";

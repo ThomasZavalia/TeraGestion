@@ -16,17 +16,18 @@ namespace Services
     public class SesionService : ISesionService
     {
         private readonly ISesionRepository _sesionRepository;
-
+        private readonly ITurnoRepository _turnoRepository;
         private readonly ITurnoService _turnoService;
         private readonly IPacienteService _pacienteService;
         private readonly IMapper _mapper;
 
-        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService, IMapper mapper)
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService, IMapper mapper, ITurnoRepository turnoRepository)
         {
             _turnoService = turnoService;
             _sesionRepository = sesionRepository;
             _pacienteService = pacienteService;
             _mapper = mapper;
+            _turnoRepository = turnoRepository;
         }
 
 
@@ -158,31 +159,22 @@ namespace Services
 
         public async Task<SesionDTO> RegistrarAsistenciaAsync(SesionAsistenciaDto dto)
         {
-           
             var sesionExistente = await _sesionRepository.GetByTurnoIdAsync(dto.TurnoId);
+            Sesion sesionFinal;
 
             if (sesionExistente != null)
             {
-                
-
-              
                 var sesionParaActualizar = await _sesionRepository.GetById(sesionExistente.Id);
-
                 sesionParaActualizar.Asistencia = dto.Asistencia;
-                
-                 if (dto.Asistencia == "Ausente") sesionParaActualizar.Notas = "Paciente ausente";
 
-                var sesionActualizada = await _sesionRepository.Actualizar(sesionParaActualizar);
-                return _mapper.Map<SesionDTO>(sesionActualizada);
+                if (dto.Asistencia == "Ausente") sesionParaActualizar.Notas = "Paciente ausente";
+
+                sesionFinal = await _sesionRepository.Actualizar(sesionParaActualizar);
             }
             else
             {
-
                 var turnoDto = await _turnoService.GetTurnoAsync(dto.TurnoId);
-                if (turnoDto == null)
-                {
-                    throw new KeyNotFoundException($"El turno con ID {dto.TurnoId} no fue encontrado.");
-                }
+                if (turnoDto == null) throw new KeyNotFoundException($"El turno con ID {dto.TurnoId} no fue encontrado.");
 
                 var nuevaSesion = new Sesion
                 {
@@ -190,12 +182,20 @@ namespace Services
                     PacienteId = turnoDto.PacienteId,
                     FechaHoraInicio = turnoDto.FechaHora,
                     Asistencia = dto.Asistencia,
-                    Notas = "" 
+                    Notas = ""
                 };
 
-                var sesionCreada = await _sesionRepository.Agregar(nuevaSesion);
-                return _mapper.Map<SesionDTO>(sesionCreada);
+                sesionFinal = await _sesionRepository.Agregar(nuevaSesion);
             }
+
+            var turno = await _turnoRepository.GetById(dto.TurnoId);
+            if (turno != null)
+            {
+                turno.Estado = dto.Asistencia == "Ausente" ? "Ausente" : "Atendido";
+                await _turnoRepository.Actualizar(turno);
+            }
+
+            return _mapper.Map<SesionDTO>(sesionFinal);
         }
     }
 }

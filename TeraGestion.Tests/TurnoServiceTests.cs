@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using Services;
 using System.Security.Claims;
+using Core.Interfaces;
 
 namespace TeraGestion.Tests;
 
@@ -32,6 +33,7 @@ public class TurnoServiceTests
     private readonly Mock<IConfiguracionService> _configServiceMock;
     private readonly Mock<IPacienteRepository> _pacienteRepoMock;
     private readonly Mock<IAusenciaRepository> _ausenciaRepoMock;
+    private readonly Mock<IAuditoriaService> _auditoriaServiceMock;
 
 
     private readonly TurnoService _turnoService;
@@ -58,6 +60,7 @@ public class TurnoServiceTests
         _notificacionServiceMock = new Mock<INotificacionService>();
         _configServiceMock = new Mock<IConfiguracionService>();
         _ausenciaRepoMock = new Mock<IAusenciaRepository>();
+            _auditoriaServiceMock = new Mock<IAuditoriaService>();
 
 
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[] {
@@ -83,6 +86,7 @@ public class TurnoServiceTests
             _notificacionServiceMock.Object,
             _configServiceMock.Object,
             _ausenciaRepoMock.Object
+           ,_auditoriaServiceMock.Object
         );
     }
 

@@ -6,6 +6,7 @@ using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.DTOs.Usuario.Output;
 using Core.Entidades;
+using Core.Interfaces;
 using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
@@ -39,6 +40,7 @@ namespace Services
         private readonly INotificacionService _notificacionService;
         private readonly IConfiguracionService _configService;
         private readonly IAusenciaRepository _ausenciaRepository;
+        private readonly IAuditoriaService _auditoriaService;
 
 
         public TurnoService(
@@ -54,7 +56,8 @@ namespace Services
          IEmailService emailService,
          INotificacionService notificacionService,
          IConfiguracionService configService,
-         IAusenciaRepository ausenciaRepository
+         IAusenciaRepository ausenciaRepository,
+         IAuditoriaService auditoriaService
      )
         {
             _turnoRepository = turnoRepository;
@@ -70,6 +73,7 @@ namespace Services
             _notificacionService = notificacionService;
             _configService = configService;
             _ausenciaRepository = ausenciaRepository;
+            _auditoriaService = auditoriaService;
         }
 
 
@@ -102,8 +106,8 @@ namespace Services
             var turno = await _turnoRepository.GetById(turnoId)
                 ?? throw new KeyNotFoundException("Turno no encontrado");
 
-            if (turno.Estado.ToLower() == "pagado") 
-                throw new ArgumentException("El turno ya está pagado");
+            if (turno.Pagos != null && turno.Pagos.Any())
+                throw new ArgumentException("El turno ya tiene un pago registrado.");
 
             await _pagoService.CrearPago(new PagoDto
             {
@@ -113,8 +117,16 @@ namespace Services
                 Monto = turno.Precio
             });
 
-            turno.Estado = "Pagado";
-            await _turnoRepository.Actualizar(turno);
+           // turno.Estado = "Pagado";
+            // await _turnoRepository.Actualizar(turno);
+
+            await _auditoriaService.RegistrarAsync(
+            accion: "MarcarPagado",
+            modulo: "Turnos",
+            entidad: "Turno",
+            entidadId: turno.Id,
+            descripcion: $"Se Marco como pagado el turno del paciente {turno.Paciente.Nombre} del día {turno.FechaHora:dd/MM/yyyy HH:mm}."
+);
         }
 
 
@@ -142,7 +154,7 @@ namespace Services
 
                 if (dto.PacienteId.HasValue)
                 {
-               
+
                     pacienteAsignado = await _pacienteService.GetPacienteAsync(dto.PacienteId.Value);
                     if (pacienteAsignado == null)
                     {
@@ -151,14 +163,14 @@ namespace Services
 
                     bool necesitaActualizar = false;
 
-                   
+
                     if (pacienteAsignado.ObraSocialId != dto.ObraSocialId)
                     {
                         pacienteAsignado.ObraSocialId = dto.ObraSocialId;
                         necesitaActualizar = true;
                     }
 
-                    
+
                     if (!pacienteAsignado.Activo)
                     {
                         pacienteAsignado.Activo = true;
@@ -176,7 +188,7 @@ namespace Services
 
                     if (pacienteExistente != null)
                     {
-                       
+
                         throw new ArgumentException($"Ya existe un paciente registrado con el DNI {dto.DNI}. Por favor, seleccione 'Paciente Existente'.");
                     }
 
@@ -185,14 +197,14 @@ namespace Services
                         DNI = dto.DNI,
                         Nombre = dto.NombrePaciente,
                         Apellido = dto.ApellidoPaciente,
-                        ObraSocialId =  dto.ObraSocialId,
+                        ObraSocialId = dto.ObraSocialId,
                         Activo = true
                     };
                     pacienteAsignado = await _pacienteService.CrearPacienteAsync(nuevoPacienteDto);
 
                     if (pacienteAsignado == null)
                     {
-                       
+
                         throw new InvalidOperationException("Error inesperado al intentar crear el nuevo paciente.");
                     }
                 }
@@ -202,12 +214,40 @@ namespace Services
 
                 int duracion = await _configService.GetDuracionAsync(dto.TerapeutaId);
 
+                var nuevaFechaFin = dto.Fecha.AddMinutes(duracion);
+
+                var turnosTerapeutaDia = await _teraDbContext.Turnos
+                    .Where(t => t.TerapeutaId == dto.TerapeutaId && t.FechaHora.Date == dto.Fecha.Date && (t.Estado == "Reservado" || t.Estado == "PendienteConfirmacion" || t.Estado == "Atendido"))
+                    .ToListAsync();
+
+                bool terapeutaOcupado = turnosTerapeutaDia.Any(t =>
+                    t.FechaHora < nuevaFechaFin &&
+                    t.FechaHora.AddMinutes(t.Duracion > 0 ? t.Duracion : 40) > dto.Fecha);
+
+                if (terapeutaOcupado)
+                {
+                    throw new InvalidOperationException("Error de concurrencia: El profesional acaba de ser reservado en este horario. Actualice el calendario.");
+                }
+            
+                var turnosPacienteDia = await _teraDbContext.Turnos
+                    .Where(t => t.PacienteId == pacienteAsignado.Id && t.FechaHora.Date == dto.Fecha.Date && (t.Estado == "Reservado" || t.Estado == "PendienteConfirmacion" || t.Estado == "Atendido"))
+                    .ToListAsync();
+
+                bool pacienteOcupado = turnosPacienteDia.Any(t =>
+                    t.FechaHora < nuevaFechaFin &&
+                    t.FechaHora.AddMinutes(t.Duracion > 0 ? t.Duracion : 40) > dto.Fecha);
+
+                if (pacienteOcupado)
+                {
+                    throw new InvalidOperationException("El paciente ya tiene un turno asignado en este horario con otro profesional.");
+                }
+
                 var turno = new Turno
                 {
                     FechaHora = dto.Fecha,
                     PacienteId = pacienteAsignado.Id,
                     Precio = precioTurno,
-                    Estado = "Pendiente",
+                    Estado = "Reservado",
                     ObraSocialId = dto.ObraSocialId ,
                     Duracion = duracion,
                     TerapeutaId = dto.TerapeutaId
@@ -243,17 +283,18 @@ namespace Services
 
         public async Task<bool> EliminarTurnoAsync(int id)
         {
-           
+            
             var turnoACancelar = await _turnoRepository.GetByIdConPaciente(id);
 
             if (turnoACancelar == null) throw new KeyNotFoundException("Turno no encontrado");
-            if (turnoACancelar.Estado.ToLower() == "pagado") throw new ArgumentException("No se puede cancelar un turno pagado.");
 
-           
+          
+            if (turnoACancelar.Pagos != null && turnoACancelar.Pagos.Any(p => p.Anulado != true))
+                throw new ArgumentException("No se puede cancelar un turno que ya tiene un pago registrado. Anule el pago primero.");
+
             turnoACancelar.Estado = "Cancelado";
             await _turnoRepository.Actualizar(turnoACancelar);
 
-           
             if (!string.IsNullOrEmpty(turnoACancelar.Paciente.Email))
             {
                 var asunto = "Turno Cancelado";
@@ -262,11 +303,16 @@ namespace Services
             <p>Su turno del día <strong>{turnoACancelar.FechaHora:dd/MM/yyyy}</strong> a las <strong>{turnoACancelar.FechaHora:HH:mm} hs</strong> ha sido cancelado.</p>
             <p>Saludos, TeraGestion.</p>";
 
-               
                 _ = _emailService.SendEmailAsync(turnoACancelar.Paciente.Email, asunto, cuerpo);
             }
-          
 
+            await _auditoriaService.RegistrarAsync(
+             accion: "CANCELACION",
+             modulo: "Turnos",
+             entidad: "Turno",
+             entidadId: turnoACancelar.Id,
+             descripcion: $"Canceló el turno del paciente {turnoACancelar.Paciente.Nombre} del día {turnoACancelar.FechaHora:dd/MM/yyyy HH:mm}."
+            );
             return true;
         }
 
@@ -436,17 +482,43 @@ namespace Services
         {
             var turno = await _turnoRepository.GetByIdConPaciente(id);
             if (turno == null) throw new KeyNotFoundException("Turno no encontrado");
+            var duracion = turno.Duracion > 0 ? turno.Duracion : 40;
+            var nuevaFechaFin = nuevaFecha.AddMinutes(duracion);
 
-            
-           
+            var turnosTerapeutaDia = await _teraDbContext.Turnos
+                .Where(t => t.Id != id && t.TerapeutaId == turno.TerapeutaId && t.FechaHora.Date == nuevaFecha.Date && (t.Estado == "Reservado" || t.Estado == "PendienteConfirmacion" || t.Estado == "Atendido"))
+                .ToListAsync();
 
-            
+            bool terapeutaOcupado = turnosTerapeutaDia.Any(t =>
+                t.FechaHora < nuevaFechaFin &&
+                t.FechaHora.AddMinutes(t.Duracion > 0 ? t.Duracion : 40) > nuevaFecha);
+
+            if (terapeutaOcupado) throw new InvalidOperationException("El profesional ya tiene otro turno en este nuevo horario.");
+
+            var turnosPacienteDia = await _teraDbContext.Turnos
+                .Where(t => t.Id != id && t.PacienteId == turno.PacienteId && t.FechaHora.Date == nuevaFecha.Date && (t.Estado == "Reservado" || t.Estado == "PendienteConfirmacion" || t.Estado == "Atendido"))
+                .ToListAsync();
+
+            bool pacienteOcupado = turnosPacienteDia.Any(t =>
+                t.FechaHora < nuevaFechaFin &&
+                t.FechaHora.AddMinutes(t.Duracion > 0 ? t.Duracion : 40) > nuevaFecha);
+
+            if (pacienteOcupado) throw new InvalidOperationException("El paciente ya tiene un turno en este horario con otro profesional.");
+
             turno.FechaHora = nuevaFecha;
 
-          
-            if (turno.Estado == "Cancelado") turno.Estado = "Pendiente";
+
+            if (turno.Estado == "Cancelado") turno.Estado = "Reservado";
 
             await _turnoRepository.Actualizar(turno);
+
+            await _auditoriaService.RegistrarAsync(
+             accion: "REPROGRAMACION",
+             modulo: "Turnos",
+             entidad: "Turno",
+             entidadId: turno.Id,
+             descripcion: $"Reprogramo el turno del paciente {turno.Paciente.Nombre} del día {turno.FechaHora:dd/MM/yyyy HH:mm}."
+);
             return _mapper.Map<TurnoCalendarioDto>(turno);
         }
 
@@ -523,6 +595,21 @@ namespace Services
 
                 int duracion = await _configService.GetDuracionAsync(dto.TerapeutaId);
 
+                var nuevaFechaFin = dto.FechaHora.AddMinutes(duracion);
+
+                var turnosTerapeutaDia = await _teraDbContext.Turnos
+                    .Where(t => t.TerapeutaId == dto.TerapeutaId && t.FechaHora.Date == dto.FechaHora.Date && (t.Estado == "Reservado" || t.Estado == "PendienteConfirmacion" || t.Estado == "Atendido"))
+                    .ToListAsync();
+
+                bool terapeutaOcupado = turnosTerapeutaDia.Any(t =>
+                    t.FechaHora < nuevaFechaFin &&
+                    t.FechaHora.AddMinutes(t.Duracion > 0 ? t.Duracion : 40) > dto.FechaHora);
+
+                if (terapeutaOcupado)
+                {
+                    throw new InvalidOperationException("Lo sentimos, alguien más acaba de reservar este horario. Por favor, seleccione otro.");
+                }
+
                 var turno = new Turno
                 {
                     FechaHora = dto.FechaHora,
@@ -593,7 +680,7 @@ namespace Services
 
             if (turno.TokenConfirmacion == token && turno.Estado == "PendienteConfirmacion")
             {
-                turno.Estado = "Pendiente";
+                turno.Estado = "Reservado";
                 turno.TokenConfirmacion = null;
 
                 await _turnoRepository.Actualizar(turno);

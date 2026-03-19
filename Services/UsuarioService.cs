@@ -2,6 +2,7 @@
 using Core.DTOs.Usuario.Input;
 using Core.DTOs.Usuario.Output;
 using Core.Entidades;
+using Core.Interfaces;
 using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
@@ -20,13 +21,15 @@ namespace Services
         private readonly IUsuariosRepository _usuarioRepository;
         private readonly IMapper _mapper;
         private readonly IEmailService _emailService;
+        private readonly IAuditoriaService _auditoriaService;
 
         private readonly PasswordHasher<Usuario> _passwordHasher = new();
-        public UsuarioService(IUsuariosRepository usuarioRepository, IMapper mapper, IEmailService emailService)
+        public UsuarioService(IUsuariosRepository usuarioRepository, IMapper mapper, IEmailService emailService,IAuditoriaService auditoriaService)
         {
             _usuarioRepository = usuarioRepository;
             _mapper = mapper;
             _emailService = emailService;
+            _auditoriaService = auditoriaService;
         }
         public async Task<UsuarioDto> ActualizarUsuario(int id, UsuarioActualizarDto dto)
         {
@@ -56,9 +59,13 @@ namespace Services
 
         public async Task<bool> EliminarUsuario(int id)
         {
+            var usuario = await _usuarioRepository.GetById(id);
             var resultado = await _usuarioRepository.Eliminar(id);
             if (!resultado) throw new KeyNotFoundException("Usuario no encontrado");
-            return resultado;
+
+            string accion = usuario.Activo ? "DESBLOQUEO" : "BLOQUEO";
+            await _auditoriaService.RegistrarAsync(accion, "Usuarios", "Usuario", id, $"El usuario {usuario.Username} fue {accion.ToLower()}do.");
+            return true;
         }
 
         public async Task<UsuarioDto> GetUsuarioById(int id)
@@ -89,7 +96,7 @@ namespace Services
         {
             var usuario = await GetByName(username);
 
-            if (usuario == null)
+            if (usuario == null || usuario.Activo==false)
             {
                 return null;
             }
@@ -201,6 +208,18 @@ namespace Services
             });
         }
 
-        
+        public async Task<bool> BlanquearClaveAdminAsync(int id, string nuevaClave)
+        {
+            var usuario = await _usuarioRepository.GetById(id);
+            if (usuario == null) throw new KeyNotFoundException("Usuario no encontrado");
+
+            usuario.PasswordHash = _passwordHasher.HashPassword(usuario, nuevaClave);
+            await _usuarioRepository.Actualizar(usuario);
+
+            await _auditoriaService.RegistrarAsync("BLANQUEO_CLAVE", "Usuarios", "Usuario", id, $"El Admin reseteó manualmente la clave del usuario {usuario.Username}.");
+
+            return true;
+        }
+
     } 
 }

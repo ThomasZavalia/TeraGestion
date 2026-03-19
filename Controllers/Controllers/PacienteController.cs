@@ -110,9 +110,17 @@ namespace Controllers.Controllers
         }
 
         [HttpGet("paginated")]
-        public async Task<ActionResult<PagedResult<PacienteDTO>>> GetPacientes([FromQuery] int pagina = 1, [FromQuery] int tamanio = 10)
+        public async Task<ActionResult<PagedResult<PacienteDTO>>> GetPacientesPaginados(
+    [FromQuery] int pagina = 1,
+    [FromQuery] int tamanio = 10,
+    [FromQuery] string? busqueda = null,
+    [FromQuery] int? obraSocialId = null,
+    [FromQuery] bool? activo = null,
+    [FromQuery] bool? tienePagosPendientes = null)
         {
-            var result = await _pacienteService.GetPacientesPaginadosAsync(pagina, tamanio);
+            var result = await _pacienteService.GetPacientesPaginadosAsync(
+                pagina, tamanio, busqueda, obraSocialId, activo, tienePagosPendientes);
+
             return Ok(result);
         }
 

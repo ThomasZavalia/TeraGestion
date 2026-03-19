@@ -20,8 +20,9 @@ namespace Core.Interfaces.Repositorios
 
         
         Task<Paciente> Actualizar(int id, Paciente entity);
-        
 
-        Task<PagedResult<Paciente>> GetPaginadosAsync(int numeroPagina, int tamanioPagina);
+
+        Task<(IEnumerable<Paciente> pacientes, int total)> GetPacientesPaginadosYFiltradosAsync(
+     int pagina, int tamanio, string? busqueda, int? obraSocialId, bool? activo, bool? tienePagosPendientes);
     }
 }

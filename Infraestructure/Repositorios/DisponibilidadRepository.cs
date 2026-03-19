@@ -42,6 +42,7 @@ namespace Infrastructure.Repositorios
             foreach (var actualizado in disponibilidades)
             {
                 var existente = existentes.FirstOrDefault(e => e.DiaSemana == actualizado.DiaSemana);
+
                 if (existente != null)
                 {
 
@@ -50,10 +51,14 @@ namespace Infrastructure.Repositorios
                     existente.HoraFin = actualizado.HoraFin;
                     _context.Entry(existente).State = EntityState.Modified;
                 }
+                else
+                {
 
+                    await _context.Disponibilidades.AddAsync(actualizado);
+                }
+
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
         }
 
 

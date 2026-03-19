@@ -52,23 +52,33 @@ namespace Services
         }
         public async Task<IEnumerable<ReporteMesDto>> GetIngresosPorMes(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
-
-            var pagosQuery = (await _pagoService.GetPagosSinDto()).Where(p => p.Turno != null && p.Turno.Estado.ToLower() == "pagado").AsQueryable();
+            var pagosQuery = (await _pagoService.GetPagosSinDto())
+                             .Where(p => p.Turno != null && p.Anulado != true && p.Turno.Terapeuta != null);
 
             if (fechaDesde.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date >= fechaDesde.Value.Date);
             if (fechaHasta.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date <= fechaHasta.Value.Date);
 
             var query = pagosQuery
                 .GroupBy(p => new { p.Fecha.Year, p.Fecha.Month })
-                .Select(g => new ReporteMesDto
-                {
-                    Mes = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")),
+                .Select(g => {
+                   
+                    decimal totalFacturado = g.Sum(p => p.Monto ?? 0);
 
-                    Valor = g.Sum(p => p.Monto ?? 0)
+                    decimal pagoTerapeutas = g.Sum(p => (p.Monto ?? 0) * (p.Turno.Terapeuta.PorcentajeGanancia / 100m));
+
+                    decimal gananciaClinica = totalFacturado - pagoTerapeutas;
+
+                    return new ReporteMesDto
+                    {
+                        Mes = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMMM yyyy", new System.Globalization.CultureInfo("es-ES")),
+                        Valor = totalFacturado, 
+                        TotalFacturado = totalFacturado,
+                        PagoTerapeutas = pagoTerapeutas,
+                        GananciaClinica = gananciaClinica
+                    };
                 })
-                 .OrderBy(r => r.Mes)
+                .OrderBy(r => r.Mes)
                 .ToList();
-
 
             return query;
         }
@@ -275,7 +285,7 @@ namespace Services
                 .Select(t => t.PacienteId)
                 .Distinct()
                 .Count();
- 
+
             var turnosFinalizados = turnosMes.Count(t => t.Sesion != null && (t.Sesion.Asistencia == "Presente" || t.Sesion.Asistencia == "Ausente"));
 
             double tasaAsistencia = turnosFinalizados > 0
@@ -294,17 +304,23 @@ namespace Services
                 .Take(5)
                 .ToList();
 
+            var turnosPagados = turnosMes.Where(t => t.Estado == "Atendido" && t.Pagos != null && t.Pagos.Any(p => p.Anulado != true));
+
+            var terapeuta = await _usuarioRepository.GetById(terapeutaId);
+            decimal ganancias = turnosPagados.Sum(t => t.Precio) * (terapeuta.PorcentajeGanancia / 100m);
+
             return new ReporteTerapeutaDto
             {
                 TurnosAtendidosMes = turnosAtendidos,
                 PacientesUnicosMes = pacientesUnicos,
                 TasaAsistencia = tasaAsistencia,
-                TopPacientes = topPacientes
+                TopPacientes = topPacientes,
+                GananciasEstimadasMes = ganancias
             };
         }
-    }
 
 
     }
+}
 
 

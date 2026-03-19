@@ -21,16 +21,10 @@ namespace Infrastructure.Repositorios
         }
         public async Task<Usuario> Actualizar(Usuario usuario)
         {
-            var usuarioExistente = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == usuario.Id);
-            if (usuarioExistente == null) { return null; }
-
-            usuarioExistente.Username = usuario.Username;
-            usuarioExistente.Email = usuario.Email;
-            usuarioExistente.Rol = usuario.Rol;
+            
+            _context.Usuarios.Update(usuario);
             await _context.SaveChangesAsync();
-            return usuarioExistente;
-
-
+            return usuario;
         }
 
 
@@ -47,7 +41,8 @@ namespace Infrastructure.Repositorios
         {
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u => u.Id == id);
             if (usuario == null) { return false; }
-            _context.Usuarios.Remove(usuario);
+
+            usuario.Activo = !usuario.Activo;
             await _context.SaveChangesAsync();
             return true;
         }
@@ -88,7 +83,7 @@ namespace Infrastructure.Repositorios
         public async Task<IEnumerable<Usuario>> GetTerapeutasDisponibles()
         {
             return await _context.Usuarios
-                .Where(u => u.Rol == "Terapeuta")
+                .Where(u => u.Rol == "Terapeuta" && u.Activo == true)
                 .ToListAsync();
 
             
@@ -100,6 +95,7 @@ namespace Infrastructure.Repositorios
             return await _context.Turnos
                 .Include(t => t.Paciente)
                 .Include(t=>t.Sesion)
+                .Include(t=>t.Pagos)
                 .Where(t => t.TerapeutaId == terapeutaId && t.FechaHora >= fechaInicioMes)
                 .ToListAsync();
         }

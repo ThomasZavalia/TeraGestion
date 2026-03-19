@@ -16,7 +16,9 @@ namespace Core.DTOs.Turno.Output
         public decimal Precio { get; set; }
         public int PacienteId { get; set; }
 
-        public int? ObraSocialId { get; set; } 
+        public int? ObraSocialId { get; set; }
+
+        public bool EstaPagado { get; set; }
 
 
     }

@@ -26,6 +26,7 @@ namespace Core.Interfaces.Services
 
         Task<IEnumerable<PacienteDTO>> GetPacientesAsync(int? obraSocialId, bool? activo, bool? tienePagosPendientes);
 
-        Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(int pagina, int tamanio);
+        Task<PagedResult<PacienteDTO>> GetPacientesPaginadosAsync(
+      int pagina, int tamanio, string? busqueda, int? obraSocialId, bool? activo, bool? tienePagosPendientes);
     }
 }

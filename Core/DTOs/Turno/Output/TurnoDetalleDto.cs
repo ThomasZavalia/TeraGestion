@@ -22,5 +22,9 @@ namespace Core.DTOs.Turno.Output
         public int TerapeutaId { get; set; }
         public string TerapeutaNombreCompleto { get; set; }
 
+        public bool EstaPagado { get; set; }
+
+
+
     }
 }

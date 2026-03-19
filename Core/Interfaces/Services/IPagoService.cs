@@ -18,6 +18,10 @@ namespace Core.Interfaces.Services
         public Task<bool> EliminarPago(int id);
         public Task<IEnumerable<Pago>> GetPagosSinDto();
         public Task<IEnumerable<PagoDetallesDto>> GetPagosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId);
+        Task<PagedResult<PagoDto>> GetPagosPaginadosAsync(
+    int pagina, int tamanio, string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago);
+        Task<bool> AnularPagoAsync(int id);
+        Task<byte[]> ExportarExcelAsync(string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago);
 
     }
 }

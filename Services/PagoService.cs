@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
+using ClosedXML.Excel;
 using Core.DTOs;
 using Core.DTOs.Pago.Output;
 using Core.Entidades;
+using Core.Interfaces;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
+using Infrastructure.Repositorios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +19,14 @@ namespace Services
     {
         private readonly IPagosRepository _pagoRepository;
         private readonly IMapper _mapper;
-        public PagoService(IPagosRepository pagoRepository,IMapper mapper)
+        private readonly ITurnoRepository _turnoRepository;
+        private readonly IAuditoriaService _auditoriaService;
+        public PagoService(IPagosRepository pagoRepository,IMapper mapper, ITurnoRepository turnoRepository,IAuditoriaService auditoriaService)
         {
             _pagoRepository = pagoRepository;
             _mapper = mapper;
+            _turnoRepository = turnoRepository;
+            _auditoriaService = auditoriaService;
         }
 
 
@@ -113,5 +120,100 @@ namespace Services
            
             return _mapper.Map<IEnumerable<PagoDetallesDto>>(pagos);
         }
+
+        public async Task<PagedResult<PagoDto>> GetPagosPaginadosAsync(
+    int pagina, int tamanio, string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago)
+        {
+            var (pagos, totalItems) = await _pagoRepository.GetPagosPaginadosYFiltradosAsync(
+                pagina, tamanio, busqueda, fechaDesde, fechaHasta, metodoPago);
+
+            var pagosDto = _mapper.Map<IEnumerable<PagoDto>>(pagos);
+
+            int totalPages = (int)Math.Ceiling(totalItems / (double)tamanio);
+
+            return new PagedResult<PagoDto>
+            {
+                Items = pagosDto,
+                TotalItems = totalItems,
+                TotalPages = totalPages,
+                CurrentPage = pagina
+            };
+        }
+
+        public async Task<bool> AnularPagoAsync(int id)
+        {
+            var pago = await _pagoRepository.GetById(id);
+            if (pago == null || pago.Anulado == true) return false;
+
+            var turno = await _turnoRepository.GetById(pago.TurnoId);
+            if (turno == null) return false;
+
+            try
+            {
+                pago.Anulado = true;
+                await _pagoRepository.Actualizar(pago);
+
+               
+                await _auditoriaService.RegistrarAsync(
+             "Anulación",
+             "Pagos",
+             "Pago",
+             pago.Id,
+             $"Anuló el pago #{pago.Id} de ${pago.Monto}."
+              );
+            
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al anular pago: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
+
+        public async Task<byte[]> ExportarExcelAsync(string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago)
+        {
+            var (pagos, _) = await _pagoRepository.GetPagosPaginadosYFiltradosAsync(
+                1, int.MaxValue, busqueda, fechaDesde, fechaHasta, metodoPago);
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Pagos Registrados");
+
+            worksheet.Cell(1, 1).Value = "Fecha";
+            worksheet.Cell(1, 2).Value = "Paciente";
+            worksheet.Cell(1, 3).Value = "DNI";
+            worksheet.Cell(1, 4).Value = "Monto";
+            worksheet.Cell(1, 5).Value = "Método de Pago";
+        
+            var headerRange = worksheet.Range("A1:E1");
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            int row = 2;
+            foreach (var pago in pagos)
+            {
+                worksheet.Cell(row, 1).Value = pago.Fecha.ToString("dd/MM/yyyy HH:mm");
+                worksheet.Cell(row, 2).Value = $"{pago.Turno.Paciente.Nombre} {pago.Turno.Paciente.Apellido}";
+                worksheet.Cell(row, 3).Value = pago.Turno.Paciente.DNI;
+
+                worksheet.Cell(row, 4).Value = pago.Monto ?? 0;
+                worksheet.Cell(row, 4).Style.NumberFormat.Format = "$ #,##0.00"; 
+
+                worksheet.Cell(row, 5).Value = pago.MetodoPago;
+
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
+        }
+
     }
 }

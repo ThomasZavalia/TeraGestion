@@ -11,6 +11,7 @@ namespace Core.Interfaces.Repositorios
     {
 
         Task<IEnumerable<Pago>> GetPagosFiltradosAsync(DateTime? fechaDesde, DateTime? fechaHasta, int? pacienteId);
-
+        Task<(IEnumerable<Pago> pagos, int total)> GetPagosPaginadosYFiltradosAsync(
+    int pagina, int tamanio, string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago);
     }
 }

@@ -56,7 +56,8 @@ namespace Infrastructure.Repositorios
 
         public async Task<Turno?> GetById(int id)
         {
-            return await _context.Turnos
+            return await _context.Turnos.Include(t=>t.Paciente)
+                                        .Include(t=>t.Pagos)
                                  .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -66,6 +67,7 @@ namespace Infrastructure.Repositorios
                                    .Include(t => t.Paciente)
                                    .Include(t=>t.ObraSocial)
                                    .Include(t=>t.Terapeuta)
+                                   .Include(t=> t.Pagos)
                                    .AsNoTracking()
                                    .ToListAsync();
 
@@ -77,6 +79,8 @@ namespace Infrastructure.Repositorios
             return await _context.Turnos
                                  .Include(t => t.Paciente)
                                  .Include(t=>t.Terapeuta)
+                                 .Include(t=>t.ObraSocial)
+                                 .Include(t=>t.Pagos)
                                  .FirstOrDefaultAsync(t => t.Id == id);
         }
 
@@ -87,6 +91,7 @@ namespace Infrastructure.Repositorios
             return await _context.Turnos
                                   .Include(t => t.Paciente)
                                   .Where(t => t.FechaHora.Date == date.Date)
+                                  .Include(t=>t.Pagos)
                                   .AsNoTracking()
                                   .ToListAsync();
         }
@@ -114,6 +119,7 @@ namespace Infrastructure.Repositorios
                 .Include(t => t.Paciente)
                 .Include(t => t.ObraSocial)
                 .Include(t => t.Terapeuta)
+                .Include(t => t.Pagos)
                 .Where(t => t.TerapeutaId == terapeutaId)
                 .ToListAsync();
         }

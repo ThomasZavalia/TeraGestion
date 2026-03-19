@@ -20,5 +20,8 @@ namespace Core.DTOs.Pago.Output
         public string MetodoPago { get; set; }
         [Required]
         public int TurnoId { get; set; }
+
+        public string PacienteNombre { get; set; }
+        public string PacienteApellido { get; set; }
     }
 }

@@ -22,5 +22,9 @@ namespace Core.Entidades
        public DateTime? ResetTokenExpiry { get; set; }
         public string? Nombre { get; set; }
         public string? Apellido { get; set; }
+
+        public bool Activo { get; set; }
+
+        public decimal PorcentajeGanancia { get; set; } = 70;
     }
 }

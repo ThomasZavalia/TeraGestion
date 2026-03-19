@@ -14,5 +14,7 @@ namespace Core.Entidades
         public string MetodoPago { get; set; } 
         public int TurnoId { get; set; }
         public Turno Turno { get; set; }
+
+        public bool? Anulado { get; set; }
     }
 }

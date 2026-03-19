@@ -25,9 +25,14 @@ namespace Core.DTOs.Disponiblidad.Input
 
     public class DisponibilidadUpdateDto
     {
-        [Required]
-        [MinLength(7, ErrorMessage = "Se deben enviar los 7 días de la semana.")]
-        public List<DiaDisponibilidadUpdateDto> Dias { get; set; }
+        public List<DisponibilidadDiaDto> Dias { get; set; } = new List<DisponibilidadDiaDto>();
+    }
+    public class DisponibilidadDiaDto
+    {
+        public DayOfWeek DiaSemana { get; set; } 
+        public bool Disponible { get; set; }
+        public string? HoraInicio { get; set; } 
+        public string? HoraFin { get; set; }    
     }
 }
 

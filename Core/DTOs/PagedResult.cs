@@ -8,9 +8,9 @@ namespace Core.DTOs
 {
     public class PagedResult<T>
     {
-        public IEnumerable<T> Items { get; set; }
-        public int CantidadTotal { get; set; }
-        public int NumeroPagina { get; set; }
-        public int TamanioPagina { get; set; }
+        public IEnumerable<T> Items { get; set; } = new List<T>();
+        public int TotalItems { get; set; }
+        public int TotalPages { get; set; }
+        public int CurrentPage { get; set; }
     }
 }

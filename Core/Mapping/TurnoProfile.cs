@@ -17,7 +17,8 @@ namespace Core.Mapping
         public TurnoProfile()
         {
             CreateMap<TurnoDto, Turno>();
-            CreateMap<Turno, TurnoDto>();
+            CreateMap<Turno, TurnoDto>()
+                .ForMember(dest => dest.EstaPagado, opt => opt.MapFrom(src => src.Pagos != null && src.Pagos.Any()));
 
 
             CreateMap<Turno, TurnoCalendarioDto>()
@@ -41,16 +42,19 @@ namespace Core.Mapping
       .ForMember(dest => dest.TerapeutaNombre,
                        opt => opt.MapFrom(src => src.Terapeuta.Nombre))
             .ForMember(dest => dest.TerapeutaApellido,
-                       opt => opt.MapFrom(src => src.Terapeuta.Apellido));
-            
+                       opt => opt.MapFrom(src => src.Terapeuta.Apellido))
+            .ForMember(dest => dest.EstaPagado, opt => opt.MapFrom(src => src.Pagos != null && src.Pagos.Any(p => p.Anulado != true)));
 
-            
+
+
 
 
             CreateMap<Turno, TurnoDetalleDto>()
                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"))
                 .ForMember(dest => dest.TerapeutaNombreCompleto, opt => opt.MapFrom(src =>
-        src.Terapeuta != null ? $"{src.Terapeuta.Nombre} {src.Terapeuta.Apellido}" : "Sin asignar")); ;
+        src.Terapeuta != null ? $"{src.Terapeuta.Nombre} {src.Terapeuta.Apellido}" : "Sin asignar"))
+            .ForMember(dest => dest.EstaPagado, opt => opt.MapFrom(src => src.Pagos != null && src.Pagos.Any(p => p.Anulado != true)));
+        }
         }
     }
-}
+

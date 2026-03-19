@@ -12,5 +12,6 @@ namespace Core.DTOs.Reportes
         public int PacientesUnicosMes { get; set; }
         public double TasaAsistencia { get; set; }
         public List<TopPacienteDto> TopPacientes { get; set; } = new List<TopPacienteDto>();
+        public decimal? GananciasEstimadasMes { get; set; }
     }
 }

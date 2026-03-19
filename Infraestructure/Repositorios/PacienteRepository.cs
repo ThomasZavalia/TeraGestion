@@ -162,52 +162,83 @@ namespace Infrastructure.Repositorios
                 query = query.Where(p => p.Activo == activo.Value);
             }
 
-      
+
             if (tienePagosPendientes.HasValue)
             {
-                var hoy = DateTime.UtcNow; 
+                var hoy = DateTime.UtcNow;
 
                 if (tienePagosPendientes.Value)
                 {
+                  
                     query = query.Where(p => p.Turnos.Any(
-                        t => t.Estado.ToLower() == "pendiente" && t.FechaHora < hoy
+                        t => t.Estado.ToLower() != "cancelado" && t.FechaHora < hoy && !t.Pagos.Any()
                     ));
                 }
-                else 
+                else
                 {
+                    
                     query = query.Where(p => !p.Turnos.Any(
-                       t => t.Estado.ToLower() == "pendiente" && t.FechaHora < hoy
-                   ));
+                        t => t.Estado.ToLower() != "cancelado" && t.FechaHora < hoy && !t.Pagos.Any()
+                    ));
                 }
             }
-            
+
 
             return await query.OrderBy(p => p.Apellido)
                                 .ThenBy(p => p.Nombre)
                                 .ToListAsync();
         }
 
-        public async Task<PagedResult<Paciente>> GetPaginadosAsync(int numeroPagina, int tamanio)
+        public async Task<(IEnumerable<Paciente> pacientes, int total)> GetPacientesPaginadosYFiltradosAsync(
+     int pagina, int tamanio, string? busqueda, int? obraSocialId, bool? activo, bool? tienePagosPendientes)
         {
-            var query = _context.Pacientes.AsQueryable();
+            var query = _context.Pacientes
+                .Include(p => p.ObraSocial)
+                .AsQueryable();
 
-            var total = await query.CountAsync();
-            var items = await query
-                .OrderBy(p => p.Nombre) 
-                .Skip((numeroPagina - 1) * tamanio)
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var b = busqueda.ToLower();
+                query = query.Where(p => p.Nombre.ToLower().Contains(b) ||
+                                         p.Apellido.ToLower().Contains(b) ||
+                                         p.DNI.Contains(b));
+            }
+
+            if (obraSocialId.HasValue && obraSocialId.Value > 0)
+            {
+                query = query.Where(p => p.ObraSocialId == obraSocialId.Value);
+            }
+
+            if (activo.HasValue)
+            {
+                query = query.Where(p => p.Activo == activo.Value);
+            }
+
+
+            if (tienePagosPendientes.HasValue)
+            {
+                if (tienePagosPendientes.Value)
+                {
+                    
+                    query = query.Where(p => p.Turnos.Any(t => t.Estado != "Cancelado" && !t.Pagos.Any()));
+                }
+                else
+                {
+                   
+                    query = query.Where(p => !p.Turnos.Any(t => t.Estado != "Cancelado" && !t.Pagos.Any()));
+                }
+            }
+
+            int totalItems = await query.CountAsync();
+
+            var pacientesFiltrados = await query
+                .OrderBy(p => p.Apellido).ThenBy(p => p.Nombre)
+                .Skip((pagina - 1) * tamanio)
                 .Take(tamanio)
                 .ToListAsync();
 
-            return new PagedResult<Paciente>
-            {
-                Items = items,
-                CantidadTotal = total,
-                NumeroPagina = numeroPagina,
-               TamanioPagina = tamanio
-            };
+            return (pacientesFiltrados, totalItems);
         }
-
-
     }
 
 

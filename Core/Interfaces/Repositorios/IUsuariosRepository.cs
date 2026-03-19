@@ -14,5 +14,7 @@ namespace Core.Interfaces.Repositorios
         Task<Usuario> GetByResetTokenAsync(string token);
         Task<IEnumerable<Usuario>> GetTerapeutasDisponibles();
         Task<List<Turno>> GetTurnosRendimientoAsync(int terapeutaId, DateTime fechaInicioMes);
+
+        
     }
 }

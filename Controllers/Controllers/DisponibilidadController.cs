@@ -33,27 +33,30 @@ namespace Controllers.Controllers
             return Ok(disponibilidad); 
         }
 
-        
-        [HttpPut]
-        public async Task<IActionResult> UpdateMiDisponibilidad([FromBody] DisponibilidadUpdateDto dto)
+
+        [HttpPut("terapeuta/{terapeutaId}")]
+        [Authorize(Roles = "Admin")] 
+        public async Task<IActionResult> UpdateDisponibilidadTerapeuta(int terapeutaId, [FromBody] DisponibilidadUpdateDto dto)
         {
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int userId))
-            {
-                return Unauthorized("Token inválido.");
-            }
+           
+            await _disponibilidadService.UpdateDisponibilidadAsync(terapeutaId, dto);
 
-          
-            await _disponibilidadService.UpdateDisponibilidadAsync(userId, dto);
-
-            return Ok(new { message = "Disponibilidad actualizada correctamente." });
-          
+            return Ok(new { message = "Horarios del terapeuta asignados correctamente." });
         }
 
         [HttpGet("terapeuta/{terapeutaId}")]
-        [Authorize(Roles = "Admin,Secretaria")] 
+      
+        [Authorize(Roles = "Admin,Secretaria,Terapeuta")]
         public async Task<IActionResult> GetDisponibilidadTerapeuta(int terapeutaId)
         {
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (userRole == "Terapeuta" && int.TryParse(userIdString, out int userId) && userId != terapeutaId)
+            {
+                return Forbid("No tienes permiso para ver los horarios de otro terapeuta.");
+            }
+
             var disponibilidad = await _disponibilidadService.GetDisponibilidadAsync(terapeutaId);
             return Ok(disponibilidad);
         }
