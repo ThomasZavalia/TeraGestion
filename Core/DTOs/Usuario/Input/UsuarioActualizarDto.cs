@@ -21,5 +21,10 @@ namespace Core.DTOs.Usuario.Input
 
         [Range(0, 100, ErrorMessage = "El porcentaje debe estar entre 0 y 100.")]
         public decimal PorcentajeGanancia { get; set; }
+
+        public string? Titulo { get; set; }
+        public string? Especialidad { get; set; }
+
+       
     }
 }

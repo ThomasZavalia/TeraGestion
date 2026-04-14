@@ -124,7 +124,52 @@ namespace Infrastructure.Repositorios
                 .ToListAsync();
         }
 
-        
+        public async Task<IEnumerable<Turno>> ObtenerPorRangoAsync(DateTime inicio, DateTime fin, int? terapeutaId = null)
+        {
+            var query = _context.Turnos
+                .Include(t => t.Paciente)
+                .Include(t => t.Pagos) 
+                .Where(t => t.FechaHora >= inicio && t.FechaHora <= fin)
+                .AsQueryable();
+
+            if (terapeutaId.HasValue && terapeutaId.Value > 0)
+            {
+                query = query.Where(t => t.TerapeutaId == terapeutaId.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<(string Paciente, int Turnos)>> GetTopPacientesReporteAsync()
+        {
+            var query = await _context.Turnos
+                .AsNoTracking()
+                .Where(t => t.Paciente != null)
+                .GroupBy(t => new { t.Paciente.Nombre, t.Paciente.Apellido })
+                .Select(g => new
+                {
+                    PacienteNombre = g.Key.Nombre + " " + g.Key.Apellido,
+                    TurnosCount = g.Count()
+                })
+                .OrderByDescending(x => x.TurnosCount)
+                .Take(5)
+                .ToListAsync(); 
+
+            return query.Select(q => (q.PacienteNombre, q.TurnosCount));
+        }
+
+        public async Task<IEnumerable<Turno>> GetTurnosHistoricoTerapeutaAsync(int terapeutaId)
+        {
+            return await _context.Turnos
+                .Include(t => t.Sesion)
+                .Include(t => t.Pagos)
+                .Include(t => t.Paciente)
+                .AsNoTracking() 
+                .Where(t => t.TerapeutaId == terapeutaId)
+                .ToListAsync();
+        }
+
+
 
 
     }

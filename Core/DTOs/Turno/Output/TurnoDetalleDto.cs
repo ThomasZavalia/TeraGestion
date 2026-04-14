@@ -24,6 +24,8 @@ namespace Core.DTOs.Turno.Output
 
         public bool EstaPagado { get; set; }
 
+        public string? TerapeutaNombreCompletoProfesional { get; set; }
+
 
 
     }

@@ -31,5 +31,7 @@ namespace Core.Interfaces.Services
 
         Task<bool> BlanquearClaveAdminAsync(int id, string nuevaClave);
 
+        Task<(IEnumerable<UsuarioDto> usuarios, int total)> GetUsuariosPaginadosAsync(int pagina, int tamanio, string? busqueda, bool mostrarInactivos);
+
     }
 }

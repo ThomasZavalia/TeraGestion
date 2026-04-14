@@ -99,6 +99,41 @@ namespace Infrastructure.Repositorios
                 .Where(t => t.TerapeutaId == terapeutaId && t.FechaHora >= fechaInicioMes)
                 .ToListAsync();
         }
+
+        public async Task<(IEnumerable<Usuario> usuarios, int total)> GetUsuariosPaginadosAsync(int pagina, int tamanio, string? busqueda, bool mostrarInactivos)
+        {
+            var query = _context.Usuarios.AsQueryable();
+
+            if (mostrarInactivos)
+            {
+                query = query.Where(u => u.Activo == false);
+            }
+            else
+            {
+                query = query.Where(u => u.Activo == true);
+            }
+            if (!string.IsNullOrWhiteSpace(busqueda))
+            {
+                var b = busqueda.ToLower();
+                query = query.Where(u =>
+                    u.Username.ToLower().Contains(b) ||
+                    (u.Nombre != null && u.Nombre.ToLower().Contains(b)) ||
+                    (u.Apellido != null && u.Apellido.ToLower().Contains(b)) ||
+                    u.Email.ToLower().Contains(b)
+                );
+            }
+
+         
+            int totalItems = await query.CountAsync();
+
+            var usuariosFiltrados = await query
+                .OrderBy(u => u.Rol).ThenBy(u => u.Apellido).ThenBy(u => u.Nombre)
+                .Skip((pagina - 1) * tamanio)
+                .Take(tamanio)
+                .ToListAsync();
+
+            return (usuariosFiltrados, totalItems);
+        }
     }
 
 }

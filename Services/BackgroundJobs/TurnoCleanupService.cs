@@ -65,11 +65,11 @@ namespace Services.BackgroundJobs
 
                 foreach (var turno in turnosVencidos)
                 {
-                    turno.Estado = "Vencido";
+                    turno.Estado = "Pendiente de Cierre";
                 }
 
                 await context.SaveChangesAsync();
-                _logger.LogInformation($" {turnosVencidos.Count} turnos viejos marcados como Vencido.");
+                _logger.LogInformation($" {turnosVencidos.Count} turnos viejos marcados como Pendiente de Cierre.");
             }
         }
     }

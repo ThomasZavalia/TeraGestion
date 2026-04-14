@@ -15,6 +15,8 @@ namespace Core.Interfaces.Repositorios
         Task<IEnumerable<Usuario>> GetTerapeutasDisponibles();
         Task<List<Turno>> GetTurnosRendimientoAsync(int terapeutaId, DateTime fechaInicioMes);
 
-        
+        Task<(IEnumerable<Usuario> usuarios, int total)> GetUsuariosPaginadosAsync(int pagina, int tamanio, string? busqueda, bool mostrarInactivos);
+
+
     }
 }

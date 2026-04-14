@@ -135,5 +135,19 @@ namespace Controllers.Controllers
             return Ok(new { message = "Clave del usuario reseteada con éxito." });
         }
 
+        [Authorize(Roles = "Admin")]
+        [HttpGet("paginados")]
+        public async Task<IActionResult> GetUsuariosPaginados(
+            [FromQuery] int pagina = 1,
+            [FromQuery] int tamanio = 10,
+            [FromQuery] string? busqueda = null,
+            [FromQuery] bool mostrarInactivos = false)
+        {
+            var (usuarios, total) = await _usuarioService.GetUsuariosPaginadosAsync(pagina, tamanio, busqueda, mostrarInactivos);
+
+         
+            return Ok(new { Items = usuarios, Total = total });
+        }
+
     }
 }

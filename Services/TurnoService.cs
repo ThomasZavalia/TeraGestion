@@ -106,9 +106,8 @@ namespace Services
             var turno = await _turnoRepository.GetById(turnoId)
                 ?? throw new KeyNotFoundException("Turno no encontrado");
 
-            if (turno.Pagos != null && turno.Pagos.Any())
-                throw new ArgumentException("El turno ya tiene un pago registrado.");
-
+            if (turno.Pagos != null && turno.Pagos.Any(p => p.Anulado != true))
+                throw new ArgumentException("El turno ya tiene un pago activo registrado. Anúlelo primero si desea registrar uno nuevo.");
             await _pagoService.CrearPago(new PagoDto
             {
                 TurnoId = turnoId,
@@ -257,7 +256,34 @@ namespace Services
 
                
                 await transaction.CommitAsync();
+                var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                _ = int.TryParse(userIdString ?? "0", out int usuarioActualId);
 
+               
+                if (usuarioActualId != dto.TerapeutaId)
+                {
+                    string timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+                        ? "Argentina Standard Time" : "America/Argentina/Buenos_Aires";
+                    var zonaAr = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                    var fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(dto.Fecha, zonaAr);
+
+                    var mensaje = $"Te han agendado un nuevo turno con {pacienteAsignado.Nombre} {pacienteAsignado.Apellido} para el {fechaLocal:dd/MM/yyyy} a las {fechaLocal:HH:mm} hs.";
+
+                    try
+                    {
+                        await _notificacionService.CrearNotificacionAsync(
+                            usuarioDestinoId: dto.TerapeutaId,
+                            titulo: "Nuevo Turno Asignado",
+                            mensaje: mensaje,
+                            referenciaId: turnoCreado.Id
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+                       
+                        Console.WriteLine($"Error al enviar notificación de creación: {ex.Message}");
+                    }
+                }
 
                 var turnoConPaciente = await _turnoRepository.GetByIdConPaciente(turnoCreado.Id);
                 if (turnoConPaciente == null)
@@ -331,26 +357,24 @@ namespace Services
             return turnoDto;
         }
 
-        public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync()
+        public async Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync(DateTime start, DateTime end)
         {
             var userIdString = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             var userRole = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.Role);
-
             int userId = int.Parse(userIdString ?? "0");
 
             IEnumerable<Turno> turnos;
 
             if (userRole == "Admin" || userRole == "Secretaria")
             {
-                turnos = await _turnoRepository.ObtenerTodos(); 
+                turnos = await _turnoRepository.ObtenerPorRangoAsync(start, end);
             }
             else
-            { 
-                turnos = await _turnoRepository.GetTurnosByTerapeutaAsync(userId);
+            {
+                turnos = await _turnoRepository.ObtenerPorRangoAsync(start, end, userId);
             }
 
-            var turnosDto = _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
-            return turnosDto;
+            return _mapper.Map<IEnumerable<TurnoCalendarioDto>>(turnos);
         }
         public async Task<IEnumerable<Turno>> GetTurnosSinDto()
         {
@@ -482,6 +506,10 @@ namespace Services
         {
             var turno = await _turnoRepository.GetByIdConPaciente(id);
             if (turno == null) throw new KeyNotFoundException("Turno no encontrado");
+            if (turno.Estado == "Atendido" || turno.Estado == "Ausente" || turno.Estado == "Cancelado")
+            {
+                throw new InvalidOperationException("No se puede reprogramar un turno que ya finalizó su ciclo (Atendido, Ausente o Cancelado).");
+            }
             var duracion = turno.Duracion > 0 ? turno.Duracion : 40;
             var nuevaFechaFin = nuevaFecha.AddMinutes(duracion);
 
@@ -508,7 +536,10 @@ namespace Services
             turno.FechaHora = nuevaFecha;
 
 
-            if (turno.Estado == "Cancelado") turno.Estado = "Reservado";
+            if (turno.Estado == "Pendiente de Cierre" || turno.Estado == "Cancelado")
+            {
+                turno.Estado = "Reservado";
+            }
 
             await _turnoRepository.Actualizar(turno);
 

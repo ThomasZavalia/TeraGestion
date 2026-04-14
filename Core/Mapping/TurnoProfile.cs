@@ -53,7 +53,11 @@ namespace Core.Mapping
                 .ForMember(dest => dest.PacienteNombre, opt => opt.MapFrom(src => $"{src.Paciente.Nombre} {src.Paciente.Apellido}"))
                 .ForMember(dest => dest.TerapeutaNombreCompleto, opt => opt.MapFrom(src =>
         src.Terapeuta != null ? $"{src.Terapeuta.Nombre} {src.Terapeuta.Apellido}" : "Sin asignar"))
-            .ForMember(dest => dest.EstaPagado, opt => opt.MapFrom(src => src.Pagos != null && src.Pagos.Any(p => p.Anulado != true)));
+            .ForMember(dest => dest.EstaPagado, opt => opt.MapFrom(src => src.Pagos != null && src.Pagos.Any(p => p.Anulado != true)))
+           .ForMember(dest => dest.TerapeutaNombreCompletoProfesional, opt => opt.MapFrom(src =>
+    string.IsNullOrWhiteSpace(src.Terapeuta.Titulo)
+        ? src.Terapeuta.Nombre + " " + src.Terapeuta.Apellido
+        : src.Terapeuta.Titulo + " " + src.Terapeuta.Nombre + " " + src.Terapeuta.Apellido));
         }
         }
     }

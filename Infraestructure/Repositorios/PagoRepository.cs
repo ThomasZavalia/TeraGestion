@@ -66,6 +66,8 @@ namespace Infrastructure.Repositorios
             IQueryable<Pago> query = _context.Pagos
                                              .Include(p => p.Turno)
                                                 .ThenInclude(t => t.Paciente)
+                                             .Include(p => p.Turno)
+                                                .ThenInclude(t => t.Terapeuta)
                                              .AsNoTracking();
 
 
@@ -96,9 +98,20 @@ namespace Infrastructure.Repositorios
             var query = _context.Pagos
                 .Include(p => p.Turno)
                     .ThenInclude(t => t.Paciente)
+                .Include(t=>t.Turno)
+                    .ThenInclude(t => t.Terapeuta)
                 .AsQueryable();
 
             query = query.Where(p => p.Anulado != true);
+
+            if (string.IsNullOrWhiteSpace(busqueda) && !fechaDesde.HasValue && !fechaHasta.HasValue)
+            {
+                var fechaCalculada = DateTime.Now.AddDays(-3);
+
+                var haceTresDias = DateTime.SpecifyKind(fechaCalculada, DateTimeKind.Unspecified);
+
+                query = query.Where(p => p.Fecha >= haceTresDias);
+            }
 
             if (!string.IsNullOrWhiteSpace(busqueda))
             {
@@ -110,15 +123,14 @@ namespace Infrastructure.Repositorios
 
             if (fechaDesde.HasValue)
             {
-                var desdeUtc = DateTime.SpecifyKind(fechaDesde.Value, DateTimeKind.Utc);
-                query = query.Where(p => p.Fecha >= desdeUtc);
+                var desdeLocal = DateTime.SpecifyKind(fechaDesde.Value, DateTimeKind.Unspecified);
+                query = query.Where(p => p.Fecha >= desdeLocal);
             }
 
             if (fechaHasta.HasValue)
             {
-
-                var hastaUtc = DateTime.SpecifyKind(fechaHasta.Value, DateTimeKind.Utc).AddDays(1).AddTicks(-1);
-                query = query.Where(p => p.Fecha <= hastaUtc);
+                var hastaLocal = DateTime.SpecifyKind(fechaHasta.Value, DateTimeKind.Unspecified).AddDays(1).AddTicks(-1);
+                query = query.Where(p => p.Fecha <= hastaLocal);
             }
 
             if (!string.IsNullOrWhiteSpace(metodoPago))

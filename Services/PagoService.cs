@@ -183,30 +183,55 @@ namespace Services
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Pagos Registrados");
 
-            worksheet.Cell(1, 1).Value = "Fecha";
-            worksheet.Cell(1, 2).Value = "Paciente";
-            worksheet.Cell(1, 3).Value = "DNI";
-            worksheet.Cell(1, 4).Value = "Monto";
-            worksheet.Cell(1, 5).Value = "Método de Pago";
-        
-            var headerRange = worksheet.Range("A1:E1");
-            headerRange.Style.Font.Bold = true;
-            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+            worksheet.Cell("A1").Value = "REPORTE DE PAGOS - TERAGESTIÓN";
+            worksheet.Range("A1:G1").Merge().Style.Font.SetBold().Font.FontSize = 16;
+            worksheet.Range("A1:G1").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            int row = 2;
+            worksheet.Cell("A2").Value = $"Generado el: {DateTime.Now:dd/MM/yyyy HH:mm}";
+            worksheet.Range("A2:G2").Merge().Style.Font.SetItalic();
+
+            int startRow = 4;
+            worksheet.Cell(startRow, 1).Value = "Fecha del Pago";
+            worksheet.Cell(startRow, 2).Value = "Fecha del Turno";
+            worksheet.Cell(startRow, 3).Value = "Profesional";
+            worksheet.Cell(startRow, 4).Value = "Paciente";
+            worksheet.Cell(startRow, 5).Value = "DNI";
+            worksheet.Cell(startRow, 6).Value = "Monto";
+            worksheet.Cell(startRow, 7).Value = "Método de Pago";
+
+            int row = startRow + 1;
+            decimal totalMonto = 0; 
+
             foreach (var pago in pagos)
             {
                 worksheet.Cell(row, 1).Value = pago.Fecha.ToString("dd/MM/yyyy HH:mm");
-                worksheet.Cell(row, 2).Value = $"{pago.Turno.Paciente.Nombre} {pago.Turno.Paciente.Apellido}";
-                worksheet.Cell(row, 3).Value = pago.Turno.Paciente.DNI;
+                worksheet.Cell(row, 2).Value = pago.Turno.FechaHora.ToString("dd/MM/yyyy HH:mm");
+                worksheet.Cell(row, 3).Value = string.IsNullOrWhiteSpace(pago.Turno.Terapeuta.Titulo)
+                    ? $"{pago.Turno.Terapeuta.Nombre} {pago.Turno.Terapeuta.Apellido}"
+                    : $"{pago.Turno.Terapeuta.Titulo} {pago.Turno.Terapeuta.Nombre} {pago.Turno.Terapeuta.Apellido}";
+                worksheet.Cell(row, 4).Value = $"{pago.Turno.Paciente.Nombre} {pago.Turno.Paciente.Apellido}";
+                worksheet.Cell(row, 5).Value = pago.Turno.Paciente.DNI;
 
-                worksheet.Cell(row, 4).Value = pago.Monto ?? 0;
-                worksheet.Cell(row, 4).Style.NumberFormat.Format = "$ #,##0.00"; 
+                worksheet.Cell(row, 6).Value = pago.Monto ?? 0;
+                worksheet.Cell(row, 6).Style.NumberFormat.Format = "$ #,##0.00";
+                totalMonto += pago.Monto ?? 0;
 
-                worksheet.Cell(row, 5).Value = pago.MetodoPago;
-
+                worksheet.Cell(row, 7).Value = pago.MetodoPago;
                 row++;
             }
+
+            if (pagos.Any())
+            {
+                var tableRange = worksheet.Range(startRow, 1, row - 1, 7);
+                var excelTable = tableRange.CreateTable("TablaPagos");
+                excelTable.Theme = XLTableTheme.TableStyleMedium2; 
+            }
+        
+            worksheet.Cell(row + 1, 5).Value = "TOTAL FACTURADO:";
+            worksheet.Cell(row + 1, 5).Style.Font.SetBold().Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+            worksheet.Cell(row + 1, 6).Value = totalMonto;
+            worksheet.Cell(row + 1, 6).Style.NumberFormat.Format = "$ #,##0.00";
+            worksheet.Cell(row + 1, 6).Style.Font.SetBold();
 
             worksheet.Columns().AdjustToContents();
 

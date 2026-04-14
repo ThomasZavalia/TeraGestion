@@ -18,7 +18,7 @@ namespace Core.Interfaces.Services
 
         Task<byte[]> GenerarExcelReporteCompleto(DateTime? fechaDesde, DateTime? fechaHasta);
 
-        Task<ReporteTerapeutaDto> GetRendimientoTerapeutaAsync(int terapeutaId);
+        Task<ReporteTerapeutaDto> GetRendimientoTerapeutaAsync(int terapeutaId, DateTime? fechaDesde = null, DateTime? fechaHasta = null);
 
 
 

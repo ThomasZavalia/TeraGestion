@@ -79,11 +79,14 @@ namespace Controllers.Controllers
         }
 
         [HttpGet("mi-rendimiento")]
-        [Authorize(Roles = "Terapeuta")] 
-        public async Task<IActionResult> GetMiRendimiento()
+        [Authorize(Roles = "Terapeuta")]
+      
+        public async Task<IActionResult> GetMiRendimiento([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var reporte = await _reportesService.GetRendimientoTerapeutaAsync(userId);
+
+            var reporte = await _reportesService.GetRendimientoTerapeutaAsync(userId, fechaDesde, fechaHasta);
+
             return Ok(reporte);
         }
 

@@ -26,5 +26,9 @@ namespace Core.Entidades
         public bool Activo { get; set; }
 
         public decimal PorcentajeGanancia { get; set; } = 70;
+
+
+        public string? Titulo { get; set; } 
+        public string? Especialidad { get; set; }
     }
 }

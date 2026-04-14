@@ -19,5 +19,13 @@ namespace Core.DTOs.Usuario.Output
         public bool Activo { get; set; }
 
         public decimal PorcentajeGanancia { get; set; }
+
+        public string? Titulo { get; set; }
+        public string? Especialidad { get; set; }
+
+        public string NombreCompletoProfesional =>
+   string.IsNullOrWhiteSpace(Titulo)
+       ? $"{Nombre} {Apellido}"
+       : $"{Titulo} {Nombre} {Apellido}";
     }
 }

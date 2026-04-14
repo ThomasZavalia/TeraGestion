@@ -18,5 +18,11 @@ namespace Core.Interfaces.Repositorios
 
         Task<IEnumerable<Turno>> GetTurnosByTerapeutaAsync(int terapeutaId);
 
+        Task<IEnumerable<Turno>> ObtenerPorRangoAsync(DateTime inicio, DateTime fin, int? terapeutaId = null);
+
+   
+        Task<IEnumerable<(string Paciente, int Turnos)>> GetTopPacientesReporteAsync();
+        Task<IEnumerable<Turno>> GetTurnosHistoricoTerapeutaAsync(int terapeutaId);
+
     }
 }

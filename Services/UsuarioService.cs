@@ -204,7 +204,9 @@ namespace Services
             {
                 Id = t.Id,
               
-                NombreCompleto = string.IsNullOrEmpty(t.Nombre) ? t.Username : $"{t.Nombre} {t.Apellido}"
+                NombreCompleto = string.IsNullOrEmpty(t.Nombre) ? t.Username : $"{t.Nombre} {t.Apellido}",
+                Titulo = t.Titulo,
+                Especialidad = t.Especialidad
             });
         }
 
@@ -219,6 +221,15 @@ namespace Services
             await _auditoriaService.RegistrarAsync("BLANQUEO_CLAVE", "Usuarios", "Usuario", id, $"El Admin reseteó manualmente la clave del usuario {usuario.Username}.");
 
             return true;
+        }
+
+        public async Task<(IEnumerable<UsuarioDto> usuarios, int total)> GetUsuariosPaginadosAsync(int pagina, int tamanio, string? busqueda, bool mostrarInactivos)
+        {
+            var (usuarios, total) = await _usuarioRepository.GetUsuariosPaginadosAsync(pagina, tamanio, busqueda, mostrarInactivos);
+
+            var usuariosDto = _mapper.Map<IEnumerable<UsuarioDto>>(usuarios);
+
+            return (usuariosDto, total);
         }
 
     } 

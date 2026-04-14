@@ -2,9 +2,11 @@
 using Core.DTOs.Turno.Input;
 using Core.DTOs.Turno.Output;
 using Core.Entidades;
+using Core.Interfaces.Repositorios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,7 +15,9 @@ namespace Core.Interfaces.Services
     public interface ITurnoService
     {
         public Task<TurnoDto> GetTurnoAsync(int id);
-        public Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync();
+        public Task<IEnumerable<TurnoCalendarioDto>> GetTurnosAsync(DateTime start, DateTime end);
+        
+            
         public Task<TurnoCalendarioDto> CrearTurnoAsync(TurnoDtoCreacion turnoDto);
         public Task<TurnoCalendarioDto> ActualizarTurnoAsync(int id, TurnoDtoActualizar turno);
         public Task<bool> EliminarTurnoAsync(int id);
@@ -30,6 +34,8 @@ namespace Core.Interfaces.Services
         Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto);
 
         Task<bool> ConfirmarTurnoAsync(int id,string token);
+
+
 
         
 

@@ -37,10 +37,22 @@ namespace Infrastructure.Repositorios
             var query = _context.Auditorias.AsQueryable();
 
             if (fechaDesde.HasValue)
-                query = query.Where(a => a.FechaHora >= fechaDesde.Value);
+            {
+                var desdeUtc = DateTime.SpecifyKind(fechaDesde.Value, DateTimeKind.Utc);
+                query = query.Where(a => a.FechaHora >= desdeUtc);
+            }
 
             if (fechaHasta.HasValue)
-                query = query.Where(a => a.FechaHora <= fechaHasta.Value);
+            {
+                var hastaUtc = DateTime.SpecifyKind(fechaHasta.Value, DateTimeKind.Utc).AddDays(1).AddTicks(-1);
+                query = query.Where(a => a.FechaHora <= hastaUtc);
+            }
+
+            if (!fechaDesde.HasValue && !fechaHasta.HasValue)
+            {
+                var haceTresDias = DateTime.UtcNow.AddDays(-3);
+                query = query.Where(a => a.FechaHora >= haceTresDias);
+            }
 
             if (usuarioId.HasValue)
                 query = query.Where(a => a.UsuarioId == usuarioId.Value);

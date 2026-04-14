@@ -30,11 +30,31 @@ namespace Controllers.Controllers
            
             return Ok(turno);
         }
+
         [HttpGet]
-        public async Task<IActionResult> GetTurnos()
+        public async Task<IActionResult> Get([FromQuery] DateTime start, [FromQuery] DateTime end)
         {
-         var turnos = await _turnoService.GetTurnosAsync();
-            return Ok(turnos);
+            if (start != default)
+                start = DateTime.SpecifyKind(start, DateTimeKind.Utc);
+
+            if (end != default)
+                end = DateTime.SpecifyKind(end, DateTimeKind.Utc);
+
+            if (start == default)
+                start = DateTime.UtcNow.AddDays(-15);
+
+            if (end == default)
+                end = DateTime.UtcNow.AddDays(45);
+
+            try
+            {
+                var turnos = await _turnoService.GetTurnosAsync(start, end);
+                return Ok(turnos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error interno del servidor", detalle = ex.Message });
+            }
         }
 
         [HttpPost]

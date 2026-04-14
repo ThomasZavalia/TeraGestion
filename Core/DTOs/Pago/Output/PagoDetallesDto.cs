@@ -18,5 +18,8 @@ namespace Core.DTOs.Pago.Output
         public int PacienteId { get; set; }
         public string PacienteNombre { get; set; }
         public string PacienteApellido { get; set; }
+
+        public DateTime? FechaTurno { get; set; }
+        public string TerapeutaTurno { get; set; }
     }
 }

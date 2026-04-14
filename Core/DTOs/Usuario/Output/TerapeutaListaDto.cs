@@ -10,5 +10,13 @@ namespace Core.DTOs.Usuario.Output
     {
         public int Id { get; set; }
         public string NombreCompleto { get; set; }
+
+        public string? Titulo { get; set; }
+        public string? Especialidad { get; set; }
+
+       
+        public string NombreCompletoProfesional => string.IsNullOrWhiteSpace(Titulo)
+            ? NombreCompleto
+            : $"{Titulo} {NombreCompleto}";
     }
 }
