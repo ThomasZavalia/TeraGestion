@@ -1,4 +1,5 @@
 ﻿using Core.DTOs;
+using Core.DTOs.Paciente;
 using Core.DTOs.Pago.Output;
 using Core.Entidades;
 using System;
@@ -22,6 +23,8 @@ namespace Core.Interfaces.Services
     int pagina, int tamanio, string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago);
         Task<bool> AnularPagoAsync(int id);
         Task<byte[]> ExportarExcelAsync(string? busqueda, DateTime? fechaDesde, DateTime? fechaHasta, string? metodoPago);
+        Task<PagedResult<PagoHistorialDTO>> GetPagosPaginadosAsync(
+    int pacienteId, int pagina, int tamanio, DateTime? desde, DateTime? hasta, string? metodoPago);
 
     }
 }

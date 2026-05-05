@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.DTOs.Usuario.Input;
 using Core.DTOs.Usuario.Output;
 using Core.Entidades;
@@ -7,6 +7,7 @@ using Core.Interfaces.Email;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,12 +25,15 @@ namespace Services
         private readonly IAuditoriaService _auditoriaService;
 
         private readonly PasswordHasher<Usuario> _passwordHasher = new();
-        public UsuarioService(IUsuariosRepository usuarioRepository, IMapper mapper, IEmailService emailService,IAuditoriaService auditoriaService)
+        private readonly string _frontendBaseUrl;
+
+        public UsuarioService(IUsuariosRepository usuarioRepository, IMapper mapper, IEmailService emailService, IAuditoriaService auditoriaService, IConfiguration configuration)
         {
             _usuarioRepository = usuarioRepository;
             _mapper = mapper;
             _emailService = emailService;
             _auditoriaService = auditoriaService;
+            _frontendBaseUrl = configuration["FrontendBaseUrl"] ?? "http://localhost:5173";
         }
         public async Task<UsuarioDto> ActualizarUsuario(int id, UsuarioActualizarDto dto)
         {
@@ -60,11 +64,14 @@ namespace Services
         public async Task<bool> EliminarUsuario(int id)
         {
             var usuario = await _usuarioRepository.GetById(id);
+            if (usuario == null) throw new KeyNotFoundException("Usuario no encontrado");
+
             var resultado = await _usuarioRepository.Eliminar(id);
             if (!resultado) throw new KeyNotFoundException("Usuario no encontrado");
 
-            string accion = usuario.Activo ? "DESBLOQUEO" : "BLOQUEO";
-            await _auditoriaService.RegistrarAsync(accion, "Usuarios", "Usuario", id, $"El usuario {usuario.Username} fue {accion.ToLower()}do.");
+            // Si Activo=true, lo estamos bloqueando. Si Activo=false, lo estamos desbloqueando.
+            string accion = usuario.Activo ? "BLOQUEO" : "DESBLOQUEO";
+            await _auditoriaService.RegistrarAsync(accion, "Usuarios", "Usuario", id, $"El usuario {usuario.Username} fue {(usuario.Activo ? "bloqueado" : "desbloqueado")}.");
             return true;
         }
 
@@ -78,10 +85,7 @@ namespace Services
 
         public async Task<Usuario> GetByName(string username)
         {
-            var usuarios = await _usuarioRepository.ObtenerTodos();
-            var usuario = usuarios.FirstOrDefault(u => u.Username == username);
-            if (usuario == null) { return null; }
-            return usuario;
+            return await _usuarioRepository.GetByUsernameAsync(username);
         }
 
         public async Task<IEnumerable<UsuarioDto>> GetUsuarios()
@@ -165,7 +169,7 @@ namespace Services
 
             await _usuarioRepository.Actualizar(usuario);
 
-            var resetLink = $"http://localhost:5173/reset-password?token={token}";
+            var resetLink = $"{_frontendBaseUrl}/reset-password?token={token}";
 
             var cuerpoMail = $@"
         <h1>Recuperación de Contraseña</h1>

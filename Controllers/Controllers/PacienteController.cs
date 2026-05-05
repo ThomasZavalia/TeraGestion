@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+using Core.DTOs;
 using Core.DTOs.Paciente;
 using Core.Entidades;
 using Core.Interfaces.Services;
@@ -40,6 +40,7 @@ namespace Controllers.Controllers
             return Ok(pacientes);
         }
 
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpPost]
         public async Task<IActionResult> CrearPaciente([FromBody] PacienteDTO pacienteDto)
         {
@@ -52,6 +53,7 @@ namespace Controllers.Controllers
                return Ok(creado);
         }
 
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarPaciente(int id, [FromBody] PacienteDTO paciente)
         {
@@ -62,6 +64,7 @@ namespace Controllers.Controllers
                 return Ok(actualizado);
         }
 
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarPaciente(int id)
         {

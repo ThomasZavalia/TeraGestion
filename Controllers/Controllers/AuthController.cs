@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+using Core.DTOs;
 using Core.DTOs.Usuario.Input;
 using Core.Entidades;
 using Core.Interfaces.Services;
@@ -94,7 +94,7 @@ namespace Controllers.Controllers
                 issuer: _configuration["Jwt:Issuer"],
                 audience: _configuration["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
+                expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds
             );
 

@@ -1,4 +1,4 @@
-﻿using Core.DTOs;
+using Core.DTOs;
 using Core.DTOs.Pago.Input;
 using Core.DTOs.Turno;
 using Core.DTOs.Turno.Input;
@@ -57,6 +57,7 @@ namespace Controllers.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpPost]
         public async Task<IActionResult> CrearTurno([FromBody] TurnoDtoCreacion turno)
         {
@@ -93,6 +94,7 @@ namespace Controllers.Controllers
             
             return Ok(turnoActualizado);
         }
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> EliminarTurno(int id)
         {
@@ -101,6 +103,7 @@ namespace Controllers.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin,Secretaria")]
         [HttpPost("{id}/pagar")]
         public async Task<IActionResult> MarcarComoPagado(int id, [FromBody] PagoRequestDto request)
         {
@@ -139,6 +142,14 @@ namespace Controllers.Controllers
         {
             var turnoActualizado = await _turnoService.ReprogramarTurnoAsync(id, dto.NuevaFecha);
             return Ok(turnoActualizado);
+        }
+
+        [Authorize(Roles = "Admin,Secretaria")] 
+        [HttpPut("{id}/revertir")]
+        public async Task<IActionResult> RevertirTurno(int id)
+        {
+            var resultado = await _turnoService.RevertirEstadoTurnoAsync(id);
+            return resultado ? Ok() : BadRequest("No se pudo revertir el turno.");
         }
     }
 }

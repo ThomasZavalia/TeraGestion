@@ -7,7 +7,6 @@ using Core.Interfaces.Services;
 using Core.Mapping;
 using Infraestructure;
 using Infrastructure.Email;
-using Infrastructure.Email;
 using Infrastructure.Hubs;
 using Infrastructure.Repositorios;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -61,7 +60,6 @@ builder.Services.AddScoped<IAusenciaService, AusenciaService>();
 builder.Services.AddScoped<IRecaptchaService, RecaptchaService>();
 builder.Services.AddScoped<INotificacionService, NotificacionService>();
 builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
-builder.Services.AddHttpContextAccessor(); 
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 builder.Services.AddHostedService<TurnoCleanupService>();

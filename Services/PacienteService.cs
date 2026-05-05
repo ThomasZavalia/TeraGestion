@@ -1,14 +1,16 @@
-﻿using Core.Entidades;
-using Core.Interfaces.Repositorios;
+﻿using AutoMapper;
+using Core.DTOs;
 using Core.DTOs.Paciente;
-using AutoMapper;
+using Core.Entidades;
+using Core.Interfaces;
+using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
-using Core.DTOs;
-using Core.Interfaces;
 
 namespace Services
 {
@@ -17,12 +19,17 @@ namespace Services
         private readonly IPacienteRepository _pacienteRepository;
         private readonly IMapper _mapper;
         private readonly IAuditoriaService _auditoriaService;
+        private readonly IHttpContextAccessor _httpContextAccessor; 
+        private readonly ITurnoRepository _turnoRepository;
 
-        public PacienteService(IPacienteRepository pacienteRepository, IMapper mapper,IAuditoriaService auditoriaService)
+        public PacienteService(IPacienteRepository pacienteRepository, IMapper mapper,IAuditoriaService auditoriaService, IHttpContextAccessor httpContextAccessor, ITurnoRepository turnoRepository)
         {
             _pacienteRepository = pacienteRepository;
             _mapper = mapper;
             _auditoriaService = auditoriaService;
+            _httpContextAccessor = httpContextAccessor;
+            _httpContextAccessor = httpContextAccessor;
+            _turnoRepository = turnoRepository;
         }
 
         public async Task<PacienteDTO> ActualizarPacienteAsync(int id, PacienteDTO pacienteDto)
@@ -175,8 +182,33 @@ namespace Services
                 throw new KeyNotFoundException("Paciente no encontrado");
             }
 
-            return _mapper.Map<PacienteDetalleDTO>(paciente);
+            var dto = _mapper.Map<PacienteDetalleDTO>(paciente);
 
+            var userRol = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+          /*  if (dto.Sesiones != null && dto.Sesiones.Any())
+            {
+                foreach (var sesion in dto.Sesiones)
+                {
+                    if (userRol != "Terapeuta")
+                    {
+                        sesion.Notas = "🔒 Contenido confidencial - Solo lectura para Terapeutas";
+                    }
+
+                    var turno = await _turnoRepository.GetByIdConPaciente(sesion.TurnoId);
+
+                    if (turno != null && turno.Terapeuta != null)
+                    {
+                        sesion.ProfesionalNombre = $"{turno.Terapeuta.Nombre} {turno.Terapeuta.Apellido}".Trim();
+                    }
+                    else
+                    {
+                        sesion.ProfesionalNombre = "Desconocido";
+                    }
+                }
+            }*/
+
+            return dto;
         }
 
         public async Task<bool> CheckDniExistsAsync(string dni)

@@ -19,9 +19,9 @@ namespace Core.DTOs.Paciente
 
         public ObraSocialSimpleDTO ObraSocial { get; set; }
 
-        public List<SesionHistorialDTO> Sesiones { get; set; }
+      
 
-        public List<PagoHistorialDTO> Pagos { get; set; }
+       
 
     }
 

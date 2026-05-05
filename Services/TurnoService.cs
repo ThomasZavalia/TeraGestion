@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.DTOs.Paciente;
 using Core.DTOs.Pago.Output;
 using Core.DTOs.Public;
@@ -14,6 +14,7 @@ using Infraestructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,7 @@ namespace Services
         private readonly IConfiguracionService _configService;
         private readonly IAusenciaRepository _ausenciaRepository;
         private readonly IAuditoriaService _auditoriaService;
+        private readonly string _frontendBaseUrl;
 
 
         public TurnoService(
@@ -57,7 +59,8 @@ namespace Services
          INotificacionService notificacionService,
          IConfiguracionService configService,
          IAusenciaRepository ausenciaRepository,
-         IAuditoriaService auditoriaService
+         IAuditoriaService auditoriaService,
+         IConfiguration configuration
      )
         {
             _turnoRepository = turnoRepository;
@@ -74,6 +77,7 @@ namespace Services
             _configService = configService;
             _ausenciaRepository = ausenciaRepository;
             _auditoriaService = auditoriaService;
+            _frontendBaseUrl = configuration["FrontendBaseUrl"] ?? "http://localhost:5173";
         }
 
 
@@ -108,18 +112,23 @@ namespace Services
 
             if (turno.Pagos != null && turno.Pagos.Any(p => p.Anulado != true))
                 throw new ArgumentException("El turno ya tiene un pago activo registrado. Anúlelo primero si desea registrar uno nuevo.");
+
+            // Leemos el porcentaje actual del terapeuta y lo fijamos en el pago.
+            // Si el admin lo cambia en el futuro, este registro histórico no se ve afectado.
+            var terapeuta = await _teraDbContext.Usuarios
+                .FirstOrDefaultAsync(u => u.Id == turno.TerapeutaId);
+            decimal porcentajeAplicado = terapeuta?.PorcentajeGanancia ?? 70m;
+
             await _pagoService.CrearPago(new PagoDto
             {
                 TurnoId = turnoId,
                 MetodoPago = metodoPago,
                 Fecha = DateTime.Now,
-                Monto = turno.Precio
+                Monto = turno.Precio,
+                PorcentajeTerapeutaAplicado = porcentajeAplicado
             });
 
-           // turno.Estado = "Pagado";
-            // await _turnoRepository.Actualizar(turno);
-
-            await _auditoriaService.RegistrarAsync(
+           await _auditoriaService.RegistrarAsync(
             accion: "MarcarPagado",
             modulo: "Turnos",
             entidad: "Turno",
@@ -556,8 +565,10 @@ namespace Services
         public async Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto)
         {
             
-            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date,dto.TerapeutaId);
-            var timeZoneId = "America/Argentina/Buenos_Aires";
+            var slots = await GetAvailableSlotsAsync(dto.FechaHora.Date, dto.TerapeutaId);
+
+            string timeZoneId = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows)
+                ? "Argentina Standard Time" : "America/Argentina/Buenos_Aires";
             var zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
          
@@ -659,26 +670,11 @@ namespace Services
 
 
 
-                var baseUrl = "http://localhost:5173"; 
-                var link = $"{baseUrl}/confirmar-turno?token={token}&id={turnoCreado.Id}";
+                var link = $"{_frontendBaseUrl}/confirmar-turno?token={token}&id={turnoCreado.Id}";
 
                
 
                
-
-                try
-                {
-                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                }
-                catch (TimeZoneNotFoundException)
-                {
-                    
-                    zonaHoraria = TimeZoneInfo.FindSystemTimeZoneById("America/Argentina/Buenos_Aires");
-                }
-
-               
-                var fechaUtc = DateTime.SpecifyKind(dto.FechaHora, DateTimeKind.Utc);
-                fechaLocal = TimeZoneInfo.ConvertTimeFromUtc(fechaUtc, zonaHoraria);
 
                 var cuerpoPaciente = $@"
     <h1>Turno Confirmado</h1>
@@ -753,7 +749,38 @@ namespace Services
             return false;
         }
 
-       
+        public async Task<bool> RevertirEstadoTurnoAsync(int turnoId)
+        {
+            var turno = await _turnoRepository.GetById(turnoId);
+            if (turno == null) return false;
+
+            var estadoAnterior = turno.Estado;
+
+            if (estadoAnterior == "Atendido" || estadoAnterior == "Ausente")
+            {
+                turno.Estado = "Pendiente";
+                await _turnoRepository.Actualizar(turno);
+
+                var sesion = await _sesionRepository.GetByTurnoIdAsync(turnoId);
+                if (sesion != null)
+                {
+                    await _sesionRepository.Eliminar(sesion.Id);
+                }
+
+                await _auditoriaService.RegistrarAsync(
+                    "Reversión de Estado",
+                    "Turnos",
+                    "Turno",
+                    turno.Id,
+                    $"Se revirtió el turno #{turno.Id} de '{estadoAnterior}' a 'Pendiente' por error del profesional."
+                );
+
+                return true;
+            }
+            return false;
+        }
+
+
     }
 
 

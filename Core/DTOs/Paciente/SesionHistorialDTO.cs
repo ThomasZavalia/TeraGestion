@@ -8,5 +8,8 @@ namespace Core.DTOs.Paciente
         public DateTime Fecha { get; set; }
         public string Notas { get; set; }
         public string Asistencia { get; set; }
+
+        public int TurnoId { get; set; }
+        public string ProfesionalNombre { get; set; }
     }
 }

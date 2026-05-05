@@ -31,23 +31,24 @@ namespace Core.Mapping
 
 
 
-           
-            CreateMap<Sesion, SesionHistorialDTO>()
-                .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaHoraInicio))
-                .ForMember(dest => dest.Notas, opt => opt.MapFrom(src => src.Notas));
 
-           
+            CreateMap<Sesion, SesionHistorialDTO>()
+                  .ForMember(dest => dest.Fecha, opt => opt.MapFrom(src => src.FechaHoraInicio))
+                  .ForMember(dest => dest.Notas, opt => opt.MapFrom(src => src.Notas))
+                  .ForMember(dest => dest.TurnoId, opt => opt.MapFrom(src => src.TurnoId)); 
+
+
             CreateMap<Pago, PagoHistorialDTO>();
 
 
             CreateMap<Paciente, PacienteDetalleDTO>()
      .ForMember(dest => dest.ObraSocial, opt => opt.MapFrom(src => src.ObraSocial))
-     .ForMember(dest => dest.Sesiones, opt => opt.MapFrom(src => src.Sesiones)) 
-     .ForMember(dest => dest.Pagos, opt => opt.MapFrom(src => src.Turnos 
-         .Where(t => t.Pagos != null && t.Pagos.Any()) 
-         .SelectMany(t => t.Pagos) 
-         .Distinct() 
-    ));
+    //.ForMember(dest => dest.Sesiones, opt => opt.MapFrom(src => src.Sesiones)) 
+    /*.ForMember(dest => dest.Pagos, opt => opt.MapFrom(src => src.Turnos 
+        .Where(t => t.Pagos != null && t.Pagos.Any()) 
+        .SelectMany(t => t.Pagos) 
+        .Distinct() 
+   ))*/;
         }
     }
 }

@@ -148,6 +148,20 @@ namespace Controllers.Controllers
                 return StatusCode(500, new { message = "Error al generar el archivo Excel.", error = ex.Message });
             }
         }
+
+        [HttpGet("paciente/{pacienteId}")]
+        public async Task<IActionResult> GetPagosDePaciente(
+    int pacienteId,
+    [FromQuery] int pagina = 1,
+    [FromQuery] int tamanio = 5,
+    [FromQuery] DateTime? desde = null,
+    [FromQuery] DateTime? hasta = null,
+    [FromQuery] string? metodoPago = null)
+        {
+            var resultado = await _pagoService.GetPagosPaginadosAsync(
+                pacienteId, pagina, tamanio, desde, hasta, metodoPago);
+            return Ok(resultado);
+        }
     }
 
 

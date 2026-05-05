@@ -1,13 +1,17 @@
-﻿using AutoMapper;
+using AutoMapper;
+using Core.DTOs;
+using Core.DTOs.Paciente;
 using Core.DTOs.Sesion.Input;
 using Core.DTOs.Sesion.Output;
 using Core.Entidades;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,13 +24,15 @@ namespace Services
         private readonly ITurnoService _turnoService;
         private readonly IPacienteService _pacienteService;
         private readonly IMapper _mapper;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService, IMapper mapper, ITurnoRepository turnoRepository)
+        public SesionService(ITurnoService turnoService, ISesionRepository sesionRepository, IPacienteService pacienteService, IMapper mapper, ITurnoRepository turnoRepository, IHttpContextAccessor httpContextAccessor)
         {
             _turnoService = turnoService;
             _sesionRepository = sesionRepository;
             _pacienteService = pacienteService;
             _mapper = mapper;
+            _httpContextAccessor = httpContextAccessor;
             _turnoRepository = turnoRepository;
         }
 
@@ -119,42 +125,59 @@ namespace Services
 
 
 
-        public async Task<SesionDTO> GetSesionByIdAsync(int id)
-        {
-            if (id <= 0)
-            {
-                throw new ArgumentException("El ID es invalido.");
-            }
-
-            var sesion = await _sesionRepository.GetById(id);
-
-            if (sesion == null)
-            {
-                throw new KeyNotFoundException($"La sesión con ID {id} no fue encontrada.");
-            }
-
-            var sesionDto = _mapper.Map<SesionDTO>(sesion);
-            return sesionDto;
-        }
-
-
-
-
-
-
-
-
         public async Task<IEnumerable<SesionDTO>> GetSesionesAsync()
         {
             var TodasLasSesiones = await _sesionRepository.ObtenerTodos();
 
             if (TodasLasSesiones == null || !TodasLasSesiones.Any())
+                return Enumerable.Empty<SesionDTO>();
+
+            var sesionesDto = _mapper.Map<IEnumerable<SesionDTO>>(TodasLasSesiones).ToList();
+            var userRol = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+            foreach (var s in sesionesDto)
             {
-                throw new ArgumentException("No se encontraron sesiones.");
+                if (userRol != "Terapeuta")
+                {
+                    s.Notas = "Contenido confidencial - Solo lectura para Terapeutas";
+                }
+
+                var turnoDetalle = await _turnoService.GetTurnoDetalleAsync(s.TurnoId);
+
+                if (turnoDetalle != null)
+                {
+                    s.ProfesionalNombre = turnoDetalle.TerapeutaNombreCompletoProfesional
+                                          ?? turnoDetalle.TerapeutaNombreCompleto
+                                          ?? "Desconocido";
+                }
             }
-            var sesionesDto = _mapper.Map<IEnumerable<SesionDTO>>(TodasLasSesiones);
 
             return sesionesDto;
+        }
+
+        public async Task<SesionDTO> GetSesionByIdAsync(int id)
+        {
+            if (id <= 0) throw new ArgumentException("El ID es invalido.");
+
+            var sesion = await _sesionRepository.GetById(id);
+            if (sesion == null) throw new KeyNotFoundException($"La sesión con ID {id} no fue encontrada.");
+
+            var sesionDto = _mapper.Map<SesionDTO>(sesion);
+
+            var userRol = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRol != "Terapeuta")
+            {
+                sesionDto.Notas = " Contenido confidencial - Solo lectura para Terapeutas";
+            }
+            var turnoDetalle = await _turnoService.GetTurnoDetalleAsync(sesion.TurnoId);
+            if (turnoDetalle != null)
+            {
+                sesionDto.ProfesionalNombre = turnoDetalle.TerapeutaNombreCompletoProfesional
+                                              ?? turnoDetalle.TerapeutaNombreCompleto
+                                              ?? "Desconocido";
+            }
+
+            return sesionDto;
         }
 
         public async Task<SesionDTO> RegistrarAsistenciaAsync(SesionAsistenciaDto dto)
@@ -197,5 +220,36 @@ namespace Services
 
             return _mapper.Map<SesionDTO>(sesionFinal);
         }
+
+        public async Task<PagedResult<SesionHistorialDTO>> GetSesionesPaginadasAsync(
+     int pacienteId, int pagina, int tamanio, DateTime? desde, DateTime? hasta, int? terapeutaId, string? asistencia)
+        {
+            var (items, totalItems) = await _sesionRepository.GetPaginadasPorPacienteAsync(
+                pacienteId, pagina, tamanio, desde, hasta, terapeutaId, asistencia);
+
+            var listaItems = items.ToList();
+            var dtos = _mapper.Map<List<SesionHistorialDTO>>(listaItems);
+            var userRol = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.Role)?.Value;
+
+            foreach (var dto in dtos)
+            {
+                if (userRol != "Terapeuta")
+                    dto.Notas = " Contenido confidencial - Solo lectura para Terapeutas";
+
+                var sesionOriginal = listaItems.First(i => i.Id == dto.Id);
+                if (sesionOriginal.Turno?.Terapeuta != null)
+                {
+                    dto.ProfesionalNombre = $"{sesionOriginal.Turno.Terapeuta.Nombre} {sesionOriginal.Turno.Terapeuta.Apellido}";
+                }
+            }
+
+            return new PagedResult<SesionHistorialDTO>
+            {
+                Items = dtos,
+                TotalItems = totalItems,
+                CurrentPage = pagina,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)tamanio)
+            };
+        }
     }
-}
+    }

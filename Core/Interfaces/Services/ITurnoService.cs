@@ -34,10 +34,11 @@ namespace Core.Interfaces.Services
         Task<TurnoCalendarioDto> ReservarTurnoPublicoAsync(ReservaDto dto);
 
         Task<bool> ConfirmarTurnoAsync(int id,string token);
+        Task<bool> RevertirEstadoTurnoAsync(int turnoId);
 
 
 
-        
+
 
 
 

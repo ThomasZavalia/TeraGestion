@@ -131,7 +131,7 @@ namespace Infrastructure.Repositorios
         {
             var paciente = await _context.Pacientes
          .Include(p => p.ObraSocial) 
-         .Include(p => p.Sesiones)                    
+         //.Include(p => p.Sesiones)                    
          .Include(p => p.Turnos) 
              .ThenInclude(t => t.Pagos)                        
          .AsNoTracking()

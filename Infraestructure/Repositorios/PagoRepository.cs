@@ -149,5 +149,30 @@ namespace Infrastructure.Repositorios
             return (pagosFiltrados, totalItems);
         }
 
+
+       
+        public async Task<(IEnumerable<Pago> Items, int Total)> GetPaginadosPorPacienteAsync(
+            int pacienteId, int pagina, int tamanio, DateTime? desde, DateTime? hasta, string? metodoPago)
+        {
+            var query = _context.Pagos
+                .Include(p => p.Turno)
+                .Where(p => p.Turno.PacienteId == pacienteId)
+                .AsQueryable();
+
+            if (desde.HasValue) query = query.Where(p => p.Fecha >= desde.Value);
+            if (hasta.HasValue) query = query.Where(p => p.Fecha <= hasta.Value);
+            if (!string.IsNullOrWhiteSpace(metodoPago)) query = query.Where(p => p.MetodoPago == metodoPago);
+
+            int total = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(p => p.Fecha)
+                .Skip((pagina - 1) * tamanio)
+                .Take(tamanio)
+                .ToListAsync();
+
+            return (items, total);
+        }
+
     }
 }

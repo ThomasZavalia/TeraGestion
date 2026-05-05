@@ -1,12 +1,13 @@
 ﻿using Core.Entidades;
 using Core.Interfaces.Repositorios;
+using Infraestructure;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Infraestructure;
 
 namespace Infrastructure.Repositorios
 {
@@ -79,6 +80,38 @@ namespace Infrastructure.Repositorios
             return await _context.Sesiones
                                  .AsNoTracking()
                                  .FirstOrDefaultAsync(s => s.TurnoId == turnoId);
+        }
+
+        public async Task<(IEnumerable<Sesion> Items, int Total)> GetPaginadasPorPacienteAsync(
+     int pacienteId,
+     int pagina,
+     int tamanio,
+     DateTime? desde,
+     DateTime? hasta,
+     int? terapeutaId,
+     string? asistencia)
+        {
+            var query = _context.Sesiones
+                .Where(s => s.PacienteId == pacienteId)
+                .AsQueryable();
+
+            if (desde.HasValue) query = query.Where(s => s.FechaHoraInicio >= desde.Value);
+            if (hasta.HasValue) query = query.Where(s => s.FechaHoraInicio <= hasta.Value);
+
+            if (terapeutaId.HasValue) query = query.Where(s => s.Turno.TerapeutaId == terapeutaId.Value);
+
+            if (!string.IsNullOrWhiteSpace(asistencia)) query = query.Where(s => s.Asistencia == asistencia);
+
+            int total = await query.CountAsync();
+
+            var items = await query
+                .OrderByDescending(s => s.FechaHoraInicio)
+                .Skip((pagina - 1) * tamanio)
+                .Take(tamanio)
+                .Include(s => s.Turno).ThenInclude(t => t.Terapeuta)
+                .ToListAsync();
+
+            return (items, total);
         }
 
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -26,5 +26,7 @@ namespace Core.DTOs.Pago.Output
 
         public DateTime? FechaTurno { get; set; }
         public string TerapeutaTurno { get; set; }
+
+        public decimal? PorcentajeTerapeutaAplicado { get; set; }
     }
 }

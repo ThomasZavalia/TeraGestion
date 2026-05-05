@@ -84,5 +84,20 @@ namespace Controllers.Controllers
             return Ok(sesionDto);
         }
 
+        [HttpGet("paciente/{pacienteId}")]
+        public async Task<IActionResult> GetSesiones(
+    int pacienteId,
+    [FromQuery] int pagina = 1,
+    [FromQuery] int tamanio = 5,
+    [FromQuery] DateTime? desde = null,
+    [FromQuery] DateTime? hasta = null,
+    [FromQuery] int? terapeutaId = null,
+    [FromQuery] string? asistencia = null)
+        {
+            var resultado = await _sesionService.GetSesionesPaginadasAsync(
+                pacienteId, pagina, tamanio, desde, hasta, terapeutaId, asistencia);
+            return Ok(resultado);
+        }
+
     }
 }

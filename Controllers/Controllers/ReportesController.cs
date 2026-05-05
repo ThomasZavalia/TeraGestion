@@ -1,4 +1,4 @@
-﻿using Core.Interfaces.Services;
+using Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,23 +19,23 @@ namespace Controllers.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("top-pacientes")]
-        public async Task<IActionResult> GetTopPacientes()
+        public async Task<IActionResult> GetTopPacientes([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
-            var topPacientes = await _reportesService.GetTopPacientes();
+            var topPacientes = await _reportesService.GetTopPacientes(fechaDesde, fechaHasta);
             return Ok(topPacientes);
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("metodos-pago")]
-        public async Task<IActionResult> GetMetodosPago()
+        public async Task<IActionResult> GetMetodosPago([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
-            var metodosPago = await _reportesService.GetMetodosPagoDto();
+            var metodosPago = await _reportesService.GetMetodosPagoDto(fechaDesde, fechaHasta);
             return Ok(metodosPago);
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("turnos-por-estado")]
-        public async Task<IActionResult> GetTurnosPorEstado()
+        public async Task<IActionResult> GetTurnosPorEstado([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
-            var turnosPorEstado = await _reportesService.GetTurnoPorEstado();
+            var turnosPorEstado = await _reportesService.GetTurnoPorEstado(fechaDesde, fechaHasta);
             return Ok(turnosPorEstado);
         }
         [Authorize(Roles = "Admin")]
@@ -54,9 +54,9 @@ namespace Controllers.Controllers
         }
         [Authorize(Roles = "Admin")]
         [HttpGet("turnos-por-obrasocial")]
-        public async Task<IActionResult> GetTurnosPorObraSocial()
+        public async Task<IActionResult> GetTurnosPorObraSocial([FromQuery] DateTime? fechaDesde = null, [FromQuery] DateTime? fechaHasta = null)
         {
-            var reporte = await _reportesService.GetTurnosPorObraSocial();
+            var reporte = await _reportesService.GetTurnosPorObraSocial(fechaDesde, fechaHasta);
             return Ok(reporte);
         }
 

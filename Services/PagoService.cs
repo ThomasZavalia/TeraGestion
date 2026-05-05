@@ -1,6 +1,7 @@
-﻿using AutoMapper;
+using AutoMapper;
 using ClosedXML.Excel;
 using Core.DTOs;
+using Core.DTOs.Paciente;
 using Core.DTOs.Pago.Output;
 using Core.Entidades;
 using Core.Interfaces;
@@ -79,19 +80,16 @@ namespace Services
             if (id <= 0)
             {
                 throw new ArgumentException("El ID debe ser un número positivo.");
-
             }
-          
-            var pago = await _pagoRepository.GetById(id);
 
-            var pagoDto = _mapper.Map<PagoDto>(pago);
+            var pago = await _pagoRepository.GetById(id);
 
             if (pago == null)
             {
                 throw new KeyNotFoundException("Pago no encontrado.");
             }
 
-            return pagoDto;
+            return _mapper.Map<PagoDto>(pago);
         }
 
 
@@ -100,13 +98,7 @@ namespace Services
         public async Task<IEnumerable<PagoDto>> GetPagos()
         {
             var todosLosPagos = await _pagoRepository.ObtenerTodos();
-
-            if (todosLosPagos == null || !todosLosPagos.Any())
-            {
-                throw new InvalidOperationException("No hay pagos disponibles.");
-            }
             var pagosDto = _mapper.Map<IEnumerable<PagoDto>>(todosLosPagos);
-
             return pagosDto;
         }
         public async  Task<IEnumerable<Pago>> GetPagosSinDto()
@@ -238,6 +230,23 @@ namespace Services
             using var stream = new MemoryStream();
             workbook.SaveAs(stream);
             return stream.ToArray();
+        }
+
+        public async Task<PagedResult<PagoHistorialDTO>> GetPagosPaginadosAsync(
+    int pacienteId, int pagina, int tamanio, DateTime? desde, DateTime? hasta, string? metodoPago)
+        {
+            var (items, totalItems) = await _pagoRepository.GetPaginadosPorPacienteAsync(
+                pacienteId, pagina, tamanio, desde, hasta, metodoPago);
+
+            var dtos = _mapper.Map<List<PagoHistorialDTO>>(items.ToList());
+
+            return new PagedResult<PagoHistorialDTO>
+            {
+                Items = dtos,
+                TotalItems = totalItems,
+                CurrentPage = pagina,
+                TotalPages = (int)Math.Ceiling(totalItems / (double)tamanio)
+            };
         }
 
     }

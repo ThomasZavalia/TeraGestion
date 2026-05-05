@@ -22,5 +22,7 @@ namespace Core.DTOs.Sesion.Output
         public int PacienteId { get; set; }
         [Required]
         public int TurnoId { get; set; }
+
+        public string ProfesionalNombre { get; set; }
     }
 }

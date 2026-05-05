@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Core.DTOs.Usuario.Input;
 using Core.DTOs.Usuario.Output;
 using Core.Entidades;
@@ -17,12 +17,11 @@ namespace Controllers.Controllers
     {
         private readonly IUsuarioService _usuarioService;
         private readonly IMapper _mapper;
-        private readonly IConfiguration _configuration;
-        public UsuarioController(IUsuarioService usuarioService, IConfiguration configuration, IMapper mapper)
+
+        public UsuarioController(IUsuarioService usuarioService, IMapper mapper)
         {
             _usuarioService = usuarioService;
             _mapper = mapper;
-          
         }
 
         [Authorize(Roles = "Admin")]
@@ -42,7 +41,6 @@ namespace Controllers.Controllers
             return Ok(usuariosDto);
         }
 
-        [AllowAnonymous]
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> CrearUsuario([FromBody] Usuario usuario) 

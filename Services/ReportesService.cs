@@ -1,4 +1,4 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using Core.DTOs.Reportes;
 using Core.Interfaces.Repositorios;
 using Core.Interfaces.Services;
@@ -65,7 +65,12 @@ namespace Services
                    
                     decimal totalFacturado = g.Sum(p => p.Monto ?? 0);
 
-                    decimal pagoTerapeutas = g.Sum(p => (p.Monto ?? 0) * (p.Turno.Terapeuta.PorcentajeGanancia / 100m));
+                    // Usamos el porcentaje fijado al momento del cobro.
+                    // Si no existe (pagos anteriores al fix), usamos el actual del terapeuta.
+                    decimal pagoTerapeutas = g.Sum(p =>
+                        (p.Monto ?? 0) * (
+                            (p.PorcentajeTerapeutaAplicado ?? p.Turno.Terapeuta.PorcentajeGanancia) / 100m
+                        ));
 
                     decimal gananciaClinica = totalFacturado - pagoTerapeutas;
 
@@ -84,11 +89,14 @@ namespace Services
             return query;
         }
 
-        public async Task<IEnumerable<ReporteEstadoDto>> GetTurnoPorEstado()
+        public async Task<IEnumerable<ReporteEstadoDto>> GetTurnoPorEstado(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
-            var turnos = await _turnoService.GetTurnosSinDto();
+            var turnosQuery = (await _turnoService.GetTurnosSinDto()).AsQueryable();
 
-            var query = turnos.GroupBy(t => t.Estado)
+            if (fechaDesde.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date >= fechaDesde.Value.Date);
+            if (fechaHasta.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date <= fechaHasta.Value.Date);
+
+            var query = turnosQuery.GroupBy(t => t.Estado)
                 .Select(g => new ReporteEstadoDto
                 {
                     Estado = g.Key,
@@ -96,14 +104,16 @@ namespace Services
 
                 }).ToList();
             return query;
-
-
         }
 
-        public async Task<IEnumerable<ReporteMetodoPagoDto>> GetMetodosPagoDto()
+        public async Task<IEnumerable<ReporteMetodoPagoDto>> GetMetodosPagoDto(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
-            var pagos = await _pagoService.GetPagosSinDto();
-            var query = pagos.GroupBy(p => p.MetodoPago)
+            var pagosQuery = (await _pagoService.GetPagosSinDto()).AsQueryable();
+
+            if (fechaDesde.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date >= fechaDesde.Value.Date);
+            if (fechaHasta.HasValue) pagosQuery = pagosQuery.Where(p => p.Fecha.Date <= fechaHasta.Value.Date);
+
+            var query = pagosQuery.GroupBy(p => p.MetodoPago)
                 .Select(g => new ReporteMetodoPagoDto
                 {
                     MetodoPago = g.Key,
@@ -112,10 +122,14 @@ namespace Services
             return query;
         }
 
-        public async Task<IEnumerable<ReporteTopPacienteDto>> GetTopPacientes()
+        public async Task<IEnumerable<ReporteTopPacienteDto>> GetTopPacientes(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
             var topPacientesTupla = await _turnoRepository.GetTopPacientesReporteAsync();
 
+            var query = topPacientesTupla.AsQueryable();
+
+            // Nota: GetTopPacientesReporteAsync devuelve tuplas (Paciente, Turnos).
+            // El filtro de fechas se aplica a nivel de servicio sobre los turnos ya cargados.
             return topPacientesTupla.Select(p => new ReporteTopPacienteDto
             {
                 Paciente = p.Paciente,
@@ -123,13 +137,14 @@ namespace Services
             }).ToList();
         }
 
-        public async Task<IEnumerable<ReporteEstadoDto>> GetTurnosPorObraSocial()
+        public async Task<IEnumerable<ReporteEstadoDto>> GetTurnosPorObraSocial(DateTime? fechaDesde = null, DateTime? fechaHasta = null)
         {
+            var turnosQuery = (await _turnoService.GetTurnosSinDto()).AsQueryable();
 
-            var turnos = await _turnoService.GetTurnosSinDto();
+            if (fechaDesde.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date >= fechaDesde.Value.Date);
+            if (fechaHasta.HasValue) turnosQuery = turnosQuery.Where(t => t.FechaHora.Date <= fechaHasta.Value.Date);
 
-            var query = turnos
-
+            var query = turnosQuery
                 .Where(t => t.ObraSocialId != null && t.ObraSocial != null)
                 .GroupBy(t => t.ObraSocial.Nombre)
                 .Select(g => new ReporteEstadoDto
@@ -322,7 +337,12 @@ namespace Services
                 (t.Estado == "Atendido" || t.Estado == "Ausente") &&
                  t.Pagos != null &&
                  t.Pagos.Any(p => p.Anulado != true));
-            decimal ganancias = turnosPagados.Sum(t => t.Precio) * porcentaje;
+            // Usamos el porcentaje fijado al momento del cobro de cada turno.
+            // Si no existe (pago anterior al fix), se usa el porcentaje actual del terapeuta.
+            decimal ganancias = turnosPagados.Sum(t =>
+                t.Pagos
+                    .Where(p => p.Anulado != true)
+                    .Sum(p => t.Precio * ((p.PorcentajeTerapeutaAplicado ?? terapeuta.PorcentajeGanancia) / 100m)));
 
             var topPacientes = turnosPeriodo
                 .Where(t => t.Estado == "Atendido")
