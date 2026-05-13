@@ -63,6 +63,7 @@ builder.Services.AddScoped<IConfiguracionService, ConfiguracionService>();
 builder.Services.AddScoped<IAuditoriaService, AuditoriaService>();
 
 builder.Services.AddHostedService<TurnoCleanupService>();
+builder.Services.AddHostedService<TurnoReminderService>();
 
 builder.Services.AddCors(options =>
 {

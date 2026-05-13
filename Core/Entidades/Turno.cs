@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +30,9 @@ namespace Core.Entidades
 
         public int TerapeutaId { get; set; }
         public Usuario Terapeuta { get; set; }
+
+        /// <summary>Momento en que se creó el turno (UTC). Usado para evitar recordatorios inmediatos.</summary>
+        public DateTime CreadoEn { get; set; } = DateTime.UtcNow;
 
     }
 
